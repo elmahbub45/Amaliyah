@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#075b49">
+  <title>Admin Koleksi — Amaliyah</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <small>AMALIYAH</small>
+      <h1>Admin Koleksi</h1>
+    </div>
+    <button id="saveDraftBtn" class="icon-btn" type="button" title="Simpan draft lokal">💾</button>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar card">
+      <div class="sidebar-head">
+        <div>
+          <b>Daftar Bacaan</b>
+          <small id="catalogInfo">Memuat…</small>
+        </div>
+        <button id="addItemBtn" class="primary small" type="button">+ Tambah</button>
+      </div>
+
+      <div class="toolbar">
+        <input id="searchInput" type="search" placeholder="Cari judul…">
+        <select id="categoryFilter"></select>
+      </div>
+
+      <div id="itemList" class="item-list"></div>
+    </aside>
+
+    <section class="editor card">
+      <div id="emptyEditor" class="empty-editor">
+        <div class="empty-icon">☰</div>
+        <h2>Pilih bacaan</h2>
+        <p>Pilih salah satu bacaan di sebelah kiri untuk mengedit data koleksi.</p>
+      </div>
+
+      <div id="editorContent" class="hidden">
+        <div class="editor-title-row">
+          <div>
+            <small id="editorTypeBadge" class="badge"></small>
+            <h2 id="editorHeading">Edit Bacaan</h2>
+          </div>
+          <button id="deleteItemBtn" class="danger ghost" type="button">Hapus</button>
+        </div>
+
+        <div class="form-grid">
+          <label class="field span-2">
+            <span>Judul Tampilan</span>
+            <input id="titleInput" type="text">
+            <small>Boleh diubah kapan saja tanpa mengganti nama PDF.</small>
+          </label>
+
+          <label class="field">
+            <span>Kategori</span>
+            <select id="categoryInput"></select>
+          </label>
+
+          <label class="field">
+            <span>Tipe</span>
+            <select id="typeInput">
+              <option value="single">Single</option>
+              <option value="collection">Collection</option>
+              <option value="group">Group</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Teks/Icon Kartu Hijau</span>
+            <input id="iconInput" type="text" maxlength="12" placeholder="مثال: و">
+            <small>Disarankan 1–3 karakter agar tetap rapi.</small>
+          </label>
+
+          <label class="field">
+            <span>ID</span>
+            <input id="idInput" type="text" readonly>
+            <small>ID dikunci agar progres & bookmark lama tetap aman.</small>
+          </label>
+        </div>
+
+        <div id="singleFields" class="section-box hidden">
+          <div class="section-heading">
+            <div><b>File PDF</b><small>Bacaan tunggal</small></div>
+          </div>
+          <div class="form-grid">
+            <label class="field span-2">
+              <span>Path PDF</span>
+              <input id="singleFileInput" type="text">
+            </label>
+            <label class="field">
+              <span>Jumlah Halaman</span>
+              <input id="singlePagesInput" type="number" min="1">
+            </label>
+          </div>
+        </div>
+
+        <div id="partsSection" class="section-box hidden">
+          <div class="section-heading">
+            <div>
+              <b id="partsHeading">Bagian</b>
+              <small>Drag untuk mengubah urutan. ID bagian tetap dipertahankan.</small>
+            </div>
+            <button id="addPartBtn" class="primary small" type="button">+ Tambah Bagian</button>
+          </div>
+          <div id="partsList" class="parts-list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bottom-actions">
+    <div class="status">
+      <span id="dirtyDot"></span>
+      <span id="statusText">Belum ada perubahan</span>
+    </div>
+    <div class="actions">
+      <button id="resetBtn" class="ghost" type="button">Muat Ulang</button>
+      <button id="importBtn" class="ghost" type="button">Import JSON</button>
+      <input id="importFile" type="file" accept=".json,application/json" hidden>
+      <button id="exportBtn" class="primary" type="button">Download books.json</button>
+    </div>
+  </footer>
+
+  <dialog id="partDialog">
+    <form method="dialog" class="dialog-card" id="partForm">
+      <div class="dialog-head">
+        <div><small id="partDialogMode">BAGIAN</small><h3 id="partDialogTitle">Tambah Bagian</h3></div>
+        <button value="cancel" class="icon-btn" type="submit">✕</button>
+      </div>
+      <label class="field">
+        <span>Judul Bagian</span>
+        <input id="partTitleInput" required>
+      </label>
+      <label class="field">
+        <span>ID Bagian</span>
+        <input id="partIdInput" required>
+        <small>Untuk bagian lama jangan diubah. Bagian baru akan dibuat otomatis dari judul.</small>
+      </label>
+      <label class="field">
+        <span>Path PDF</span>
+        <input id="partFileInput" required placeholder="assets/pdf-v2/.../nama-file.pdf">
+      </label>
+      <label class="field">
+        <span>Jumlah Halaman</span>
+        <input id="partPagesInput" type="number" min="1" value="1" required>
+      </label>
+      <label class="file-helper">
+        <span>Pilih PDF dari komputer (opsional)</span>
+        <input id="partPdfPicker" type="file" accept="application/pdf,.pdf">
+        <small>Admin hanya membaca nama file untuk membantu path. PDF tetap perlu di-upload ke GitHub.</small>
+      </label>
+      <div class="dialog-actions">
+        <button value="cancel" class="ghost" type="submit">Batal</button>
+        <button id="savePartBtn" value="default" class="primary" type="button">Simpan Bagian</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="itemDialog">
+    <form method="dialog" class="dialog-card" id="itemForm">
+      <div class="dialog-head">
+        <div><small>BACAAN BARU</small><h3>Tambah Bacaan</h3></div>
+        <button value="cancel" class="icon-btn" type="submit">✕</button>
+      </div>
+      <label class="field"><span>Judul</span><input id="newTitleInput" required></label>
+      <label class="field"><span>Tipe</span>
+        <select id="newTypeInput">
+          <option value="single">Single</option>
+          <option value="collection">Collection</option>
+          <option value="group">Group</option>
+        </select>
+      </label>
+      <label class="field"><span>Kategori</span><select id="newCategoryInput"></select></label>
+      <label class="field"><span>Teks/Icon Kartu Hijau</span><input id="newIconInput" maxlength="12" placeholder="◈"></label>
+      <div class="dialog-actions">
+        <button value="cancel" class="ghost" type="submit">Batal</button>
+        <button id="createItemBtn" class="primary" type="button">Buat Bacaan</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

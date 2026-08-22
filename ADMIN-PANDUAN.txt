@@ -1,0 +1,26 @@
+ADMIN KOLEKSI — AMALIYAH
+
+Cara akses setelah di-upload ke root repository:
+https://elmahbub45.github.io/Amaliyah/admin.html
+
+Fitur:
+- Edit judul tampilan.
+- Edit teks/icon kartu hijau.
+- Edit kategori dan tipe single/collection/group.
+- Drag-and-drop atau tombol ↑ ↓ untuk mengubah urutan bagian.
+- Tambah, edit, atau hapus subbagian.
+- Tambah bacaan induk baru.
+- Path PDF dan jumlah halaman dapat diedit.
+- ID bacaan lama dikunci agar progres/bookmark pengguna tidak rusak.
+- Draft dapat disimpan sementara di browser.
+- Download books.json yang sudah diperbarui.
+
+PENTING:
+Admin ini berjalan sepenuhnya di browser dan TIDAK menulis langsung ke GitHub.
+Setelah klik "Download books.json":
+1. Upload/replace books.json di root repository Amaliyah.
+2. Jika menambah PDF baru, upload PDF tersebut ke path yang ditulis di Admin.
+3. Refresh aplikasi.
+
+Menghapus item di Admin hanya menghapus data dari books.json.
+File PDF fisik di GitHub tidak otomatis terhapus.
