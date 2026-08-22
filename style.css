@@ -132,3 +132,74 @@ main{padding:0 16px 28px}
 .empty-state p{margin:.5rem 0 0;color:#6d756f;font-size:.92rem}
 .action-row{width:100%;border:0;text-align:left;background:#fff;margin-bottom:10px}
 .prayer-name{display:block;font-size:.72rem;color:#6e756e;margin-bottom:2px}
+
+
+/* =========================================================
+   V2.9 — Enhanced header background with mosque silhouette
+   ========================================================= */
+.hero{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.14), transparent 28%),
+    radial-gradient(circle at 83% 16%, rgba(228,189,107,.16), transparent 24%),
+    linear-gradient(165deg, #0d5a46 0%, #0a4b3b 42%, #07392f 100%);
+  box-shadow:0 16px 40px rgba(7,60,49,.18);
+}
+.hero > *{
+  position:relative;
+  z-index:2;
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,.08), rgba(255,255,255,0) 34%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='220' viewBox='0 0 320 220'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.08)' stroke-width='1'%3E%3Cpath d='M40 34l12 12-12 12-12-12zM110 34l12 12-12 12-12-12zM180 34l12 12-12 12-12-12zM250 34l12 12-12 12-12-12z'/%3E%3Cpath d='M75 74l12 12-12 12-12-12zM145 74l12 12-12 12-12-12zM215 74l12 12-12 12-12-12zM285 74l12 12-12 12-12-12z'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat:no-repeat, repeat;
+  background-size:auto, 320px 220px;
+  opacity:.9;
+  pointer-events:none;
+}
+.hero::after{
+  content:"";
+  position:absolute;
+  left:-2%;
+  right:-2%;
+  bottom:-2px;
+  height:128px;
+  background:
+    linear-gradient(to top, rgba(7,57,47,.62), rgba(7,57,47,0) 62%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 220' preserveAspectRatio='none'%3E%3Cg fill='rgba(240,202,117,0.16)'%3E%3Cpath d='M0 220V196h36v-50l26-26 26 26v50h26V126c0-16 11-29 27-33V72c0-23 18-41 41-41s41 18 41 41v21c16 4 27 17 27 33v70h28v-34l18-18 18 18v34h28v-54l24-24 24 24v54h42v-80h34l28-28 28 28h34v80h32v-42l21-21 21 21v42h28v-64c0-17 12-31 29-35V63c0-25 19-45 44-45s44 20 44 45v24c17 4 29 18 29 35v64h30v-36l19-19 19 19v36h30v-48l23-23 23 23v48h44v-62h31l23-23 23 23h31v62h34V220z'/%3E%3Cpath d='M141 93h41v-19c0-12-9-22-20.5-22S141 62 141 74zM722 89h44V64c0-13-9.8-23-22-23s-22 10-22 23z' fill='rgba(240,202,117,0.2)'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-size:100% 100%;
+  pointer-events:none;
+}
+.hero .top{
+  margin-bottom:2px;
+}
+.hero .brand{
+  padding-top:2px;
+}
+.hero .quote{
+  margin-top:18px;
+  padding:14px 14px 12px;
+  border-radius:20px;
+  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+.hero .arabic{
+  text-shadow:0 2px 8px rgba(0,0,0,.14);
+}
+.hero .quote p,
+.hero .quote small{
+  text-shadow:0 1px 3px rgba(0,0,0,.12);
+}
+@media (max-width:390px){
+  .hero::after{height:112px}
+  .hero .quote{padding:13px 12px 11px}
+}
