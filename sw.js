@@ -1,5 +1,5 @@
-const C='amaliyah-v2-16';
-const A=['./','./index.html','./style.css','./books.js','./app.js','./reader.html','./reader.css','./reader.js','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png','./assets/pdf/wirdul-latif.pdf'];
+const C='amaliyah-v2-18';
+const A=['./','./index.html','./style.css','./app.js','./reader.html','./reader.css','./reader.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
 
 self.addEventListener('install',e=>{
   self.skipWaiting();

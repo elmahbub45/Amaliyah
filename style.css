@@ -509,3 +509,47 @@ main{
   .favorite-copy b{font-size:11.2px}
   .favorite-copy small{font-size:8.5px}
 }
+
+
+/* =========================================================
+   V2.18 — Collection / Group screen
+   ========================================================= */
+.collection-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:-3px 0 14px;
+  padding:11px 13px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--surface);
+  color:#56675f;
+}
+.collection-meta b{font-size:11px;color:#2d5548}
+.collection-meta span{font-size:10px}
+.collection-part{
+  width:100%;
+  min-height:64px;
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr) 18px;
+  gap:10px;
+  align-items:center;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--surface);
+  padding:10px 12px;
+  color:var(--ink);
+  text-align:left;
+  box-shadow:0 4px 14px rgba(63,50,32,.035);
+}
+.collection-part+.collection-part{margin-top:8px}
+.part-number{
+  width:36px;height:36px;
+  border-radius:11px;
+  display:grid;place-items:center;
+  background:#edf4f0;color:#21604f;
+  font-size:10px;font-weight:800;
+}
+.part-copy{min-width:0}
+.part-copy b{display:block;font-size:12.5px;line-height:1.25}
+.part-copy small{display:block;margin-top:4px;font-size:9.5px;color:#87908b}

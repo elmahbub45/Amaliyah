@@ -1,0 +1,1697 @@
+{
+  "version": "2.18",
+  "categories": [
+    "Semua",
+    "Al-Qur'an",
+    "Wirid",
+    "Doa",
+    "Maulid",
+    "Dalail",
+    "Syair",
+    "Khutbah"
+  ],
+  "items": [
+    {
+      "id": "surah-pilihan",
+      "title": "Surah Pilihan",
+      "category": "Al-Qur'an",
+      "type": "group",
+      "icon": "ق",
+      "coverText": "Surah Pilihan",
+      "parts": [
+        {
+          "id": "surah-al-kahfi-236d7f",
+          "title": "Surah Al Kahfi",
+          "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-kahfi.pdf",
+          "pages": 24
+        },
+        {
+          "id": "surah-al-fath-00632d",
+          "title": "Surah Al Fath",
+          "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-fath.pdf",
+          "pages": 10
+        },
+        {
+          "id": "surah-yasin-a18b09",
+          "title": "Surah Yasin",
+          "file": "assets/pdf-v2/quran/surah-pilihan/surah-yasin.pdf",
+          "pages": 12
+        },
+        {
+          "id": "surah-al-waqiah-2b58bd",
+          "title": "Surah Al Waqiah",
+          "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-waqiah.pdf",
+          "pages": 8
+        },
+        {
+          "id": "surah-al-mulk-tabarak-d7b01e",
+          "title": "Surah Al Mulk (Tabarak)",
+          "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-mulk-tabarak.pdf",
+          "pages": 6
+        },
+        {
+          "id": "surah-ar-rahman-28126a",
+          "title": "Surah Ar-Rahman",
+          "file": "assets/pdf-v2/quran/surah-pilihan/surah-ar-rahman.pdf",
+          "pages": 6
+        }
+      ]
+    },
+    {
+      "id": "wirid-sesudah-sholat",
+      "title": "Wirid Sesudah Sholat",
+      "category": "Wirid",
+      "type": "group",
+      "icon": "و",
+      "coverText": "Wirid Sesudah Sholat",
+      "parts": [
+        {
+          "id": "wirid-sholat-subuh-ac9b13",
+          "title": "Wirid Sholat - Subuh",
+          "file": "assets/pdf-v2/wirid/wirid-sesudah-sholat/wirid-sholat-subuh.pdf",
+          "pages": 12
+        },
+        {
+          "id": "wirid-sholat-zhuhur-c1010c",
+          "title": "Wirid Sholat - Dzuhur",
+          "file": "assets/pdf-v2/wirid/wirid-sesudah-sholat/wirid-sholat-dzuhur.pdf",
+          "pages": 8
+        },
+        {
+          "id": "wirid-sholat-ashar-50f4e2",
+          "title": "Wirid Sholat - Ashar",
+          "file": "assets/pdf-v2/wirid/wirid-sesudah-sholat/wirid-sholat-ashar.pdf",
+          "pages": 11
+        },
+        {
+          "id": "wirid-sholat-maghrib-d2f5fc",
+          "title": "Wirid Sholat - Maghrib",
+          "file": "assets/pdf-v2/wirid/wirid-sesudah-sholat/wirid-sholat-maghrib.pdf",
+          "pages": 9
+        },
+        {
+          "id": "wirid-sholat-isya-bc2af1",
+          "title": "Wirid Sholat - Isya",
+          "file": "assets/pdf-v2/wirid/wirid-sesudah-sholat/wirid-sholat-isya.pdf",
+          "pages": 8
+        }
+      ]
+    },
+    {
+      "id": "dalail",
+      "title": "Dalail",
+      "category": "Dalail",
+      "type": "collection",
+      "icon": "ص",
+      "coverText": "Dalail",
+      "parts": [
+        {
+          "id": "tartib-al-fatihah-dalail-3f401b",
+          "title": "Tartib Al-Fatihah Dalail",
+          "file": "assets/pdf-v2/dalail/dalail/tartib-al-fatihah-dalail.pdf",
+          "pages": 2
+        },
+        {
+          "id": "hizb-senin-awal-3e8b33",
+          "title": "Hizb - Senin Awal",
+          "file": "assets/pdf-v2/dalail/dalail/hizb-senin-awal.pdf",
+          "pages": 32
+        },
+        {
+          "id": "hizb-selasa-45bfe6",
+          "title": "Hizb - Selasa",
+          "file": "assets/pdf-v2/dalail/dalail/hizb-selasa.pdf",
+          "pages": 18
+        },
+        {
+          "id": "hizb-rabu-065c7b",
+          "title": "Hizb - Rabu",
+          "file": "assets/pdf-v2/dalail/dalail/hizb-rabu.pdf",
+          "pages": 19
+        },
+        {
+          "id": "hizb-kamis-3ca3d8",
+          "title": "Hizb - Kamis",
+          "file": "assets/pdf-v2/dalail/dalail/hizb-kamis.pdf",
+          "pages": 19
+        },
+        {
+          "id": "hizb-jum-at-f8a6eb",
+          "title": "Hizb - Jum'at",
+          "file": "assets/pdf-v2/dalail/dalail/hizb-jum-at.pdf",
+          "pages": 26
+        },
+        {
+          "id": "hizb-sabtu-f5c757",
+          "title": "Hizb - Sabtu",
+          "file": "assets/pdf-v2/dalail/dalail/hizb-sabtu.pdf",
+          "pages": 22
+        },
+        {
+          "id": "hizb-ahad-06d4f1",
+          "title": "Hizb - Ahad",
+          "file": "assets/pdf-v2/dalail/dalail/hizb-ahad.pdf",
+          "pages": 22
+        },
+        {
+          "id": "hizb-senin-akhir-c6b5d9",
+          "title": "Hizb - Senin Akhir",
+          "file": "assets/pdf-v2/dalail/dalail/hizb-senin-akhir.pdf",
+          "pages": 10
+        },
+        {
+          "id": "do-a-dalail-d1e9c4",
+          "title": "Doa Dalail",
+          "file": "assets/pdf-v2/dalail/dalail/doa-dalail.pdf",
+          "pages": 5
+        }
+      ]
+    },
+    {
+      "id": "istighfar-harian",
+      "title": "Istighfar Harian",
+      "category": "Dalail",
+      "type": "group",
+      "icon": "ص",
+      "coverText": "Istighfar Harian",
+      "parts": [
+        {
+          "id": "istigfar-senin-2e2aea",
+          "title": "Istighfar - Senin",
+          "file": "assets/pdf-v2/dalail/istighfar-harian/istighfar-senin.pdf",
+          "pages": 7
+        },
+        {
+          "id": "istigfar-selasa-dd4645",
+          "title": "Istighfar - Selasa",
+          "file": "assets/pdf-v2/dalail/istighfar-harian/istighfar-selasa.pdf",
+          "pages": 6
+        },
+        {
+          "id": "istigfar-rabu-bb003d",
+          "title": "Istighfar - Rabu",
+          "file": "assets/pdf-v2/dalail/istighfar-harian/istighfar-rabu.pdf",
+          "pages": 5
+        },
+        {
+          "id": "istigfar-kamis-ef9688",
+          "title": "Istighfar - Kamis",
+          "file": "assets/pdf-v2/dalail/istighfar-harian/istighfar-kamis.pdf",
+          "pages": 9
+        },
+        {
+          "id": "istigfar-jum-at-60514f",
+          "title": "Istighfar - Jum'at",
+          "file": "assets/pdf-v2/dalail/istighfar-harian/istighfar-jum-at.pdf",
+          "pages": 8
+        },
+        {
+          "id": "istigfar-sabtu-4a7d07",
+          "title": "Istighfar - Sabtu",
+          "file": "assets/pdf-v2/dalail/istighfar-harian/istighfar-sabtu.pdf",
+          "pages": 6
+        },
+        {
+          "id": "istigfar-ahad-256a3f",
+          "title": "Istighfar - Ahad",
+          "file": "assets/pdf-v2/dalail/istighfar-harian/istighfar-ahad.pdf",
+          "pages": 6
+        }
+      ]
+    },
+    {
+      "id": "qashidah-burdah",
+      "title": "Qashidah Burdah",
+      "category": "Maulid",
+      "type": "collection",
+      "icon": "م",
+      "coverText": "Qashidah Burdah",
+      "parts": [
+        {
+          "id": "tartib-al-fatihah-burdah-265a49",
+          "title": "Tartib Al-Fatihah Burdah",
+          "file": "assets/pdf-v2/maulid/qashidah-burdah/tartib-al-fatihah-burdah.pdf",
+          "pages": 10
+        },
+        {
+          "id": "qashidah-burdah-b40fd2",
+          "title": "Qashidah Burdah",
+          "file": "assets/pdf-v2/maulid/qashidah-burdah/qashidah-burdah.pdf",
+          "pages": 38
+        }
+      ]
+    },
+    {
+      "id": "wirdul-latif",
+      "title": "Wirdul Latif",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/wirdul-latif.pdf",
+      "pages": 16,
+      "icon": "و",
+      "coverText": "وِرْدُ\nاللَّطِيف"
+    },
+    {
+      "id": "ratib-al-haddad-ee328d",
+      "title": "Ratib Al-Haddad",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/ratib-al-haddad.pdf",
+      "pages": 14,
+      "icon": "و",
+      "coverText": "Ratib Al-Haddad"
+    },
+    {
+      "id": "rathib-al-atthas-1bb18c",
+      "title": "Ratib Al-Attas",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/ratib-al-attas.pdf",
+      "pages": 14,
+      "icon": "و",
+      "coverText": "Ratib Al-Attas"
+    },
+    {
+      "id": "wirid-sakran-9265b6",
+      "title": "Wirid Sakran",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/wirid-sakran.pdf",
+      "pages": 5,
+      "icon": "و",
+      "coverText": "Wirid Sakran"
+    },
+    {
+      "id": "hizib-nawawi-66c917",
+      "title": "Hizib An-Nawawi",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/hizib-an-nawawi.pdf",
+      "pages": 9,
+      "icon": "و",
+      "coverText": "Hizib An-Nawawi"
+    },
+    {
+      "id": "khawatim-31a34a",
+      "title": "Khawatim",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/khawatim.pdf",
+      "pages": 13,
+      "icon": "و",
+      "coverText": "Khawatim"
+    },
+    {
+      "id": "doa-akhir-awal-tahun",
+      "title": "Doa Akhir & Awal Tahun",
+      "category": "Doa",
+      "type": "group",
+      "icon": "د",
+      "coverText": "Doa Akhir & Awal Tahun",
+      "parts": [
+        {
+          "id": "do-a-akhir-tahun-b8ce98",
+          "title": "Doa Akhir Tahun",
+          "file": "assets/pdf-v2/doa/doa-akhir-awal-tahun/doa-akhir-tahun.pdf",
+          "pages": 2
+        },
+        {
+          "id": "do-a-awwal-tahun-db3e46",
+          "title": "Doa Awwal Tahun",
+          "file": "assets/pdf-v2/doa/doa-akhir-awal-tahun/doa-awwal-tahun.pdf",
+          "pages": 1
+        }
+      ]
+    },
+    {
+      "id": "doa-hari-asyura-6b1997",
+      "title": "Doa Hari Asyura",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-hari-asyura.pdf",
+      "pages": 2,
+      "icon": "د",
+      "coverText": "Doa Hari Asyura"
+    },
+    {
+      "id": "amaliyah-bulan-shafar",
+      "title": "Amaliyah Bulan Shafar",
+      "category": "Doa",
+      "type": "group",
+      "icon": "د",
+      "coverText": "Amaliyah Bulan Shafar",
+      "parts": [
+        {
+          "id": "dibaca-pada-awal-bulan-shafar-7bc0e0",
+          "title": "Dibaca Pada Awal Bulan Shafar",
+          "file": "assets/pdf-v2/doa/amaliyah-bulan-shafar/dibaca-pada-awal-bulan-shafar.pdf",
+          "pages": 2
+        },
+        {
+          "id": "dibaca-setiap-hari-bulan-shafar-daba1f",
+          "title": "Dibaca Setiap Hari Bulan Shafar",
+          "file": "assets/pdf-v2/doa/amaliyah-bulan-shafar/dibaca-setiap-hari-bulan-shafar.pdf",
+          "pages": 2
+        },
+        {
+          "id": "dibaca-hari-rabu-akhir-bulan-shafar-ac62de",
+          "title": "Dibaca Hari Rabu Akhir Bulan Shafar",
+          "file": "assets/pdf-v2/doa/amaliyah-bulan-shafar/dibaca-hari-rabu-akhir-bulan-shafar.pdf",
+          "pages": 2
+        }
+      ]
+    },
+    {
+      "id": "amaliyah-malam-nishfu-sya-ban-cd0e9f",
+      "title": "Amaliyah Malam Nishfu Sya'ban",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/amaliyah-malam-nishfu-sya-ban.pdf",
+      "pages": 10,
+      "icon": "د",
+      "coverText": "Amaliyah Malam Nishfu Sya'ban"
+    },
+    {
+      "id": "sholat-tasbih",
+      "title": "Sholat Tasbih",
+      "category": "Doa",
+      "type": "collection",
+      "icon": "د",
+      "coverText": "Sholat Tasbih",
+      "parts": [
+        {
+          "id": "tata-cara-sholat-tasbih-1b934e",
+          "title": "Tata Cara Sholat Tasbih",
+          "file": "assets/pdf-v2/doa/sholat-tasbih/tata-cara-sholat-tasbih.pdf",
+          "pages": 2
+        },
+        {
+          "id": "do-a-sholat-tasbih-2c217f",
+          "title": "Doa Sholat Tasbih",
+          "file": "assets/pdf-v2/doa/sholat-tasbih/doa-sholat-tasbih.pdf",
+          "pages": 3
+        }
+      ]
+    },
+    {
+      "id": "amaliyah-ramadhan",
+      "title": "Amaliyah Ramadhan",
+      "category": "Doa",
+      "type": "collection",
+      "icon": "د",
+      "coverText": "Amaliyah Ramadhan",
+      "parts": [
+        {
+          "id": "tata-cara-sholat-tarawih-4e75cc",
+          "title": "Tata Cara Sholat Tarawih",
+          "file": "assets/pdf-v2/doa/amaliyah-ramadhan/tata-cara-sholat-tarawih.pdf",
+          "pages": 2
+        },
+        {
+          "id": "sholawat-sholat-tarawih-51ab81",
+          "title": "Sholawat Sholat Tarawih",
+          "file": "assets/pdf-v2/doa/amaliyah-ramadhan/sholawat-sholat-tarawih.pdf",
+          "pages": 10
+        },
+        {
+          "id": "do-a-sholat-tarawih-d245aa",
+          "title": "Doa Sholat Tarawih",
+          "file": "assets/pdf-v2/doa/amaliyah-ramadhan/doa-sholat-tarawih.pdf",
+          "pages": 3
+        },
+        {
+          "id": "do-a-di-bulan-ramadhan-9a0088",
+          "title": "Doa Di Bulan Ramadhan",
+          "file": "assets/pdf-v2/doa/amaliyah-ramadhan/doa-di-bulan-ramadhan.pdf",
+          "pages": 5
+        }
+      ]
+    },
+    {
+      "id": "sholat-witir",
+      "title": "Sholat Witir",
+      "category": "Doa",
+      "type": "collection",
+      "icon": "د",
+      "coverText": "Sholat Witir",
+      "parts": [
+        {
+          "id": "niat-sholat-witir-84b949",
+          "title": "Niat Sholat Witir",
+          "file": "assets/pdf-v2/doa/sholat-witir/niat-sholat-witir.pdf",
+          "pages": 2
+        },
+        {
+          "id": "doa-sholat-witir-913eee",
+          "title": "Doa Sholat Witir",
+          "file": "assets/pdf-v2/doa/sholat-witir/doa-sholat-witir.pdf",
+          "pages": 10
+        }
+      ]
+    },
+    {
+      "id": "takbir-hari-raya-7a8d86",
+      "title": "Takbir Hari Raya",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/takbir-hari-raya.pdf",
+      "pages": 1,
+      "icon": "و",
+      "coverText": "Takbir Hari Raya"
+    },
+    {
+      "id": "khutbah-idul-fitri",
+      "title": "Khutbah Idul Fitri",
+      "category": "Khutbah",
+      "type": "group",
+      "icon": "خ",
+      "coverText": "Khutbah Idul Fitri",
+      "parts": [
+        {
+          "id": "khutbah-idul-fithri-melayu-2143c1",
+          "title": "Khutbah Idul Fithri (Melayu)",
+          "file": "assets/pdf-v2/khutbah/khutbah-idul-fitri/khutbah-idul-fithri-melayu.pdf",
+          "pages": 18
+        },
+        {
+          "id": "khutbah-idul-fithri-latin-8689cd",
+          "title": "Khutbah Idul Fithri (Latin)",
+          "file": "assets/pdf-v2/khutbah/khutbah-idul-fitri/khutbah-idul-fithri-latin.pdf",
+          "pages": 16
+        }
+      ]
+    },
+    {
+      "id": "khutbah-idul-adha",
+      "title": "Khutbah Idul Adha",
+      "category": "Khutbah",
+      "type": "group",
+      "icon": "خ",
+      "coverText": "Khutbah Idul Adha",
+      "parts": [
+        {
+          "id": "khutbah-idul-adha-latin-881e60",
+          "title": "Khutbah Idul Adha (Latin)",
+          "file": "assets/pdf-v2/khutbah/khutbah-idul-adha/khutbah-idul-adha-latin.pdf",
+          "pages": 18
+        },
+        {
+          "id": "khutbah-idul-adha-melayu-bce19f",
+          "title": "Khutbah Idul Adha (Melayu)",
+          "file": "assets/pdf-v2/khutbah/khutbah-idul-adha/khutbah-idul-adha-melayu.pdf",
+          "pages": 19
+        }
+      ]
+    },
+    {
+      "id": "maasyir-sholat",
+      "title": "Ma'asyir Sholat",
+      "category": "Khutbah",
+      "type": "group",
+      "icon": "خ",
+      "coverText": "Ma'asyir Sholat",
+      "parts": [
+        {
+          "id": "iqomah-dan-ma-asyiral-sholat-ied-7a27bb",
+          "title": "iqomah dan ma asyiral sholat ied",
+          "file": "assets/pdf-v2/khutbah/maasyir-sholat/iqomah-dan-ma-asyiral-sholat-ied.pdf",
+          "pages": 3
+        },
+        {
+          "id": "iqamah-dan-ma-asyiral-sholat-kusuf-gerhana-matahari-084bb9",
+          "title": "Iqamah Dan Ma asyiral Sholat Kusuf (Gerhana Matahari)",
+          "file": "assets/pdf-v2/khutbah/maasyir-sholat/iqamah-dan-ma-asyiral-sholat-kusuf-gerhana-matahari.pdf",
+          "pages": 2
+        },
+        {
+          "id": "iqamah-dan-ma-asyiral-sholat-khusuf-gerhana-bulan-ced53d",
+          "title": "Iqamah Dan Ma asyiral Sholat Khusuf (Gerhana Bulan)",
+          "file": "assets/pdf-v2/khutbah/maasyir-sholat/iqamah-dan-ma-asyiral-sholat-khusuf-gerhana-bulan.pdf",
+          "pages": 2
+        },
+        {
+          "id": "iqamah-dan-ma-asyiral-sholat-istisqa-minta-hujan-531c2b",
+          "title": "Iqamah Dan Ma asyiral Sholat Istisqa (Minta Hujan)",
+          "file": "assets/pdf-v2/khutbah/maasyir-sholat/iqamah-dan-ma-asyiral-sholat-istisqa-minta-hujan.pdf",
+          "pages": 1
+        }
+      ]
+    },
+    {
+      "id": "aqiqah-qurban",
+      "title": "Aqiqah & Qurban",
+      "category": "Doa",
+      "type": "group",
+      "icon": "د",
+      "coverText": "Aqiqah & Qurban",
+      "parts": [
+        {
+          "id": "niat-menyembelih-hewan-qurban-409d1b",
+          "title": "Niat Menyembelih Hewan Qurban",
+          "file": "assets/pdf-v2/doa/aqiqah-qurban/niat-menyembelih-hewan-qurban.pdf",
+          "pages": 1
+        },
+        {
+          "id": "do-a-menyembelih-aqiqah-737135",
+          "title": "Doa Menyembelih Aqiqah",
+          "file": "assets/pdf-v2/doa/aqiqah-qurban/doa-menyembelih-aqiqah.pdf",
+          "pages": 1
+        },
+        {
+          "id": "do-a-jamuan-aqiqah-449d1c",
+          "title": "Doa Jamuan Aqiqah",
+          "file": "assets/pdf-v2/doa/aqiqah-qurban/doa-jamuan-aqiqah.pdf",
+          "pages": 2
+        }
+      ]
+    },
+    {
+      "id": "do-a-sholat-dhuha-15d3e7",
+      "title": "Doa Sholat Dhuha",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-sholat-dhuha.pdf",
+      "pages": 1,
+      "icon": "د",
+      "coverText": "Doa Sholat Dhuha"
+    },
+    {
+      "id": "doa-mempermudah-persalinan-8922be",
+      "title": "Doa Mempermudah Persalinan",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-mempermudah-persalinan.pdf",
+      "pages": 4,
+      "icon": "د",
+      "coverText": "Doa Mempermudah Persalinan"
+    },
+    {
+      "id": "doa-betajak-rumah-d52d27",
+      "title": "Doa Betajak Rumah",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-betajak-rumah.pdf",
+      "pages": 1,
+      "icon": "د",
+      "coverText": "Doa Betajak Rumah"
+    },
+    {
+      "id": "do-a-selamat-rumah-atau-toko-47549a",
+      "title": "Doa Selamat Rumah atau Toko",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-selamat-rumah-atau-toko.pdf",
+      "pages": 5,
+      "icon": "د",
+      "coverText": "Doa Selamat Rumah atau Toko"
+    },
+    {
+      "id": "do-a-selamat-haji-dan-umroh-9586c4",
+      "title": "Doa Selamat Haji Dan Umroh",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-selamat-haji-dan-umroh.pdf",
+      "pages": 5,
+      "icon": "د",
+      "coverText": "Doa Selamat Haji Dan Umroh"
+    },
+    {
+      "id": "sholawat-kamilah-71c153",
+      "title": "Sholawat Kamilah",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/sholawat-kamilah.pdf",
+      "pages": 1,
+      "icon": "و",
+      "coverText": "Sholawat Kamilah"
+    },
+    {
+      "id": "jamak-qashar-takhir",
+      "title": "Jamak Qashar Takhir",
+      "category": "Doa",
+      "type": "collection",
+      "icon": "د",
+      "coverText": "Jamak Qashar Takhir",
+      "parts": [
+        {
+          "id": "zhuhur-b1bd60",
+          "title": "Dzuhur",
+          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/dzuhur.pdf",
+          "pages": 1
+        },
+        {
+          "id": "ashar-67ce2e",
+          "title": "Ashar",
+          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/ashar.pdf",
+          "pages": 1
+        },
+        {
+          "id": "maghrib-295ec2",
+          "title": "Maghrib",
+          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/maghrib.pdf",
+          "pages": 1
+        },
+        {
+          "id": "isya-0b97f9",
+          "title": "Isya",
+          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/isya.pdf",
+          "pages": 1
+        }
+      ]
+    },
+    {
+      "id": "jamak-qashar-taqdim",
+      "title": "Jamak Qashar Taqdim",
+      "category": "Doa",
+      "type": "collection",
+      "icon": "د",
+      "coverText": "Jamak Qashar Taqdim",
+      "parts": [
+        {
+          "id": "zhuhur-a48720",
+          "title": "Dzuhur",
+          "file": "assets/pdf-v2/doa/jamak-qashar-taqdim/dzuhur.pdf",
+          "pages": 1
+        },
+        {
+          "id": "ashar-3dda50",
+          "title": "Ashar",
+          "file": "assets/pdf-v2/doa/jamak-qashar-taqdim/ashar.pdf",
+          "pages": 1
+        },
+        {
+          "id": "maghrib-70ddd5",
+          "title": "Maghrib",
+          "file": "assets/pdf-v2/doa/jamak-qashar-taqdim/maghrib.pdf",
+          "pages": 1
+        },
+        {
+          "id": "isya-3a3a7c",
+          "title": "Isya",
+          "file": "assets/pdf-v2/doa/jamak-qashar-taqdim/isya.pdf",
+          "pages": 1
+        }
+      ]
+    },
+    {
+      "id": "sholat-hajat",
+      "title": "Sholat Hajat",
+      "category": "Doa",
+      "type": "collection",
+      "icon": "د",
+      "coverText": "Sholat Hajat",
+      "parts": [
+        {
+          "id": "tata-cara-sholat-hajat-c4ac02",
+          "title": "Tata Cara Sholat Hajat",
+          "file": "assets/pdf-v2/doa/sholat-hajat/tata-cara-sholat-hajat.pdf",
+          "pages": 2
+        },
+        {
+          "id": "do-a-sholat-hajat-45dfa5",
+          "title": "Doa Sholat Hajat",
+          "file": "assets/pdf-v2/doa/sholat-hajat/doa-sholat-hajat.pdf",
+          "pages": 2
+        }
+      ]
+    },
+    {
+      "id": "sholat-hadiah",
+      "title": "Sholat Hadiah",
+      "category": "Doa",
+      "type": "collection",
+      "icon": "د",
+      "coverText": "Sholat Hadiah",
+      "parts": [
+        {
+          "id": "tata-cara-sholat-hadiah-13ccc5",
+          "title": "Tata Cara Sholat Hadiah",
+          "file": "assets/pdf-v2/doa/sholat-hadiah/tata-cara-sholat-hadiah.pdf",
+          "pages": 1
+        },
+        {
+          "id": "do-a-sholat-hadiah-54e9c5",
+          "title": "Doa Sholat Hadiah",
+          "file": "assets/pdf-v2/doa/sholat-hadiah/doa-sholat-hadiah.pdf",
+          "pages": 1
+        }
+      ]
+    },
+    {
+      "id": "nikah",
+      "title": "Nikah",
+      "category": "Doa",
+      "type": "collection",
+      "icon": "د",
+      "coverText": "Nikah",
+      "parts": [
+        {
+          "id": "khutbah-nikah-91efaa",
+          "title": "Khutbah Nikah",
+          "file": "assets/pdf-v2/doa/nikah/khutbah-nikah.pdf",
+          "pages": 7
+        },
+        {
+          "id": "shigat-aqad-nikah-d2f4ba",
+          "title": "Shigat Aqad Nikah",
+          "file": "assets/pdf-v2/doa/nikah/shigat-aqad-nikah.pdf",
+          "pages": 5
+        },
+        {
+          "id": "doa-sesudah-akad-nikah-b442a4",
+          "title": "Doa Sesudah Akad Nikah",
+          "file": "assets/pdf-v2/doa/nikah/doa-sesudah-akad-nikah.pdf",
+          "pages": 2
+        }
+      ]
+    },
+    {
+      "id": "tasmiyah",
+      "title": "Tasmiyah",
+      "category": "Doa",
+      "type": "collection",
+      "icon": "د",
+      "coverText": "Tasmiyah",
+      "parts": [
+        {
+          "id": "kayfiyat-tasmiyah-cd3ffd",
+          "title": "Kayfiyat Tasmiyah",
+          "file": "assets/pdf-v2/doa/tasmiyah/kayfiyat-tasmiyah.pdf",
+          "pages": 3
+        },
+        {
+          "id": "doa-tasmiyah-ab795b",
+          "title": "Doa Tasmiyah",
+          "file": "assets/pdf-v2/doa/tasmiyah/doa-tasmiyah.pdf",
+          "pages": 4
+        }
+      ]
+    },
+    {
+      "id": "sholat-jenazah",
+      "title": "Sholat Jenazah",
+      "category": "Doa",
+      "type": "group",
+      "icon": "د",
+      "coverText": "Sholat Jenazah",
+      "parts": [
+        {
+          "id": "tata-cara-sholat-jenazah-9f0b82",
+          "title": "Tata Cara Sholat Jenazah",
+          "file": "assets/pdf-v2/doa/sholat-jenazah/tata-cara-sholat-jenazah.pdf",
+          "pages": 3
+        },
+        {
+          "id": "do-a-sholat-jenazah-183425",
+          "title": "Doa Sholat Jenazah",
+          "file": "assets/pdf-v2/doa/sholat-jenazah/doa-sholat-jenazah.pdf",
+          "pages": 1
+        },
+        {
+          "id": "niat-sholat-jenazah-anak-anak-fb637e",
+          "title": "Niat Sholat Jenazah Anak-anak",
+          "file": "assets/pdf-v2/doa/sholat-jenazah/niat-sholat-jenazah-anak-anak.pdf",
+          "pages": 1
+        },
+        {
+          "id": "do-a-sholat-jenazah-anak-anak-a435ee",
+          "title": "Doa Sholat Jenazah Anak-anak",
+          "file": "assets/pdf-v2/doa/sholat-jenazah/doa-sholat-jenazah-anak-anak.pdf",
+          "pages": 3
+        },
+        {
+          "id": "sholat-ghaib-9486bc",
+          "title": "Sholat Ghaib",
+          "file": "assets/pdf-v2/doa/sholat-jenazah/sholat-ghaib.pdf",
+          "pages": 1
+        }
+      ]
+    },
+    {
+      "id": "tahlil",
+      "title": "Tahlil",
+      "category": "Doa",
+      "type": "collection",
+      "icon": "د",
+      "coverText": "Tahlil",
+      "parts": [
+        {
+          "id": "tahlil-bacaan-tahlil-1cc909",
+          "title": "Tahlil - Bacaan Tahlil",
+          "file": "assets/pdf-v2/doa/tahlil/tahlil-bacaan-tahlil.pdf",
+          "pages": 6
+        },
+        {
+          "id": "tahlil-do-a-tahlil-2920f7",
+          "title": "Tahlil - Doa Tahlil",
+          "file": "assets/pdf-v2/doa/tahlil/tahlil-doa-tahlil.pdf",
+          "pages": 2
+        },
+        {
+          "id": "do-a-arwah-760d52",
+          "title": "Doa Arwah",
+          "file": "assets/pdf-v2/doa/tahlil/doa-arwah.pdf",
+          "pages": 7
+        }
+      ]
+    },
+    {
+      "id": "adh-dhiya-al-lami",
+      "title": "Adh-Dhiya' al-Lami'",
+      "category": "Maulid",
+      "type": "collection",
+      "icon": "م",
+      "coverText": "Adh-Dhiya' al-Lami'",
+      "parts": [
+        {
+          "id": "ya-rabbi-shalli-0f6b63",
+          "title": "Ya Rabbi Shalli",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/ya-rabbi-shalli.pdf",
+          "pages": 3
+        },
+        {
+          "id": "inna-fatahna-226b21",
+          "title": "Inna Fatahna",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/inna-fatahna.pdf",
+          "pages": 1
+        },
+        {
+          "id": "alhamdulillah-1e91fc",
+          "title": "Alhamdulillah",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/alhamdulillah.pdf",
+          "pages": 3
+        },
+        {
+          "id": "nabbaanallah-bfa7bf",
+          "title": "Nabbaanallah",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/nabbaanallah.pdf",
+          "pages": 2
+        },
+        {
+          "id": "hadza-waqod-3386db",
+          "title": "Hadza Waqod",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/hadza-waqod.pdf",
+          "pages": 2
+        },
+        {
+          "id": "lamma-dana-7c30b6",
+          "title": "Lamma Dana",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/lamma-dana.pdf",
+          "pages": 3
+        },
+        {
+          "id": "mahallul-qiyam-36bd5a",
+          "title": "Mahallul Qiyam",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/mahallul-qiyam.pdf",
+          "pages": 4
+        },
+        {
+          "id": "wulidal-habib-281cbb",
+          "title": "Wulidal Habib",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/wulidal-habib.pdf",
+          "pages": 3
+        },
+        {
+          "id": "hadza-waqod-nasyaa-823442",
+          "title": "Hadza Waqod Nasyaa",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/hadza-waqod-nasyaa.pdf",
+          "pages": 3
+        },
+        {
+          "id": "waatahu-jibrilu-3a3ff7",
+          "title": "Waatahu Jibrilu",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/waatahu-jibrilu.pdf",
+          "pages": 4
+        },
+        {
+          "id": "do-a-361f87",
+          "title": "Doa",
+          "file": "assets/pdf-v2/maulid/adh-dhiya-al-lami/doa.pdf",
+          "pages": 5
+        }
+      ]
+    },
+    {
+      "id": "al-azab",
+      "title": "Maulid Al-'Azab",
+      "category": "Maulid",
+      "type": "collection",
+      "icon": "م",
+      "coverText": "Maulid Al-'Azab",
+      "parts": [
+        {
+          "id": "alhamdulillah-2cd74b",
+          "title": "Alhamdulillah",
+          "file": "assets/pdf-v2/maulid/al-azab/alhamdulillah.pdf",
+          "pages": 2
+        },
+        {
+          "id": "i-lam-biannallaha-cdbc86",
+          "title": "I'lam Biannallaha",
+          "file": "assets/pdf-v2/maulid/al-azab/i-lam-biannallaha.pdf",
+          "pages": 2
+        },
+        {
+          "id": "fahuwannabiyyu-79e270",
+          "title": "Fahuwannabiyyu",
+          "file": "assets/pdf-v2/maulid/al-azab/fahuwannabiyyu.pdf",
+          "pages": 3
+        },
+        {
+          "id": "hadza-walama-ab6178",
+          "title": "Hadza Walama",
+          "file": "assets/pdf-v2/maulid/al-azab/hadza-walama.pdf",
+          "pages": 3
+        },
+        {
+          "id": "min-hamlihi-mahallul-qiyam-9d296f",
+          "title": "Min Hamlihi (Mahallul Qiyam)",
+          "file": "assets/pdf-v2/maulid/al-azab/min-hamlihi-mahallul-qiyam.pdf",
+          "pages": 2
+        },
+        {
+          "id": "wa-lidzikri-maulidihi-1b5807",
+          "title": "Wa Lidzikri Maulidihi",
+          "file": "assets/pdf-v2/maulid/al-azab/wa-lidzikri-maulidihi.pdf",
+          "pages": 3
+        },
+        {
+          "id": "lijanabihil-ummu-f90fc3",
+          "title": "Lijanabihil Ummu",
+          "file": "assets/pdf-v2/maulid/al-azab/lijanabihil-ummu.pdf",
+          "pages": 2
+        },
+        {
+          "id": "tsummal-musyaffa-u-ac9cfd",
+          "title": "Tsummal Musyaffa'u",
+          "file": "assets/pdf-v2/maulid/al-azab/tsummal-musyaffa-u.pdf",
+          "pages": 2
+        },
+        {
+          "id": "wa-lidari-hijratihi-971906",
+          "title": "Wa Lidari Hijratihi",
+          "file": "assets/pdf-v2/maulid/al-azab/wa-lidari-hijratihi.pdf",
+          "pages": 1
+        },
+        {
+          "id": "doa-2365aa",
+          "title": "Doa",
+          "file": "assets/pdf-v2/maulid/al-azab/doa.pdf",
+          "pages": 5
+        }
+      ]
+    },
+    {
+      "id": "barzanji-full-857f88",
+      "title": "Maulid Al-Barzanji",
+      "category": "Maulid",
+      "type": "single",
+      "file": "assets/pdf-v2/maulid/maulid-al-barzanji.pdf",
+      "pages": 58,
+      "icon": "م",
+      "coverText": "Maulid Al-Barzanji"
+    },
+    {
+      "id": "addiba-d4955e",
+      "title": "Maulid Diba'",
+      "category": "Maulid",
+      "type": "single",
+      "file": "assets/pdf-v2/maulid/maulid-diba.pdf",
+      "pages": 53,
+      "icon": "م",
+      "coverText": "Maulid Diba'"
+    },
+    {
+      "id": "maulid-syaraful-anam-ea6c5b",
+      "title": "Maulid Syaraful Anam",
+      "category": "Maulid",
+      "type": "single",
+      "file": "assets/pdf-v2/maulid/maulid-syaraful-anam.pdf",
+      "pages": 99,
+      "icon": "م",
+      "coverText": "Maulid Syaraful Anam"
+    },
+    {
+      "id": "simthuddurar-full-821370",
+      "title": "Simthud Durar",
+      "category": "Maulid",
+      "type": "single",
+      "file": "assets/pdf-v2/maulid/simthud-durar.pdf",
+      "pages": 65,
+      "icon": "م",
+      "coverText": "Simthud Durar"
+    },
+    {
+      "id": "khutbah-gerhana",
+      "title": "Khutbah Sholat Gerhana",
+      "category": "Khutbah",
+      "type": "group",
+      "icon": "خ",
+      "coverText": "Khutbah Sholat Gerhana",
+      "parts": [
+        {
+          "id": "khutbah-gerhana-melayu-639400",
+          "title": "Khutbah - Gerhana (Melayu)",
+          "file": "assets/pdf-v2/khutbah/khutbah-gerhana/khutbah-gerhana-melayu.pdf",
+          "pages": 14
+        },
+        {
+          "id": "khutbah-gerhana-latin-ok-83756a",
+          "title": "Khutbah - Gerhana (Latin)",
+          "file": "assets/pdf-v2/khutbah/khutbah-gerhana/khutbah-gerhana-latin.pdf",
+          "pages": 13
+        }
+      ]
+    },
+    {
+      "id": "khutbah-istisqa",
+      "title": "Khutbah Istisqa",
+      "category": "Khutbah",
+      "type": "group",
+      "icon": "خ",
+      "coverText": "Khutbah Istisqa",
+      "parts": [
+        {
+          "id": "khutbah-istisqo-melayu-945bcb",
+          "title": "Khutbah - Istisqa (Melayu)",
+          "file": "assets/pdf-v2/khutbah/khutbah-istisqa/khutbah-istisqa-melayu.pdf",
+          "pages": 19
+        },
+        {
+          "id": "khutbah-istisqo-latin-859d0b",
+          "title": "Khutbah - Istisqa (Latin)",
+          "file": "assets/pdf-v2/khutbah/khutbah-istisqa/khutbah-istisqa-latin.pdf",
+          "pages": 18
+        }
+      ]
+    },
+    {
+      "id": "khutbah-hari-tasyrik",
+      "title": "Khutbah Hari Tasyrik",
+      "category": "Khutbah",
+      "type": "group",
+      "icon": "خ",
+      "coverText": "Khutbah Hari Tasyrik",
+      "parts": [
+        {
+          "id": "khutbah-hari-tasyrik-melayu-2ae3f1",
+          "title": "Khutbah - Hari Tasyrik (Melayu)",
+          "file": "assets/pdf-v2/khutbah/khutbah-hari-tasyrik/khutbah-hari-tasyrik-melayu.pdf",
+          "pages": 13
+        },
+        {
+          "id": "khutbah-hari-tasyrik-latin-9b5a9d",
+          "title": "Khutbah - Hari Tasyrik (Latin)",
+          "file": "assets/pdf-v2/khutbah/khutbah-hari-tasyrik/khutbah-hari-tasyrik-latin.pdf",
+          "pages": 12
+        }
+      ]
+    },
+    {
+      "id": "doa-fajar-9b7c6f",
+      "title": "Doa Fajar",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-fajar.pdf",
+      "pages": 5,
+      "icon": "د",
+      "coverText": "Doa Fajar"
+    },
+    {
+      "id": "doa-khatamil-qur-an-a4e0aa",
+      "title": "Doa Khatamil Qur'an",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-khatamil-qur-an.pdf",
+      "pages": 4,
+      "icon": "د",
+      "coverText": "Doa Khatamil Qur'an"
+    },
+    {
+      "id": "doa-musafir-8d2af9",
+      "title": "Doa Musafir",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-musafir.pdf",
+      "pages": 1,
+      "icon": "د",
+      "coverText": "Doa Musafir"
+    },
+    {
+      "id": "doa-setelah-membaca-surah-yasin-e8eada",
+      "title": "Doa Setelah Membaca Surah Yasin",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-setelah-membaca-surah-yasin.pdf",
+      "pages": 2,
+      "icon": "د",
+      "coverText": "Doa Setelah Membaca Surah Yasin"
+    },
+    {
+      "id": "doa-surah-al-waqi-ah-c7badd",
+      "title": "Doa Surah Al Waqi'ah",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-surah-al-waqi-ah.pdf",
+      "pages": 2,
+      "icon": "د",
+      "coverText": "Doa Surah Al Waqi'ah"
+    },
+    {
+      "id": "doa-surah-al-waqi-ah-panjang-87e0d5",
+      "title": "Doa Surah Al Waqi'ah - Panjang",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-surah-al-waqi-ah-panjang.pdf",
+      "pages": 3,
+      "icon": "د",
+      "coverText": "Doa Surah Al Waqi'ah - Panjang"
+    },
+    {
+      "id": "hizb-al-bahr-5928ea",
+      "title": "Hizb Al-Bahr",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/hizb-al-bahr.pdf",
+      "pages": 9,
+      "icon": "و",
+      "coverText": "Hizb Al-Bahr"
+    },
+    {
+      "id": "hizb-nashr-9bb228",
+      "title": "Hizb Nashr",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/hizb-nashr.pdf",
+      "pages": 6,
+      "icon": "و",
+      "coverText": "Hizb Nashr"
+    },
+    {
+      "id": "shalat-sunnat-taubat-d74fe5",
+      "title": "Shalat Sunnat Taubat",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/shalat-sunnat-taubat.pdf",
+      "pages": 3,
+      "icon": "د",
+      "coverText": "Shalat Sunnat Taubat"
+    },
+    {
+      "id": "talqin-mayyit-laki-laki-a33599",
+      "title": "Talqin Mayyit Laki-Laki",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/talqin-mayyit-laki-laki.pdf",
+      "pages": 6,
+      "icon": "د",
+      "coverText": "Talqin Mayyit Laki-Laki"
+    },
+    {
+      "id": "talqin-mayyit-perempuan-2485eb",
+      "title": "Talqin Mayyit Perempuan",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/talqin-mayyit-perempuan.pdf",
+      "pages": 6,
+      "icon": "د",
+      "coverText": "Talqin Mayyit Perempuan"
+    },
+    {
+      "id": "khutbah-jumat",
+      "title": "Kumpulan Khutbah Jum'at",
+      "category": "Khutbah",
+      "type": "group",
+      "icon": "خ",
+      "coverText": "Kumpulan Khutbah Jum'at",
+      "parts": [
+        {
+          "id": "amar-ma-ruf-nahi-mungkar-cd9e39",
+          "title": "Amar Ma'ruf Nahi Mungkar",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/amar-ma-ruf-nahi-mungkar.pdf",
+          "pages": 9
+        },
+        {
+          "id": "beramal-untuk-akhirat-866b7d",
+          "title": "Beramal Untuk Akhirat",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/beramal-untuk-akhirat.pdf",
+          "pages": 6
+        },
+        {
+          "id": "kematian-95c7b6",
+          "title": "Kematian",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/kematian.pdf",
+          "pages": 8
+        },
+        {
+          "id": "masjid-adalah-sarana-ibadah-3f0ee4",
+          "title": "Masjid Adalah Sarana Ibadah",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/masjid-adalah-sarana-ibadah.pdf",
+          "pages": 7
+        },
+        {
+          "id": "membina-kekuatan-ummat-3ddf39",
+          "title": "Membina Kekuatan Ummat",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/membina-kekuatan-ummat.pdf",
+          "pages": 8
+        },
+        {
+          "id": "menjauhi-hasad-tamak-dan-takabbur-1cfc4f",
+          "title": "Menjauhi Hasad Tamak Dan Takabbur",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/menjauhi-hasad-tamak-dan-takabbur.pdf",
+          "pages": 9
+        },
+        {
+          "id": "mensyukuri-nikmat-1f194d",
+          "title": "Mensyukuri Nikmat",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/mensyukuri-nikmat.pdf",
+          "pages": 7
+        },
+        {
+          "id": "nabi-muhammad-sebagai-teladan-bb02fe",
+          "title": "Nabi Muhammad Sebagai Teladan",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/nabi-muhammad-sebagai-teladan.pdf",
+          "pages": 10
+        },
+        {
+          "id": "tafakkur-mempertebal-iman-72ecc3",
+          "title": "Tafakkur Mempertebal Iman",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/tafakkur-mempertebal-iman.pdf",
+          "pages": 7
+        },
+        {
+          "id": "bacaan-09f873",
+          "title": "بچأن بلال صلاة جمعة",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/bacaan.pdf",
+          "pages": 2
+        }
+      ]
+    },
+    {
+      "id": "syair",
+      "title": "Kumpulan Syair",
+      "category": "Syair",
+      "type": "group",
+      "icon": "♪",
+      "coverText": "Kumpulan Syair",
+      "parts": [
+        {
+          "id": "bacaan-85915f",
+          "title": "أَشْرَقَتْ أَنْوَارْ نَبِيْنَا",
+          "file": "assets/pdf-v2/syair/syair/bacaan.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-41d967",
+          "title": "إِلٰهِى يَا سَمِيعُ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-2.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-87e305",
+          "title": "اللهُ اَرْجُوْ اَرْجُوْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-3.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-3480bc",
+          "title": "اَحْبَابُنَا فِىْ اللهِ قَوْمٌ بَقَوْا بِالله",
+          "file": "assets/pdf-v2/syair/syair/bacaan-4.pdf",
+          "pages": 5
+        },
+        {
+          "id": "bacaan-5a4d3c",
+          "title": "اَشْرَقَ الْبَدْرُ عَلَيْنَا",
+          "file": "assets/pdf-v2/syair/syair/bacaan-5.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-2ca784",
+          "title": "اَلسَّلَامُ عَلَيْكَ زَيْنَ الْاَنْبِيَاءْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-6.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-732347",
+          "title": "اَللهُ اَللهُ الْمَدَدْ يَا رَسُوْلَ اللهْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-7.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-f71574",
+          "title": "اَللهُ اَللهْ لَمَّا نَادَانِىْ هُوَ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-8.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-aa0670",
+          "title": "اَللهْ اَللهْ اَللهْ اَللهْ مَالَنَا مَوْلًى سِوَى اللهْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-9.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-f5d237",
+          "title": "اَللّٰهُمَّ صَلِّ عَلَی مُحَمَّدْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-10.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-af33f1",
+          "title": "اِنَّ فِى الْجَنَّةِ نَهْرًا مِنْ لَّبَنْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-11.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-d1ba0b",
+          "title": "اِنْ شِئْتَ اَنْ تَدْرِىْ مَقَامَ مُحَمَّدٍ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-12.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-2cfa67",
+          "title": "بُشْرٰی لَنَا نِلْنَا الْمُنٰی",
+          "file": "assets/pdf-v2/syair/syair/bacaan-13.pdf",
+          "pages": 3
+        },
+        {
+          "id": "bacaan-828773",
+          "title": "بِرَسُوْلِ اللهِ وَالْبَدَوِىْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-14.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-ceccae",
+          "title": "حَيُّوا الْهَادِي بِاَجْمَلِ ذِكْرٰى",
+          "file": "assets/pdf-v2/syair/syair/bacaan-15.pdf",
+          "pages": 3
+        },
+        {
+          "id": "bacaan-582578",
+          "title": "حُبُّ اَحْمَدٍ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-16.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-44ff21",
+          "title": "خَبِّرِىْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-17.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-86bedc",
+          "title": "دَعُوْنِىْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-18.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-17e036",
+          "title": "رَبِّ فَانْــفَعْـنَا بِــبَرْكَتِهِمْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-19.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-001af6",
+          "title": "رَبِّى خَلَقْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-20.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-a48a66",
+          "title": "شَيْ لِلّٰهْ شَيْ لِلّٰه",
+          "file": "assets/pdf-v2/syair/syair/bacaan-21.pdf",
+          "pages": 3
+        },
+        {
+          "id": "bacaan-52ddce",
+          "title": "صَـــلَوَاتُ اللهِ تَغْشَى",
+          "file": "assets/pdf-v2/syair/syair/bacaan-22.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-9ae767",
+          "title": "صَلَاةُ اللهِ مَا لَاحَتْ كَوَاكِبْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-23.pdf",
+          "pages": 3
+        },
+        {
+          "id": "bacaan-653a53",
+          "title": "صَلُّوْا عَلَى النُّوْرِ الَّذِيْ عَرَجَ السَّمَاءْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-24.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-33a4a1",
+          "title": "صَلِّ وَسَلِّمْ يَا سَلَامْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-25.pdf",
+          "pages": 3
+        },
+        {
+          "id": "bacaan-b2992a",
+          "title": "صِلْ يَانَبِيْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-26.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-94ce5a",
+          "title": "طَالَمَا اَشْكُوْ غَرَامِىْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-27.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-ab1bdf",
+          "title": "طَلَعَ الْبَدْرُ عَلَيْنَا",
+          "file": "assets/pdf-v2/syair/syair/bacaan-28.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-6b7187",
+          "title": "فِى هَوٰى خَيْرِ الْعِبَادْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-29.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-7dd0a4",
+          "title": "قِفْ وَاسْـتَمِعْ لِىْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-30.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-a67d45",
+          "title": "لَا إِلٰهَ إِلَّا اللهْ اَللَّهْ اَللهْ يَامَوْلَانَا",
+          "file": "assets/pdf-v2/syair/syair/bacaan-31.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-889587",
+          "title": "لَكَ الْحَمْدُ يَا رَبِّىْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-32.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-f224da",
+          "title": "لُذْ فِى حِمٰى",
+          "file": "assets/pdf-v2/syair/syair/bacaan-33.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-e4a1ec",
+          "title": "مَبْرَكَ الْيَوْم ذَا جِيْنَا",
+          "file": "assets/pdf-v2/syair/syair/bacaan-34.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-ff2b5a",
+          "title": "مَرْحَبًا يَا رَمَضَانْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-35.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-f64913",
+          "title": "نُورُ الْمُصْطَفٰى",
+          "file": "assets/pdf-v2/syair/syair/bacaan-36.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-982ed1",
+          "title": "نُورُ الْهُدٰى وَافَانَا",
+          "file": "assets/pdf-v2/syair/syair/bacaan-37.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-d86ede",
+          "title": "نُورُ الْهُدٰى وَالْحَقِّ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-38.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-30edce",
+          "title": "نُوْرُ الْمُصْطَفٰى مَلَأَ الْاَكْوَانْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-39.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-3b54ad",
+          "title": "نُوْرُ الْوُجُودِ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-40.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-a0600b",
+          "title": "هَامَ قَلْبِىْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-41.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-b09914",
+          "title": "هَلُمَّ انْشُدْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-42.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-6068c2",
+          "title": "هُوَ النُّوْرُ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-43.pdf",
+          "pages": 4
+        },
+        {
+          "id": "bacaan-b4a4c5",
+          "title": "وُلِدَ الْحَبِيْبُ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-44.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-6c52d7",
+          "title": "يَا اللّٰهْ يَا عَظِيْم",
+          "file": "assets/pdf-v2/syair/syair/bacaan-45.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-f998f1",
+          "title": "يَا اَللهُ يَا رَحْمٰنْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-46.pdf",
+          "pages": 3
+        },
+        {
+          "id": "bacaan-8ce27b",
+          "title": "يَا اَهْلَ بَيْتِ النَّبِىْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-47.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-eabfe6",
+          "title": "يَا اِمَامَ الرُّسْلِ يَا سَنَدِىْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-48.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-47df61",
+          "title": "يَا اٰلَ بَيْتِ النَّبِىْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-49.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-91217c",
+          "title": "يَا حَبِيْبِىْ كَيْفَ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-50.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-8f1ae7",
+          "title": "يَا خَيْرَ مَوْلُوْدٍ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-51.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-44d76e",
+          "title": "يَا خَيْرَ هَادِى",
+          "file": "assets/pdf-v2/syair/syair/bacaan-52.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-070b6f",
+          "title": "يَا رَبِّ بِالْعَارِفِ السَّمَّانِ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-53.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-fbe354",
+          "title": "يَا رَسُوْلَ الله",
+          "file": "assets/pdf-v2/syair/syair/bacaan-54.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-6770f2",
+          "title": "يَا سَـيِّدَ السَّادَاتِ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-55.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-1a4e64",
+          "title": "يَا سَـيِّدِي يَا رَسُوْلَ اللهْ يَا مَنْ لَهُ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-56.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-e4d208",
+          "title": "يَا سَيِّدِىْ يَا رَسُوْلَ الله",
+          "file": "assets/pdf-v2/syair/syair/bacaan-57.pdf",
+          "pages": 3
+        },
+        {
+          "id": "bacaan-476193",
+          "title": "يَا شَيْخَنَا يَا سَمَّانْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-58.pdf",
+          "pages": 3
+        },
+        {
+          "id": "bacaan-0eaa5b",
+          "title": "يَا طَيْبَةْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-59.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-3227f8",
+          "title": "يَا لَطِيفًا بِالْعِبَادْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-60.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-9fdd8a",
+          "title": "يَا مَنْ يَرٰى وَلَا يُرٰى",
+          "file": "assets/pdf-v2/syair/syair/bacaan-61.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-16ac4d",
+          "title": "يَا مُهَيْمِنُ يَا سَلَامْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-62.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-266b04",
+          "title": "يَا نَبِي سَلَامْ عَلَيْكَ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-63.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-f0c66f",
+          "title": "يَا نَبِيَّنَا الْهَادِى",
+          "file": "assets/pdf-v2/syair/syair/bacaan-64.pdf",
+          "pages": 1
+        },
+        {
+          "id": "bacaan-825ffa",
+          "title": "يَارَبِّ يَا عَالِمَ الْحَالْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-65.pdf",
+          "pages": 2
+        },
+        {
+          "id": "bacaan-53385e",
+          "title": "يَارَبِّ يَارَحْمٰنْ",
+          "file": "assets/pdf-v2/syair/syair/bacaan-66.pdf",
+          "pages": 2
+        }
+      ]
+    }
+  ]
+}

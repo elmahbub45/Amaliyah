@@ -1,0 +1,28 @@
+AMALIYAH V2.18 — PANDUAN STRUKTUR KOLEKSI
+
+SUMBER DATA
+- books.json adalah sumber daftar bacaan.
+- books.js sudah tidak digunakan.
+
+TIPE BACAAN
+1. single
+   Satu PDF, langsung dibuka ke Reader.
+2. collection
+   Beberapa PDF berurutan. Pada halaman terakhir akan muncul tombol
+   'Lanjut ke bagian berikutnya'.
+3. group
+   Beberapa PDF dalam satu tema, tetapi tidak otomatis lanjut.
+
+MENGUBAH URUTAN
+- Untuk collection/group, urutan mengikuti posisi objek di dalam array "parts".
+- Tidak perlu mengganti nama file PDF.
+- Untuk menyisipkan PDF baru, tambahkan objek baru di posisi yang diinginkan.
+
+PATH PDF
+- PDF baru berada di assets/pdf-v2/
+- Nama folder dibuat manusiawi: quran, wirid, doa, maulid, dalail, khutbah, syair.
+- ID subbagian lama dipertahankan supaya progres dan bookmark pengguna lama tetap aman.
+
+CATATAN
+Tahap berikutnya tetap direncanakan: Admin Koleksi agar pengurutan dan penambahan
+PDF bisa dilakukan dengan drag-and-drop tanpa edit JSON manual.
