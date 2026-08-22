@@ -32,7 +32,9 @@ function navigateScreen(screen='home',opts={}){
   }
   if(screen==='monthly'){renderMonthlyHeader();loadMonthlyPrayerTimes();}
 }
-function showHome(){navigateScreen('home')}
+function showHome(){
+  if(typeof showScreenV28==="function"){ showScreenV28("app"); return; }
+navigateScreen('home')}
 function showLibrary(category='Semua'){navigateScreen('library',{category})}
 function showSettings(focusNotifications=false){navigateScreen('settings',{focusNotifications})}
 function showMonthly(){navigateScreen('monthly')}
@@ -231,3 +233,121 @@ async function bootPrayer(){
 window.showHome=showHome; window.showLibrary=showLibrary; window.showSettings=showSettings; window.showMonthly=showMonthly; window.goBackInApp=goBackInApp; window.changeMonth=changeMonth; window.openReader=openReader; window.getPrayerTimes=getPrayerTimes; window.requestNotifications=requestNotifications;
 window.addEventListener('load',()=>{history.replaceState({amaliyah:true,screen:'home'},'',location.href);paintScreen('home');updateHome();renderLibrary('Semua');syncSettingsLocation();bootPrayer();});
 if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+
+// ===== V2.8 Functional Audit =====
+const V28_SCREEN_IDS = ['app','library','settings','bookmarks','history'];
+
+function showScreenV28(id, push=true){
+  V28_SCREEN_IDS.forEach(s=>{
+    const el=document.getElementById(s);
+    if(el) el.classList.toggle('hidden', s!==id);
+  });
+  if(push){
+    history.pushState({screen:id}, '', location.href);
+  }
+}
+function goBackScreen(){
+  if(history.length>1) history.back(); else showHome();
+}
+window.addEventListener('popstate', e=>{
+  const s=e.state && e.state.screen ? e.state.screen : 'app';
+  V28_SCREEN_IDS.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('hidden', id!==s);
+  });
+});
+if(!history.state || !history.state.screen){
+  history.replaceState({screen:'app'}, '', location.href);
+}
+
+function showBookmarks(){
+  renderBookmarks();
+  showScreenV28('bookmarks');
+}
+function showHistory(){
+  renderHistory();
+  showScreenV28('history');
+}
+function renderBookmarks(){
+  const wrap=document.getElementById('bookmarkList');
+  if(!wrap) return;
+  const entries=[];
+  Object.keys(localStorage).forEach(k=>{
+    if(k.startsWith('amaliyah_bookmark_')){
+      const id=k.replace('amaliyah_bookmark_','');
+      const page=parseInt(localStorage.getItem(k)||'0',10);
+      if(page>0) entries.push({id,page});
+    }
+  });
+  if(!entries.length){
+    wrap.innerHTML='<div class="empty-state"><b>Belum ada bookmark</b><p>Simpan halaman penting dari Reader agar muncul di sini.</p></div>';
+    return;
+  }
+  wrap.innerHTML=entries.map(x=>`<button class="book-row action-row" onclick="openBookAt('${x.id}',${x.page})"><div class="book-icon">🔖</div><div><b>${bookTitleById(x.id)}</b><small>Halaman ${x.page}</small></div><span>›</span></button>`).join('');
+}
+function renderHistory(){
+  const wrap=document.getElementById('historyList');
+  if(!wrap) return;
+  let hist=[];
+  try{ hist=JSON.parse(localStorage.getItem('amaliyah_history')||'[]'); }catch(e){}
+  if(!hist.length){
+    wrap.innerHTML='<div class="empty-state"><b>Belum ada riwayat</b><p>Bacaan yang dibuka akan tercatat otomatis di sini.</p></div>';
+    return;
+  }
+  wrap.innerHTML=hist.map(x=>`<button class="book-row action-row" onclick="openBookAt('${x.id}',${x.page||1})"><div class="book-icon">◷</div><div><b>${bookTitleById(x.id)}</b><small>Terakhir halaman ${x.page||1}</small></div><span>›</span></button>`).join('');
+}
+function bookTitleById(id){
+  try{
+    const b=(window.BOOKS||[]).find(x=>x.id===id);
+    return b ? b.judul : id;
+  }catch(e){ return id; }
+}
+function openBookAt(id,page){
+  localStorage.setItem('amaliyah_open_book', id);
+  if(page) localStorage.setItem(`amaliyah_last_${id}`, String(page));
+  location.href=`reader.html?id=${encodeURIComponent(id)}${page?`&page=${page}`:''}`;
+}
+function recordHistory(id,page){
+  let hist=[];
+  try{ hist=JSON.parse(localStorage.getItem('amaliyah_history')||'[]'); }catch(e){}
+  hist=hist.filter(x=>x.id!==id);
+  hist.unshift({id,page:page||1,ts:Date.now()});
+  hist=hist.slice(0,20);
+  localStorage.setItem('amaliyah_history', JSON.stringify(hist));
+}
+
+function toggleSearch(){
+  const b=document.getElementById('searchBox');
+  if(!b) return;
+  b.classList.toggle('hidden');
+  if(!b.classList.contains('hidden')){
+    setTimeout(()=>document.getElementById('searchInput')?.focus(),50);
+  }
+}
+function filterBooks(){
+  const q=(document.getElementById('searchInput')?.value||'').trim().toLowerCase();
+  document.querySelectorAll('#library .book-row').forEach(row=>{
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// Improve prayer rendering labels if a monthly table/list contains raw times
+function ensurePrayerLabels(){
+  const prayerNames=['Subuh','Dzuhur','Ashar','Maghrib','Isya'];
+  document.querySelectorAll('[data-prayer-row]').forEach(row=>{
+    const cells=row.querySelectorAll('[data-prayer-time]');
+    cells.forEach((c,i)=>{
+      if(!c.querySelector('.prayer-name') && prayerNames[i]){
+        c.innerHTML=`<span class="prayer-name">${prayerNames[i]}</span><strong>${c.textContent.trim()}</strong>`;
+      }
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded', ensurePrayerLabels);
+
+// V2.8 screen wrappers override older showLibrary/showSettings safely
+const _v27ShowLibrary = typeof showLibrary === 'function' ? showLibrary : null;
+const _v27ShowSettings = typeof showSettings === 'function' ? showSettings : null;
+showLibrary = function(){ if(_v27ShowLibrary) _v27ShowLibrary(); showScreenV28('library'); };
+showSettings = function(){ if(_v27ShowSettings) _v27ShowSettings(); showScreenV28('settings'); };

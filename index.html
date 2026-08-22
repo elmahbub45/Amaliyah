@@ -70,8 +70,17 @@
   </nav>
 </div>
 
-<div id="library" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Daftar Bacaan</b><span>⌕</span></div><div class="chips" id="categoryChips"></div><div id="bookList" class="book-list"></div></div>
+<div id="library" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Daftar Bacaan</b><button class="icon-btn" onclick="toggleSearch()" aria-label="Cari">⌕</button></div><div class="chips" id="categoryChips"></div><div id="bookList" class="book-list"></div></div>
 <div id="monthly" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Jadwal Sholat Bulanan</b><span></span></div><div class="month-switch"><button type="button" onclick="changeMonth(-1)">‹</button><b id="monthlyTitle"></b><button type="button" onclick="changeMonth(1)">›</button></div><div id="monthlyTable"></div></div>
+
+<div id="bookmarks" class="screen hidden">
+  <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Bookmark</b><span></span></div>
+  <div id="bookmarkList" class="list-wrap"></div>
+</div>
+<div id="history" class="screen hidden">
+  <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Riwayat Bacaan</b><span></span></div>
+  <div id="historyList" class="list-wrap"></div>
+</div>
 <div id="settings" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Pengaturan</b><span></span></div><div class="settings-card" id="notificationSettings"><h3>Notifikasi Sholat</h3><p>Notifikasi browser memerlukan izin perangkat dan dukungan browser.</p><button class="primary" type="button" onclick="requestNotifications()">Aktifkan Notifikasi</button></div><div class="settings-card"><h3>Lokasi Sholat</h3><p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p><button class="primary" type="button" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button></div></div>
 
 <script src="books.js"></script><script src="app.js"></script>

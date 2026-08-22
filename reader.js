@@ -49,3 +49,63 @@ document.querySelector('#stage').addEventListener('click',()=>{document.body.cla
 document.querySelector('#stage').addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY},{passive:true});
 document.querySelector('#stage').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.4){if(dx>0)go(1);else go(-1)}},{passive:true});
 addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)});addEventListener('resize',()=>render());
+
+
+// ===== V2.8 Reader functional fixes =====
+let renderBusyV28=false;
+function closeReaderSheet(){ document.getElementById('readerSheet')?.classList.add('hidden'); }
+function openReaderSheet(title,html){
+  const s=document.getElementById('readerSheet');
+  if(!s) return;
+  document.getElementById('sheetTitle').textContent=title;
+  document.getElementById('sheetContent').innerHTML=html;
+  s.classList.remove('hidden');
+}
+document.getElementById('tocBtn')?.addEventListener('click', ()=>{
+  const total=window.pdfDoc?.numPages || window.totalPages || 1;
+  openReaderSheet('Daftar Isi', `<div class="toc-grid">${Array.from({length:total},(_,i)=>`<button onclick="goToPageV28(${i+1})">${i+1}</button>`).join('')}</div>`);
+});
+document.getElementById('moreBtn')?.addEventListener('click', ()=>{
+  openReaderSheet('Lainnya', `<button class="sheet-action" onclick="toggleFullscreenV28()">Layar penuh</button><button class="sheet-action" onclick="shareReaderV28()">Bagikan bacaan</button>`);
+});
+function goToPageV28(p){
+  closeReaderSheet();
+  if(typeof queueRenderPage==='function'){ pageNum=p; queueRenderPage(p); }
+  else if(typeof renderPage==='function'){ pageNum=p; renderPage(p); }
+}
+async function toggleFullscreenV28(){
+  closeReaderSheet();
+  try{
+    if(!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  }catch(e){}
+}
+async function shareReaderV28(){
+  closeReaderSheet();
+  const data={title:document.title,text:'Bacaan di aplikasi Amaliyah',url:location.href};
+  if(navigator.share){ try{ await navigator.share(data); }catch(e){} }
+  else { try{ await navigator.clipboard.writeText(location.href); alert('Tautan disalin.'); }catch(e){} }
+}
+// Bookmark feedback + per-book persistence
+const oldBookmarkV28 = typeof toggleBookmark==='function' ? toggleBookmark : null;
+if(oldBookmarkV28){
+  toggleBookmark = function(){
+    oldBookmarkV28();
+    try{
+      const id=new URLSearchParams(location.search).get('id')||localStorage.getItem('amaliyah_open_book')||'wirdul-latif';
+      const p=window.pageNum||1;
+      localStorage.setItem(`amaliyah_bookmark_${id}`, String(p));
+      document.querySelectorAll('[data-bookmark],#bookmarkBtn').forEach(b=>b.classList.add('saved'));
+    }catch(e){}
+  };
+}
+// Record reading history
+window.addEventListener('beforeunload', ()=>{
+  try{
+    const id=new URLSearchParams(location.search).get('id')||localStorage.getItem('amaliyah_open_book')||'wirdul-latif';
+    const p=window.pageNum||1;
+    let hist=[]; try{hist=JSON.parse(localStorage.getItem('amaliyah_history')||'[]')}catch(e){}
+    hist=hist.filter(x=>x.id!==id); hist.unshift({id,page:p,ts:Date.now()}); hist=hist.slice(0,20);
+    localStorage.setItem('amaliyah_history', JSON.stringify(hist));
+  }catch(e){}
+});

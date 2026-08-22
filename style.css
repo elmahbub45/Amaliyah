@@ -122,3 +122,13 @@ main{padding:0 16px 28px}
   main{padding-left:13px;padding-right:13px}.prayer{padding:15px 13px}.times{gap:5px}.time{font-size:10px}.time b{font-size:13px}
   .categories{gap:6px}.categories button{min-height:88px}.category-icon{width:28px;height:28px}.categories b{font-size:9.8px}
 }
+
+/* ===== V2.8 functional UI ===== */
+.icon-btn{border:0;background:transparent;font:inherit;color:inherit;padding:.35rem;cursor:pointer}
+.search-box{padding:0 16px 10px}
+.search-box input{width:100%;border:1px solid rgba(11,77,59,.14);background:#fff;border-radius:14px;padding:12px 14px;font:inherit;outline:none}
+.list-wrap{padding:16px}
+.empty-state{background:#fff;border-radius:18px;padding:28px 20px;text-align:center;box-shadow:0 8px 24px rgba(34,47,43,.06)}
+.empty-state p{margin:.5rem 0 0;color:#6d756f;font-size:.92rem}
+.action-row{width:100%;border:0;text-align:left;background:#fff;margin-bottom:10px}
+.prayer-name{display:block;font-size:.72rem;color:#6e756e;margin-bottom:2px}

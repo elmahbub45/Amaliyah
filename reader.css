@@ -26,3 +26,14 @@ footer button:active{background:rgba(255,255,255,.06)}
 footer svg{width:20px;height:20px}footer small{font-size:8.5px;margin:0;color:rgba(255,255,255,.72)}
 body.controls-off #stage{background:#fff}
 @media(max-width:390px){header{grid-template-columns:48px 1fr 48px}.arrow{width:42px;height:42px}.arrow#prev{right:7px}.arrow#next{left:7px}}
+
+/* ===== V2.8 reader sheets ===== */
+.reader-sheet{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.36);display:flex;align-items:flex-end}
+.reader-sheet.hidden{display:none}
+.sheet-card{width:100%;background:#f8f2e7;border-radius:24px 24px 0 0;padding:16px;max-height:70vh;overflow:auto}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sheet-head button{border:0;background:transparent;font-size:28px}
+.toc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.toc-grid button,.sheet-action{border:0;border-radius:12px;background:#fff;padding:12px;font:inherit}
+.sheet-action{display:block;width:100%;text-align:left;margin:8px 0}
+.saved{color:#b08a3f!important}
