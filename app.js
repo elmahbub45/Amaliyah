@@ -4,15 +4,50 @@ const books = window.AMALIYAH_BOOKS || [];
 const categories = window.AMALIYAH_CATEGORIES || ['Semua'];
 let prayerCountdownTimer = null;
 
-function show(id){
+const SCREEN_TO_ID={home:'#app',library:'#library',settings:'#settings',monthly:'#monthly'};
+let currentScreen='home';
+
+function paintScreen(screen='home'){
+  const id=SCREEN_TO_ID[screen]||SCREEN_TO_ID.home;
   ['#app','#library','#settings','#monthly'].forEach(x=>$(x)?.classList.add('hidden'));
   $(id)?.classList.remove('hidden');
+  currentScreen=screen;
   scrollTo(0,0);
 }
-function showHome(){show('#app');updateHome();}
-function showLibrary(category='Semua'){show('#library');renderLibrary(category);}
-function showSettings(){show('#settings');syncSettingsLocation();}
-function showMonthly(){show('#monthly');renderMonthlyHeader();loadMonthlyPrayerTimes();}
+function navigateScreen(screen='home',opts={}){
+  const {push=true,category='Semua',focusNotifications=false}=opts;
+  if(push && currentScreen!==screen){
+    history.pushState({amaliyah:true,screen,category,focusNotifications},'',location.href);
+  }else if(!history.state?.amaliyah){
+    history.replaceState({amaliyah:true,screen,category,focusNotifications},'',location.href);
+  }
+  paintScreen(screen);
+  if(screen==='home')updateHome();
+  if(screen==='library')renderLibrary(category);
+  if(screen==='settings'){
+    syncSettingsLocation();
+    if(focusNotifications){
+      requestAnimationFrame(()=>$('#notificationSettings')?.scrollIntoView({behavior:'smooth',block:'start'}));
+    }
+  }
+  if(screen==='monthly'){renderMonthlyHeader();loadMonthlyPrayerTimes();}
+}
+function showHome(){navigateScreen('home')}
+function showLibrary(category='Semua'){navigateScreen('library',{category})}
+function showSettings(focusNotifications=false){navigateScreen('settings',{focusNotifications})}
+function showMonthly(){navigateScreen('monthly')}
+function goBackInApp(){
+  if(currentScreen==='home')return;
+  history.back();
+}
+window.addEventListener('popstate',e=>{
+  const st=e.state;
+  if(st?.amaliyah){
+    navigateScreen(st.screen||'home',{push:false,category:st.category||'Semua',focusNotifications:!!st.focusNotifications});
+  }else{
+    paintScreen('home');updateHome();
+  }
+});
 function getBook(id){return books.find(b=>b.id===id) || books[0];}
 function pageKey(id){return `book:${id}:page`;}
 function lastBookId(){return store.getItem('amaliyah:lastBook') || books[0]?.id;}
@@ -70,6 +105,7 @@ const fmtDate=new Intl.DateTimeFormat('id-ID',{weekday:'long',day:'numeric',mont
 $('#dateText').textContent=fmtDate.format(new Date());
 $('#locBtn').onclick=getPrayerTimes;
 $('#monthlyBtn')?.addEventListener('click',showMonthly);
+$('#notifBtn')?.addEventListener('click',()=>showSettings(true));
 
 function dateKey(d=new Date()){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -192,6 +228,6 @@ async function bootPrayer(){
   $('#prayerTimes').innerHTML='<span>Izinkan lokasi untuk menampilkan jadwal sholat.</span>';
 }
 
-window.showHome=showHome; window.showLibrary=showLibrary; window.showSettings=showSettings; window.showMonthly=showMonthly; window.changeMonth=changeMonth; window.openReader=openReader; window.getPrayerTimes=getPrayerTimes; window.requestNotifications=requestNotifications;
-window.addEventListener('load',()=>{updateHome();renderLibrary('Semua');syncSettingsLocation();bootPrayer();});
+window.showHome=showHome; window.showLibrary=showLibrary; window.showSettings=showSettings; window.showMonthly=showMonthly; window.goBackInApp=goBackInApp; window.changeMonth=changeMonth; window.openReader=openReader; window.getPrayerTimes=getPrayerTimes; window.requestNotifications=requestNotifications;
+window.addEventListener('load',()=>{history.replaceState({amaliyah:true,screen:'home'},'',location.href);paintScreen('home');updateHome();renderLibrary('Semua');syncSettingsLocation();bootPrayer();});
 if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});

@@ -14,6 +14,13 @@ localStorage.setItem('amaliyah:lastBook',book.id);
 const pageKey=`book:${book.id}:page`, bookmarkKey=`book:${book.id}:bookmark`;
 let doc,page=+(localStorage.getItem(pageKey)||1),scale=1,rendering=false,startX=0,startY=0;
 const canvas=document.querySelector('#pdf'),ctx=canvas.getContext('2d'),counter=document.querySelector('#counter');
+
+function leaveReader(){
+  if(history.length>1) history.back();
+  else location.href='./index.html';
+}
+document.querySelector('#readerBack')?.addEventListener('click',e=>{e.stopPropagation();leaveReader();});
+
 doc=await pdfjsLib.getDocument(book.pdf).promise;
 page=Math.min(page,doc.numPages);
 

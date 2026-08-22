@@ -1,4 +1,4 @@
-const C='amaliyah-v2-5';
+const C='amaliyah-v2-6';
 const A=['./','./index.html','./style.css','./books.js','./app.js','./reader.html','./reader.css','./reader.js','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png','./assets/pdf/wirdul-latif.pdf'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(A)))});
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k))))])));

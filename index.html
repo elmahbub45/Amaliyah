@@ -1,15 +1,74 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b4d3b"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="assets/icons/icon-192.png" sizes="192x192"><link rel="apple-touch-icon" href="assets/icons/icon-192.png"><link rel="stylesheet" href="style.css"><title>Amaliyah</title></head><body>
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b4d3b">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <title>Amaliyah</title>
+</head>
+<body>
 <div id="app">
-<header class="hero"><div class="top"><button class="icon">☰</button><div><h1>Amaliyah</h1><p>Kumpulan Bacaan Harian</p></div><button class="icon" id="notifBtn">♢</button></div><div class="quote"><div class="arabic">خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ</div><p>Sebaik-baik kalian adalah yang mempelajari Al-Qur'an dan mengajarkannya.</p><small>(HR. Bukhari)</small></div></header>
-<main>
-<section class="card prayer"><div class="section-head"><div><b>JADWAL SHOLAT HARI INI</b><div id="location">📍 Izinkan lokasi untuk jadwal otomatis</div><small id="dateText"></small><small id="hijriDate" class="hijri"></small></div><button id="locBtn" class="soft">Ubah Lokasi</button></div><div id="prayerTimes" class="times"><span>Memuat jadwal…</span></div><div id="nextPrayer" class="next">Jadwal menggunakan metode KEMENAG RI</div><button id="monthlyBtn" class="monthly-link">▣ Lihat Jadwal Bulanan <span>›</span></button></section>
-<section><div class="section-title">LANJUTKAN MEMBACA</div><article class="reading-card"><div class="cover" id="continueCover">وِرْدُ<br>اللَّطِيف</div><div class="grow"><h3 id="continueTitle">Wirdul Latif</h3><p id="lastPage">Belum dibaca</p><div class="progress"><i id="progressBar"></i></div></div><button class="primary" id="continueBtn">Baca →</button></article></section>
-<section><div class="section-head"><b>KATEGORI BACAAN</b><button class="link" onclick="showLibrary()">Lihat Semua</button></div><div class="categories"><button data-category-card="Al-Qur'an">▣<b>Al-Qur'an</b><small>Segera</small></button><button data-category-card="Wirid">◉<b>Wirid</b><small>1 Bacaan</small></button><button data-category-card="Doa">♧<b>Doa Harian</b><small>Segera</small></button><button data-category-card="Lainnya">••<b>Lainnya</b><small>Segera</small></button></div></section>
-<section><div class="section-title">TERAKHIR DIBACA</div><div class="recent" id="recentBook"><span>▣</span><div><b id="recentTitle">Wirdul Latif</b><small id="recentPage">Ketuk untuk membaca</small></div><span>›</span></div></section>
-</main>
-<nav><button class="active" onclick="showHome()">⌂<span>Beranda</span></button><button onclick="showLibrary()">▦<span>Kategori</span></button><button onclick="openReader(undefined,true)">♡<span>Bookmark</span></button><button onclick="openReader()">◷<span>Riwayat</span></button><button onclick="showSettings()">⚙<span>Pengaturan</span></button></nav>
+  <header class="hero">
+    <div class="top">
+      <span class="top-spacer" aria-hidden="true"></span>
+      <div class="brand"><h1>Amaliyah</h1><p>Kumpulan Bacaan Harian</p></div>
+      <button class="icon notif-icon" id="notifBtn" type="button" aria-label="Pengaturan notifikasi" title="Pengaturan notifikasi">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+      </button>
+    </div>
+    <div class="quote"><div class="arabic">خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ</div><p>Sebaik-baik kalian adalah yang mempelajari Al-Qur'an dan mengajarkannya.</p><small>(HR. Bukhari)</small></div>
+  </header>
+
+  <main>
+    <section class="card prayer">
+      <div class="prayer-head">
+        <div class="prayer-heading">
+          <b>JADWAL SHOLAT HARI INI</b>
+          <div id="location">📍 Izinkan lokasi untuk jadwal otomatis</div>
+          <small id="dateText"></small>
+          <small id="hijriDate" class="hijri"></small>
+        </div>
+        <button id="locBtn" class="location-btn" type="button" aria-label="Ubah lokasi"><span aria-hidden="true">⌖</span> Ubah</button>
+      </div>
+      <div id="prayerTimes" class="times"><span>Memuat jadwal…</span></div>
+      <div id="nextPrayer" class="next">Jadwal menggunakan metode KEMENAG RI</div>
+      <button id="monthlyBtn" class="monthly-link" type="button">▣ Lihat Jadwal Bulanan <span>›</span></button>
+    </section>
+
+    <section><div class="section-title">LANJUTKAN MEMBACA</div><article class="reading-card"><div class="cover" id="continueCover">وِرْدُ<br>اللَّطِيف</div><div class="grow"><h3 id="continueTitle">Wirdul Latif</h3><p id="lastPage">Belum dibaca</p><div class="progress"><i id="progressBar"></i></div></div><button class="primary" id="continueBtn">Baca →</button></article></section>
+
+    <section><div class="section-head"><b>KATEGORI BACAAN</b><button class="link" type="button" onclick="showLibrary()">Lihat Semua</button></div><div class="categories"><button data-category-card="Al-Qur'an">▣<b>Al-Qur'an</b><small>Segera</small></button><button data-category-card="Wirid">◉<b>Wirid</b><small>1 Bacaan</small></button><button data-category-card="Doa">♧<b>Doa Harian</b><small>Segera</small></button><button data-category-card="Lainnya">••<b>Lainnya</b><small>Segera</small></button></div></section>
+
+    <section><div class="section-title">TERAKHIR DIBACA</div><div class="recent" id="recentBook"><span>▣</span><div><b id="recentTitle">Wirdul Latif</b><small id="recentPage">Ketuk untuk membaca</small></div><span>›</span></div></section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Navigasi utama">
+    <button class="active" type="button" onclick="showHome()" aria-label="Beranda">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5M5.5 10.5V20h13v-9.5M9.5 20v-6h5v6"/></svg><span>Beranda</span>
+    </button>
+    <button type="button" onclick="showLibrary()" aria-label="Kategori">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>Kategori</span>
+    </button>
+    <button type="button" onclick="openReader(undefined,true)" aria-label="Bookmark">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/></svg><span>Bookmark</span>
+    </button>
+    <button type="button" onclick="openReader()" aria-label="Riwayat">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7.5V12l3 2"/></svg><span>Riwayat</span>
+    </button>
+    <button type="button" onclick="showSettings()" aria-label="Pengaturan">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2-.7a6.8 6.8 0 0 0-.7-1.7l.9-1.9-2.1-2.1-1.9.9a6.8 6.8 0 0 0-1.7-.7L10.5 2h-3l-.7 2a6.8 6.8 0 0 0-1.7.7l-1.9-.9-2.1 2.1.9 1.9a6.8 6.8 0 0 0-.7 1.7L0 10.5v3l2 .7a6.8 6.8 0 0 0 .7 1.7l-.9 1.9 2.1 2.1 1.9-.9a6.8 6.8 0 0 0 1.7.7l.7 2h3l.7-2a6.8 6.8 0 0 0 1.7-.7l1.9.9 2.1-2.1-.9-1.9a6.8 6.8 0 0 0 .7-1.7z" transform="translate(1.5 0) scale(.875)"/></svg><span>Pengaturan</span>
+    </button>
+  </nav>
 </div>
-<div id="library" class="screen hidden"><div class="screenbar"><button onclick="showHome()">‹</button><b>Daftar Bacaan</b><span>⌕</span></div><div class="chips" id="categoryChips"></div><div id="bookList" class="book-list"></div></div>
-<div id="monthly" class="screen hidden"><div class="screenbar"><button onclick="showHome()">‹</button><b>Jadwal Sholat Bulanan</b><span></span></div><div class="month-switch"><button onclick="changeMonth(-1)">‹</button><b id="monthlyTitle"></b><button onclick="changeMonth(1)">›</button></div><div id="monthlyTable"></div></div>
-<div id="settings" class="screen hidden"><div class="screenbar"><button onclick="showHome()">‹</button><b>Pengaturan</b><span></span></div><div class="settings-card"><h3>Notifikasi Sholat</h3><p>Notifikasi browser memerlukan izin perangkat dan dukungan browser.</p><button class="primary" onclick="requestNotifications()">Aktifkan Notifikasi</button></div><div class="settings-card"><h3>Lokasi Sholat</h3><p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p><button class="primary" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button></div></div>
-<script src="books.js"></script><script src="app.js"></script></body></html>
+
+<div id="library" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Daftar Bacaan</b><span>⌕</span></div><div class="chips" id="categoryChips"></div><div id="bookList" class="book-list"></div></div>
+<div id="monthly" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Jadwal Sholat Bulanan</b><span></span></div><div class="month-switch"><button type="button" onclick="changeMonth(-1)">‹</button><b id="monthlyTitle"></b><button type="button" onclick="changeMonth(1)">›</button></div><div id="monthlyTable"></div></div>
+<div id="settings" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Pengaturan</b><span></span></div><div class="settings-card" id="notificationSettings"><h3>Notifikasi Sholat</h3><p>Notifikasi browser memerlukan izin perangkat dan dukungan browser.</p><button class="primary" type="button" onclick="requestNotifications()">Aktifkan Notifikasi</button></div><div class="settings-card"><h3>Lokasi Sholat</h3><p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p><button class="primary" type="button" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button></div></div>
+
+<script src="books.js"></script><script src="app.js"></script>
+</body>
+</html>
