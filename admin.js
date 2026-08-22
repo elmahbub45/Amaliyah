@@ -8,6 +8,7 @@ let selectedId=null;
 let editingPartIndex=-1;
 let dirty=false;
 let dragIndex=null;
+let mainDragIndex=null;
 
 async function boot(){
   original=await fetch('./books.json',{cache:'no-store'}).then(r=>{
@@ -93,18 +94,96 @@ function saveDraft(){localStorage.setItem(DRAFT_KEY,JSON.stringify(data));update
 function renderList(){
   const q=$('#searchInput').value.trim().toLowerCase();
   const cat=$('#categoryFilter').value;
-  const arr=data.items.filter(x=>(!cat||x.category===cat)&&(!q||[x.title,x.category,...(x.parts||[]).map(p=>p.title)].join(' ').toLowerCase().includes(q)));
-  $('#itemList').innerHTML=arr.map(x=>{
+
+  const indexed=data.items.map((item,index)=>({item,index}));
+  const arr=indexed.filter(({item:x})=>
+    (!cat||x.category===cat) &&
+    (!q||[x.title,x.category,...(x.parts||[]).map(p=>p.title)].join(' ').toLowerCase().includes(q))
+  );
+
+  $('#itemList').innerHTML=arr.map(({item:x,index})=>{
     const count=x.type==='single'?(x.pages?`${x.pages} hal.`:'1 PDF'):`${x.parts?.length||0} bagian`;
-    return `<button class="item-card ${x.id===selectedId?'active':''}" data-id="${esc(x.id)}">
-      <span class="item-icon">${esc(x.icon||'◈')}</span>
-      <span class="item-copy"><b>${esc(x.title)}</b><small>${esc(x.category)} • ${esc(x.type)}</small></span>
-      <span class="item-count">${count}</span>
-    </button>`;
+    return `<div class="item-card ${x.id===selectedId?'active':''}" draggable="true" data-id="${esc(x.id)}" data-main-index="${index}">
+      <button class="main-drag-handle" type="button" title="Drag untuk mengurutkan">☰</button>
+      <button class="item-select" type="button" data-select-id="${esc(x.id)}">
+        <span class="item-icon">${esc(x.icon||'◈')}</span>
+        <span class="item-copy"><b>${esc(x.title)}</b><small>${esc(x.category)} • ${esc(x.type)}</small></span>
+        <span class="item-count">${count}</span>
+      </button>
+      <span class="main-order-actions">
+        <button type="button" data-main-up="${index}" title="Naik">↑</button>
+        <button type="button" data-main-down="${index}" title="Turun">↓</button>
+      </span>
+    </div>`;
   }).join('');
-  $('#itemList').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>selectItem(b.dataset.id));
+
+  const list=$('#itemList');
+
+  list.querySelectorAll('[data-select-id]').forEach(b=>{
+    b.onclick=()=>selectItem(b.dataset.selectId);
+  });
+
+  list.querySelectorAll('.item-card').forEach(row=>{
+    row.addEventListener('dragstart',e=>{
+      // Allow drag anywhere on desktop, but keep buttons clickable.
+      mainDragIndex=+row.dataset.mainIndex;
+      row.classList.add('dragging');
+      try{e.dataTransfer.effectAllowed='move'}catch{}
+    });
+    row.addEventListener('dragend',()=>{
+      mainDragIndex=null;
+      row.classList.remove('dragging');
+      list.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+    });
+    row.addEventListener('dragover',e=>{
+      e.preventDefault();
+      row.classList.add('drag-over');
+      try{e.dataTransfer.dropEffect='move'}catch{}
+    });
+    row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+    row.addEventListener('drop',e=>{
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const to=+row.dataset.mainIndex;
+      if(mainDragIndex===null||mainDragIndex===to)return;
+      moveMainItem(mainDragIndex,to);
+    });
+  });
+
+  list.querySelectorAll('[data-main-up]').forEach(b=>{
+    b.onclick=e=>{
+      e.stopPropagation();
+      moveMainItem(+b.dataset.mainUp,+b.dataset.mainUp-1);
+    };
+  });
+  list.querySelectorAll('[data-main-down]').forEach(b=>{
+    b.onclick=e=>{
+      e.stopPropagation();
+      moveMainItem(+b.dataset.mainDown,+b.dataset.mainDown+1);
+    };
+  });
+
   updateStatus(dirty);
 }
+function moveMainItem(from,to){
+  if(from<0||to<0||from>=data.items.length||to>=data.items.length)return;
+  if(from===to)return;
+
+  const [item]=data.items.splice(from,1);
+  data.items.splice(to,0,item);
+
+  selectedId=item.id;
+  markDirty('Urutan bacaan utama diubah');
+  renderList();
+
+  requestAnimationFrame(()=>{
+    document.querySelector(`[data-id="${CSS.escape(item.id)}"]`)?.scrollIntoView({
+      block:'nearest',
+      behavior:'smooth'
+    });
+  });
+}
+
 function selectItem(id){
   selectedId=id;renderList();
   document.querySelector('.item-card.active')?.scrollIntoView({block:'nearest'});
