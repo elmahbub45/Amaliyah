@@ -5,3 +5,24 @@ body.controls-off #stage{inset:0;overflow:hidden;padding:0}
 body.controls-off canvas{box-shadow:none}
 header,footer,.arrow,#counter{transition:opacity .2s ease}
 #stage{transition:inset .2s ease}
+
+
+/* V2.7 — elegant reader controls */
+html,body{background:#0d4438}
+header{height:62px;padding:env(safe-area-inset-top) 10px 0;background:linear-gradient(180deg,rgba(5,55,45,.98),rgba(7,64,52,.94));grid-template-columns:52px 1fr 52px;backdrop-filter:blur(12px);box-shadow:0 5px 18px rgba(0,0,0,.08)}
+header b{font-size:14px;font-weight:700;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header button,footer button{display:flex;align-items:center;justify-content:center;flex-direction:column}
+header button{width:40px;height:40px;border-radius:12px;margin:auto;background:rgba(255,255,255,.055)}
+header svg,footer svg,.arrow svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+#stage{inset:62px 0 70px;background:#0d4438}
+canvas{box-shadow:0 10px 30px rgba(0,0,0,.27)}
+.arrow{width:44px;height:44px;display:grid;place-items:center;background:rgba(6,76,59,.88);box-shadow:0 5px 16px rgba(0,0,0,.16);backdrop-filter:blur(8px)}
+.arrow#prev{right:10px}.arrow#next{left:10px}
+.arrow svg{width:20px;height:20px}
+#counter{bottom:78px;padding:6px 12px;border-radius:999px;background:rgba(5,44,37,.83);font-size:10.5px;letter-spacing:.02em;box-shadow:0 4px 12px rgba(0,0,0,.12);backdrop-filter:blur(8px)}
+footer{height:70px;padding:6px 6px env(safe-area-inset-bottom);background:rgba(5,55,45,.97);backdrop-filter:blur(12px);box-shadow:0 -5px 18px rgba(0,0,0,.08)}
+footer button{gap:3px;font-size:inherit;min-width:0;border-radius:12px;color:rgba(255,255,255,.9)}
+footer button:active{background:rgba(255,255,255,.06)}
+footer svg{width:20px;height:20px}footer small{font-size:8.5px;margin:0;color:rgba(255,255,255,.72)}
+body.controls-off #stage{background:#fff}
+@media(max-width:390px){header{grid-template-columns:48px 1fr 48px}.arrow{width:42px;height:42px}.arrow#prev{right:7px}.arrow#next{left:7px}}
