@@ -223,3 +223,17 @@ main{
 @media(max-width:390px){
   .prayer{margin-top:-8px}
 }
+
+
+/* =========================================================
+   V2.12 Fixed — monthly prayer table header visibility
+   ========================================================= */
+#monthlyTable .monthly-head{
+  background:#0b4f3d !important;
+  color:#ffffff !important;
+}
+#monthlyTable .monthly-head b{
+  color:#ffffff !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
