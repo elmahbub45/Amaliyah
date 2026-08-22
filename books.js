@@ -11,4 +11,4 @@ window.AMALIYAH_BOOKS = [
   }
 ];
 
-window.AMALIYAH_CATEGORIES = ['Semua', 'Al-Qur\'an', 'Wirid', 'Doa', 'Lainnya'];
+window.AMALIYAH_CATEGORIES = ['Semua', 'Al-Qur\'an', 'Wirid', 'Doa', 'Maulid', 'Dalail'];

@@ -84,10 +84,14 @@ function updateHome(){
 function updateCategoryCounts(){
   document.querySelectorAll('[data-category-card]').forEach(el=>{
     const cat=el.dataset.categoryCard;
-    const count=books.filter(b=>b.category===cat).length;
+    const count=cat==='Semua' ? books.length : books.filter(b=>b.category===cat).length;
     const label=el.querySelector('small');
-    if(label) label.textContent=count?`${count} Bacaan`:'Segera';
-    el.onclick=()=>showLibrary(cat);
+    if(label){
+      label.textContent = cat==='Semua'
+        ? (count ? `${count} Bacaan` : 'Semua Bacaan')
+        : (count ? `${count} Bacaan` : 'Segera');
+    }
+    el.onclick=()=>showLibrary(cat==='Semua'?'Semua':cat);
   });
 }
 function renderChips(active='Semua'){

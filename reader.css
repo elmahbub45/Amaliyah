@@ -56,3 +56,57 @@ body.controls-off #stage{
 body.controls-off canvas{
   box-shadow:none;
 }
+
+
+/* =========================================================
+   V2.13 — Reader interaction fixes
+   ========================================================= */
+.bookmark-control{
+  transition:color .16s ease,background .16s ease,transform .16s ease;
+}
+.bookmark-control svg{
+  transition:fill .16s ease,stroke .16s ease;
+}
+.bookmark-control.saved{
+  color:#f0cb78 !important;
+  background:rgba(240,203,120,.10);
+}
+.bookmark-control.saved svg{
+  fill:#f0cb78;
+  stroke:#f0cb78;
+}
+#bookmarkBottom.saved small{
+  color:#f0cb78;
+}
+.sheet-head button{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  cursor:pointer;
+  color:#1f302b;
+}
+.sheet-head button:active{
+  background:#eee4d5;
+}
+.toc-grid button.current{
+  background:#0b4f3d;
+  color:white;
+  font-weight:800;
+}
+.sheet-action{
+  min-height:58px;
+  cursor:pointer;
+  color:#1f302b;
+  font-weight:650;
+}
+.sheet-action:active{
+  background:#f2e8d9;
+}
+.reader-sheet{
+  cursor:pointer;
+}
+.sheet-card{
+  cursor:default;
+}
