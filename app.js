@@ -3,6 +3,8 @@ const store = localStorage;
 const books = window.AMALIYAH_BOOKS || [];
 const categories = window.AMALIYAH_CATEGORIES || ['Semua'];
 let prayerCountdownTimer = null;
+let activeLibraryCategory='Semua';
+let librarySearchQuery='';
 
 const SCREEN_TO_ID={home:'#app',library:'#library',settings:'#settings',monthly:'#monthly',bookmarks:'#bookmarks',history:'#history'};
 let currentScreen='home';
@@ -55,6 +57,8 @@ function pageKey(id){return `book:${id}:page`;}
 function lastBookId(){return store.getItem('amaliyah:lastBook') || books[0]?.id;}
 function openReader(id=lastBookId(), bookmark=false){
   const book=getBook(id); if(!book)return;
+  store.setItem('amaliyah:lastBook', book.id);
+  recordHistoryEntry(book.id, Math.max(1, +(store.getItem(pageKey(book.id))||1)));
   location.href=`reader.html?book=${encodeURIComponent(book.id)}${bookmark?'&bookmark=1':''}`;
 }
 
@@ -75,6 +79,7 @@ function updateHome(){
   $('#recentPage').textContent=pr.page>1?`Halaman ${pr.page} dari ${pr.total}`:'Ketuk untuk membaca';
   $('#recentBook').onclick=()=>openReader(book.id);
   updateCategoryCounts();
+  renderHomeFavorites();
 }
 function updateCategoryCounts(){
   document.querySelectorAll('[data-category-card]').forEach(el=>{
@@ -86,21 +91,52 @@ function updateCategoryCounts(){
   });
 }
 function renderChips(active='Semua'){
+  activeLibraryCategory=active;
   const wrap=$('#categoryChips'); if(!wrap)return;
   wrap.innerHTML=categories.map(cat=>`<button class="chip ${cat===active?'active':''}" data-cat="${cat}">${cat}</button>`).join('');
-  wrap.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>renderLibrary(btn.dataset.cat));
+  wrap.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>{
+    activeLibraryCategory=btn.dataset.cat;
+    renderLibrary(activeLibraryCategory);
+  });
 }
-function renderLibrary(category='Semua'){
+function normalizedSearchText(book){
+  return [book.title,book.arabicTitle,book.category,book.coverText].filter(Boolean).join(' ').toLocaleLowerCase('id-ID');
+}
+function renderLibrary(category=activeLibraryCategory||'Semua'){
+  activeLibraryCategory=category;
   renderChips(category);
   const list=$('#bookList'); if(!list)return;
-  const filtered=category==='Semua'?books:books.filter(b=>b.category===category);
-  if(!filtered.length){list.innerHTML='<div class="empty-state">Belum ada bacaan pada kategori ini.</div>';return;}
+  const q=(librarySearchQuery||'').trim().toLocaleLowerCase('id-ID');
+  let filtered=category==='Semua'?books:books.filter(b=>b.category===category);
+  if(q) filtered=filtered.filter(book=>normalizedSearchText(book).includes(q));
+
+  if(!filtered.length){
+    list.innerHTML=`<div class="empty-state"><b>${q?'Bacaan tidak ditemukan':'Belum ada bacaan'}</b><p>${q?'Coba kata kunci lain atau pilih kategori Semua.':'Belum ada bacaan pada kategori ini.'}</p></div>`;
+    return;
+  }
+
   list.innerHTML=filtered.map(book=>{
     const pr=bookProgress(book);
     const progress=pr.page>1?`Terakhir hal. ${pr.page}`:`${pr.total} halaman`;
-    return `<button class="book-row" data-book="${book.id}"><div class="book-icon">${book.icon||'▣'}</div><div class="book-copy"><b>${book.title}</b><small>${book.arabicTitle||''}</small></div><em>${progress}</em><span>›</span></button>`;
+    const favorite=isFavorite(book.id);
+    return `<div class="book-row library-book-row" data-book-row="${book.id}">
+      <button class="book-main" type="button" data-open-book="${book.id}" aria-label="Buka ${book.title}">
+        <div class="book-icon">${book.icon||'▣'}</div>
+        <div class="book-copy"><b>${book.title}</b><small>${book.arabicTitle||''}</small></div>
+        <em>${progress}</em>
+        <span class="chevron">›</span>
+      </button>
+      <button class="favorite-btn ${favorite?'active':''}" type="button" data-favorite="${book.id}" aria-label="${favorite?'Hapus dari favorit':'Tambahkan ke favorit'}" title="${favorite?'Hapus dari favorit':'Tambahkan ke favorit'}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>
+      </button>
+    </div>`;
   }).join('');
-  list.querySelectorAll('[data-book]').forEach(row=>row.onclick=()=>openReader(row.dataset.book));
+
+  list.querySelectorAll('[data-open-book]').forEach(btn=>btn.onclick=()=>openReader(btn.dataset.openBook));
+  list.querySelectorAll('[data-favorite]').forEach(btn=>btn.onclick=e=>{
+    e.stopPropagation();
+    toggleFavorite(btn.dataset.favorite);
+  });
 }
 
 const fmtDate=new Intl.DateTimeFormat('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -278,15 +314,73 @@ function renderHistory(){
 }
 function toggleSearch(){
   const box=$('#searchBox');
+  const input=$('#searchInput');
   if(!box)return;
+  const opening=box.classList.contains('hidden');
   box.classList.toggle('hidden');
-  if(!box.classList.contains('hidden'))setTimeout(()=>$('#searchInput')?.focus(),50);
+  $('#searchToggleBtn')?.classList.toggle('active', opening);
+  if(opening){
+    setTimeout(()=>input?.focus(),60);
+  }else{
+    librarySearchQuery='';
+    if(input)input.value='';
+    renderLibrary(activeLibraryCategory);
+  }
 }
 function filterBooks(){
-  const q=($('#searchInput')?.value||'').trim().toLowerCase();
-  document.querySelectorAll('#library .book-row').forEach(row=>{
-    row.style.display=row.textContent.toLowerCase().includes(q)?'':'none';
-  });
+  librarySearchQuery=($('#searchInput')?.value||'').trim();
+  $('#clearSearchBtn')?.classList.toggle('visible', !!librarySearchQuery);
+  renderLibrary(activeLibraryCategory);
+}
+function clearSearch(){
+  const input=$('#searchInput');
+  if(input)input.value='';
+  librarySearchQuery='';
+  $('#clearSearchBtn')?.classList.remove('visible');
+  renderLibrary(activeLibraryCategory);
+  input?.focus();
+}
+
+const FAVORITES_KEY='amaliyah:favorites';
+function getFavorites(){
+  try{
+    const value=JSON.parse(store.getItem(FAVORITES_KEY)||'[]');
+    return Array.isArray(value)?value.filter(id=>books.some(b=>b.id===id)):[];
+  }catch{return []}
+}
+function saveFavorites(ids){
+  store.setItem(FAVORITES_KEY,JSON.stringify([...new Set(ids)]));
+}
+function isFavorite(id){return getFavorites().includes(id);}
+function toggleFavorite(id){
+  let ids=getFavorites();
+  if(ids.includes(id))ids=ids.filter(x=>x!==id);
+  else ids.push(id);
+  saveFavorites(ids);
+  renderLibrary(activeLibraryCategory);
+  renderHomeFavorites();
+}
+function renderHomeFavorites(){
+  const section=$('#favoritesSection');
+  const wrap=$('#favoriteBooks');
+  if(!section||!wrap)return;
+  const ids=getFavorites();
+  const favBooks=ids.map(id=>getBook(id)).filter(Boolean);
+  section.classList.toggle('hidden',favBooks.length===0);
+  if(!favBooks.length){wrap.innerHTML='';return;}
+  wrap.innerHTML=favBooks.map(book=>`<button class="favorite-card" type="button" data-fav-open="${book.id}">
+    <span class="favorite-cover">${(book.coverText||book.arabicTitle||book.icon||'◈').replace(/\n/g,'<br>')}</span>
+    <span class="favorite-copy"><b>${book.title}</b><small>${book.category}</small></span>
+    <span class="favorite-star" aria-hidden="true">★</span>
+  </button>`).join('');
+  wrap.querySelectorAll('[data-fav-open]').forEach(btn=>btn.onclick=()=>openReader(btn.dataset.favOpen));
+}
+function recordHistoryEntry(id,page=1){
+  let hist=[];
+  try{hist=JSON.parse(store.getItem('amaliyah_history')||'[]')}catch{}
+  hist=hist.filter(x=>x.id!==id);
+  hist.unshift({id,page,ts:Date.now()});
+  store.setItem('amaliyah_history',JSON.stringify(hist.slice(0,20)));
 }
 
 window.showBookmarks=showBookmarks;
@@ -295,6 +389,8 @@ window.goBackScreen=goBackScreen;
 window.openBookAt=openBookAt;
 window.toggleSearch=toggleSearch;
 window.filterBooks=filterBooks;
+window.clearSearch=clearSearch;
+window.toggleFavorite=toggleFavorite;
 
 window.showHome=showHome; window.showLibrary=showLibrary; window.showSettings=showSettings; window.showMonthly=showMonthly; window.showBookmarks=showBookmarks; window.showHistory=showHistory; window.goBackInApp=goBackInApp; window.changeMonth=changeMonth; window.openReader=openReader; window.getPrayerTimes=getPrayerTimes; window.requestNotifications=requestNotifications;
 window.addEventListener('load',()=>{history.replaceState({amaliyah:true,screen:'home'},'',location.href);paintScreen('home');updateHome();renderLibrary('Semua');syncSettingsLocation();bootPrayer();});

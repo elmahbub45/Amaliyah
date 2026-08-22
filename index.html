@@ -41,6 +41,15 @@
 
     <section><div class="section-title">LANJUTKAN MEMBACA</div><article class="reading-card"><div class="cover" id="continueCover">وِرْدُ<br>اللَّطِيف</div><div class="grow"><h3 id="continueTitle">Wirdul Latif</h3><p id="lastPage">Belum dibaca</p><div class="progress"><i id="progressBar"></i></div></div><button class="primary" id="continueBtn">Baca →</button></article></section>
 
+
+    <section id="favoritesSection" class="favorites-section hidden">
+      <div class="section-head">
+        <b>BACAAN FAVORIT</b>
+        <button class="link" type="button" onclick="showLibrary()">Kelola <span aria-hidden="true">›</span></button>
+      </div>
+      <div id="favoriteBooks" class="favorite-strip" aria-label="Bacaan favorit"></div>
+    </section>
+
     <section class="category-section"><div class="section-head"><b>KATEGORI BACAAN</b><button class="link" type="button" onclick="showLibrary()">Lihat Semua <span aria-hidden="true">›</span></button></div><div class="categories">
       <button data-category-card="Al-Qur'an"><span class="category-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H12v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M19 4.5A2.5 2.5 0 0 0 16.5 2H12v18h4.5A2.5 2.5 0 0 1 19 22z"/></svg></span><b>Al-Qur'an</b><small>Segera</small></button>
       <button data-category-card="Wirid"><span class="category-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><circle cx="18.5" cy="5.5" r="1.5"/></svg></span><b>Wirid</b><small>1 Bacaan</small></button>
@@ -70,7 +79,22 @@
   </nav>
 </div>
 
-<div id="library" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Daftar Bacaan</b><button class="icon-btn" onclick="toggleSearch()" aria-label="Cari">⌕</button></div><div class="chips" id="categoryChips"></div><div id="bookList" class="book-list"></div></div>
+<div id="library" class="screen hidden">
+  <div class="screenbar">
+    <button type="button" onclick="goBackInApp()">‹</button>
+    <b>Daftar Bacaan</b>
+    <button id="searchToggleBtn" class="icon-btn search-toggle" type="button" onclick="toggleSearch()" aria-label="Cari bacaan" title="Cari bacaan">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+    </button>
+  </div>
+  <div id="searchBox" class="search-box hidden">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+    <input id="searchInput" type="search" autocomplete="off" placeholder="Cari judul bacaan atau tulisan Arab…" oninput="filterBooks()">
+    <button id="clearSearchBtn" type="button" onclick="clearSearch()" aria-label="Hapus pencarian">×</button>
+  </div>
+  <div class="chips" id="categoryChips"></div>
+  <div id="bookList" class="book-list"></div>
+</div>
 <div id="monthly" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Jadwal Sholat Bulanan</b><span></span></div><div class="month-switch"><button type="button" onclick="changeMonth(-1)">‹</button><b id="monthlyTitle"></b><button type="button" onclick="changeMonth(1)">›</button></div><div id="monthlyTable"></div></div>
 
 <div id="bookmarks" class="screen hidden">
