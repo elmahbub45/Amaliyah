@@ -1,0 +1,2 @@
+# Amaliyah
+Aplikasi Amaliyah Harian
