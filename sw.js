@@ -1,4 +1,4 @@
-const C='amaliyah-v2-13';
+const C='amaliyah-v2-14';
 const A=['./','./index.html','./style.css','./books.js','./app.js','./reader.html','./reader.css','./reader.js','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png','./assets/pdf/wirdul-latif.pdf'];
 
 self.addEventListener('install',e=>{

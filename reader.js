@@ -33,10 +33,11 @@ let startX=0,startY=0;
 let swiped=false;
 let sheetOpen=false;
 
-// Migrate old single-bookmark key if the older version was used.
+// V2.14: migrate an old bookmark only once, then remove the legacy key.
 if(!localStorage.getItem(bookmarkKey) && localStorage.getItem(legacyBookmarkKey)){
   localStorage.setItem(bookmarkKey,localStorage.getItem(legacyBookmarkKey));
 }
+localStorage.removeItem(legacyBookmarkKey);
 
 function currentBookmark(){
   return Math.max(0,+(localStorage.getItem(bookmarkKey)||0));
@@ -54,8 +55,10 @@ function syncBookmarkState(){
 function toggleBookmark(){
   if(currentBookmark()===page){
     localStorage.removeItem(bookmarkKey);
+    localStorage.removeItem(legacyBookmarkKey);
   }else{
     localStorage.setItem(bookmarkKey,String(page));
+    localStorage.removeItem(legacyBookmarkKey);
   }
   syncBookmarkState();
 }
@@ -165,7 +168,7 @@ function closeSheet(){
 }
 
 function openToc(){
-  showSheet('Daftar Isi',container=>{
+  showSheet('Halaman',container=>{
     const grid=document.createElement('div');
     grid.className='toc-grid';
     for(let i=1;i<=pdfDoc.numPages;i++){
@@ -180,26 +183,14 @@ function openToc(){
   });
 }
 
-async function toggleFullscreen(){
+function toggleFullscreen(){
+  // Internal immersive mode only, without the browser's native fullscreen API.
   hideSheetOnly();
   if(history.state?.readerSheet)history.back();
 
-  try{
-    if(document.fullscreenElement){
-      await document.exitFullscreen();
-    }else if(document.documentElement.requestFullscreen){
-      await document.documentElement.requestFullscreen();
-    }else{
-      // Safe fallback for installed PWA/browser variants without Fullscreen API.
-      document.body.classList.toggle('controls-off');
-      scale=1;
-      drawPage();
-    }
-  }catch{
-    document.body.classList.toggle('controls-off');
-    scale=1;
-    drawPage();
-  }
+  document.body.classList.toggle('controls-off');
+  scale=1;
+  drawPage();
 }
 
 async function shareReading(){
@@ -236,7 +227,7 @@ function openMore(){
     const full=document.createElement('button');
     full.type='button';
     full.className='sheet-action';
-    full.textContent=document.fullscreenElement?'Keluar layar penuh':'Layar penuh';
+    full.textContent=document.body.classList.contains('controls-off')?'Tampilkan kontrol':'Layar penuh';
     full.addEventListener('click',toggleFullscreen);
 
     const share=document.createElement('button');
@@ -310,7 +301,6 @@ window.addEventListener('keydown',e=>{
 });
 
 window.addEventListener('resize',()=>drawPage());
-document.addEventListener('fullscreenchange',()=>{scale=1;drawPage();});
 window.addEventListener('pagehide',recordHistory);
 
 // Load PDF
