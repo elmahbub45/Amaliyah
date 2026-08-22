@@ -110,3 +110,23 @@ body.controls-off canvas{
 .sheet-card{
   cursor:default;
 }
+
+
+/* =========================================================
+   V2.14 — Internal immersive reading mode
+   ========================================================= */
+body.controls-off{
+  background:#484c32;
+}
+body.controls-off header,
+body.controls-off footer,
+body.controls-off .arrow,
+body.controls-off #counter{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+body.controls-off #stage{
+  inset:0;
+  background:#484c32;
+}

@@ -1,0 +1,17 @@
+AMALIYAH V2.16 — INVENTARIS PDF
+Total PDF: 212
+
+Jumlah berdasarkan kategori:
+- Syair: 66
+- Doa: 49
+- Maulid: 27
+- Khutbah: 25
+- Dalail: 17
+- Wirid: 15
+- Al-Qur'an: 9
+- Umum: 4
+
+Catatan:
+- Filter utama aplikasi tetap: Al-Qur'an, Wirid, Doa, Maulid, Dalail, dan Lihat Semua.
+- PDF berjenis Syair, Khutbah, dan Umum tetap tampil pada Lihat Semua dan pencarian.
+- Wirdul Latif mempertahankan ID lama agar progres/favorit/bookmark pengguna tidak hilang.
