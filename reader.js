@@ -242,5 +242,6 @@ window.addEventListener('pagehide',recordHistory);
 
 pdfDoc=await pdfjsLib.getDocument(part.file).promise;
 page=Math.min(page,pdfDoc.numPages);
+stage.scrollTop=0;
 syncBookmarkState();
 drawPage();

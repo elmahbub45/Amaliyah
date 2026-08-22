@@ -238,3 +238,27 @@ body.controls-off .next-part-bar{
   margin-top:14px;
 }
 
+
+
+/* =========================================================
+   V2.18.2 — Fix bagian atas PDF terpotong
+   Dokumen selalu dimulai dari atas; immersive tidak lagi
+   memakai flex-centering pada konten yang lebih tinggi layar.
+   ========================================================= */
+#readerDocument{
+  justify-content:flex-start;
+}
+
+body.controls-off #stage{
+  display:block;
+  align-items:initial;
+  justify-content:initial;
+  padding:0;
+  overflow:auto;
+}
+
+body.controls-off #readerDocument{
+  justify-content:flex-start;
+  min-height:100%;
+  padding:0 0 18px;
+}
