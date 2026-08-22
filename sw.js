@@ -1,0 +1,1 @@
+const C='amaliyah-v1',A=['./','./index.html','./style.css','./app.js','./reader.html','./reader.css','./reader.js','./assets/pdf/wirdul-latif.pdf'];self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(A))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
