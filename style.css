@@ -203,3 +203,23 @@ main{padding:0 16px 28px}
   .hero::after{height:112px}
   .hero .quote{padding:13px 12px 11px}
 }
+
+
+/* =========================================================
+   V2.11 — Fix header overlapping prayer card
+   ========================================================= */
+.hero{
+  z-index:1;
+}
+main{
+  position:relative;
+  z-index:3;
+}
+.prayer{
+  position:relative;
+  z-index:6;
+  margin-top:-10px;
+}
+@media(max-width:390px){
+  .prayer{margin-top:-8px}
+}
