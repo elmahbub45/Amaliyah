@@ -189,3 +189,52 @@ body.controls-off .next-part-bar{
 }
 .reader-part-info b{font-size:11px}
 .reader-part-info small{font-size:10px;color:#6f7c76}
+
+
+/* =========================================================
+   V2.18.1 — Next part tidak menutupi bacaan
+   Bar menjadi bagian dari alur dokumen setelah halaman PDF.
+   ========================================================= */
+#stage{
+  display:block;
+  overflow:auto;
+  overscroll-behavior:contain;
+}
+
+#readerDocument{
+  width:100%;
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  padding:9px 0 14px;
+}
+
+.next-part-bar{
+  position:static;
+  left:auto;
+  bottom:auto;
+  transform:none;
+  z-index:auto;
+  flex:0 0 auto;
+  width:min(440px,calc(100% - 28px));
+  margin:0 auto;
+}
+
+body.controls-off #stage{
+  overflow:auto;
+}
+
+body.controls-off #readerDocument{
+  min-height:100%;
+  padding:0 0 18px;
+}
+
+body.controls-off .next-part-bar{
+  position:static;
+  bottom:auto;
+  margin-top:14px;
+}
+

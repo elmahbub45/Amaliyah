@@ -221,7 +221,7 @@ $('.sheet-card').onclick=e=>e.stopPropagation();
 
 window.addEventListener('popstate',()=>{if(sheetOpen)hideSheetOnly()});
 stage.addEventListener('click',e=>{
-  if(e.target.closest('button')||swiped){swiped=false;return}
+  if(e.target.closest('button')||e.target.closest('#nextPartBar')||swiped){swiped=false;return}
   document.body.classList.toggle('controls-off');scale=1;drawPage();
 });
 stage.addEventListener('touchstart',e=>{
