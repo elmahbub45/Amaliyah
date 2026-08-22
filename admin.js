@@ -25,6 +25,7 @@ async function boot(){
   bind();
   fillCategories();
   renderList();
+  if(innerWidth>820 && data.items?.length){ selectItem(data.items[0].id); }
   updateStatus(false);
 }
 function bind(){
@@ -106,6 +107,7 @@ function renderList(){
 }
 function selectItem(id){
   selectedId=id;renderList();
+  document.querySelector('.item-card.active')?.scrollIntoView({block:'nearest'});
   const x=getSelected();if(!x)return;
   $('#emptyEditor').classList.add('hidden');$('#editorContent').classList.remove('hidden');
   $('#editorHeading').textContent=x.title;$('#editorTypeBadge').textContent=x.type;
