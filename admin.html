@@ -12,7 +12,7 @@
   <header class="topbar">
     <div class="brand">
       <div class="brand-mark" aria-label="Logo Amaliyah">
-        <img src="./icons/icon-192.png" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+        <img src="./assets/icons/icon-192.png" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
         <span class="brand-fallback" hidden>A</span>
       </div>
       <div>
@@ -117,7 +117,6 @@
             <span class="mini-book-copy">
               <small id="previewCategory">KATEGORI</small>
               <b id="previewTitle">Judul Bacaan</b>
-              <span id="previewCover">Teks kartu</span>
             </span>
             <span id="previewType" class="mini-type">SINGLE</span>
           </div>
@@ -169,11 +168,6 @@
             </div>
           </details>
 
-          <label class="field span-2">
-            <span>Teks Cover / Kartu</span>
-            <textarea id="coverTextInput" rows="3" placeholder="Teks yang ingin disimpan untuk kartu/cover"></textarea>
-            <small>Boleh berbeda dari judul dan nama file.</small>
-          </label>
         </div>
 
         <div id="singleFields" class="section-box hidden">
@@ -191,24 +185,28 @@
                 <span class="field-title">PDF Bacaan</span>
                 <b id="singlePdfName">Belum memilih file baru</b>
                 <small>Pilih PDF jika ingin mengisi atau mengganti nama file. File fisik tetap diunggah ke R2.</small>
+                <small id="singlePageStatus" class="page-status">Jumlah halaman dibaca otomatis dari PDF.</small>
               </div>
-              <button id="singlePdfChooseBtn" class="ghost accent" type="button">Pilih PDF</button>
+              <div class="pdf-picker-actions">
+                <button id="singlePdfChooseBtn" class="ghost accent" type="button">Pilih PDF</button>
+                <button id="singlePagesEditBtn" class="text-action" type="button">Koreksi halaman</button>
+              </div>
               <input id="singlePdfPicker" type="file" accept="application/pdf,.pdf" hidden>
             </div>
-
-            <label class="field pages-field">
-              <span>Jumlah Halaman <small class="auto-label">otomatis</small></span>
-              <input id="singlePagesInput" type="number" min="1">
-            </label>
           </div>
 
-          <details class="technical-details pdf-technical">
+          <details class="technical-details pdf-technical" id="singleTechnicalDetails">
             <summary>Alamat PDF di R2 <small>dibuat otomatis</small></summary>
             <div class="technical-grid">
               <label class="field span-2">
                 <span>Path Virtual</span>
                 <input id="singleFileInput" type="text" autocomplete="off" placeholder="assets/pdf-v2/.../nama-file.pdf" readonly>
                 <small id="singleR2Key" class="r2-key">R2 key: —</small>
+              </label>
+              <label class="field page-correction-field">
+                <span>Koreksi Jumlah Halaman</span>
+                <input id="singlePagesInput" type="number" min="1">
+                <small>Biasanya tidak perlu diubah. Gunakan hanya jika hasil otomatis tidak sesuai.</small>
               </label>
               <button id="editSinglePathBtn" class="ghost tiny technical-edit-btn" type="button">Edit teknis</button>
             </div>
@@ -281,24 +279,18 @@
           <span class="field-title">PDF Bacaan</span>
           <b id="partPdfName">Belum memilih PDF</b>
           <small>Pilih file agar ID, path virtual, dan R2 key dibuat otomatis.</small>
+          <small id="partPageStatus" class="page-status">Jumlah halaman dibaca otomatis dari PDF.</small>
         </div>
         <button id="partPdfChooseBtn" class="ghost accent" type="button">Pilih PDF</button>
         <input id="partPdfPicker" type="file" accept="application/pdf,.pdf" hidden>
       </div>
 
-      <div class="dialog-inline-grid">
-        <label class="field pages-field">
-          <span>Jumlah Halaman <small class="auto-label">otomatis</small></span>
-          <input id="partPagesInput" type="number" min="1" value="1">
-        </label>
-
-        <div class="auto-managed-note compact-note">
-          <span class="auto-managed-icon">✓</span>
-          <span><b>Teknis otomatis</b><small>ID & key tidak perlu diketik.</small></span>
-        </div>
+      <div class="auto-managed-note compact-note">
+        <span class="auto-managed-icon">✓</span>
+        <span><b>Teknis otomatis</b><small>ID, path, key, dan jumlah halaman normalnya tidak perlu diketik.</small></span>
       </div>
 
-      <details class="technical-details dialog-technical">
+      <details class="technical-details dialog-technical" id="partTechnicalDetails">
         <summary>Detail teknis <small>opsional dilihat</small></summary>
         <div class="technical-grid">
           <label class="field">
@@ -309,6 +301,11 @@
             <span>Path Virtual</span>
             <input id="partFileInput" autocomplete="off" placeholder="assets/pdf-v2/.../nama-file.pdf" readonly>
             <small id="partR2Key" class="r2-key">R2 key: —</small>
+          </label>
+          <label class="field page-correction-field">
+            <span>Koreksi Jumlah Halaman</span>
+            <input id="partPagesInput" type="number" min="1" value="1">
+            <small>Gunakan hanya jika deteksi otomatis gagal atau tidak sesuai.</small>
           </label>
           <button id="editPartPathBtn" class="ghost tiny technical-edit-btn" type="button">Edit teknis</button>
         </div>

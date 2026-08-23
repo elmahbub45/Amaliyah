@@ -207,17 +207,6 @@ function migrateLegacyState(){
     }
   }
 
-  // Favorite migration: any favorited old sub-part becomes its parent collection/group.
-  try{
-    const fav=JSON.parse(store.getItem('amaliyah:favorites')||'[]');
-    if(Array.isArray(fav)){
-      const converted=fav.map(id=>{
-        if(getItem(id)) return id;
-        return resolvePart(id)?.parent.id;
-      }).filter(Boolean);
-      store.setItem('amaliyah:favorites',JSON.stringify([...new Set(converted)]));
-    }
-  }catch{}
 }
 migrateLegacyState();
 
@@ -354,7 +343,7 @@ function continueItem(id){
 
 function itemSearchText(item){
   const parts=(item.parts||[]).flatMap(p=>[p.title,p.arabicTitle]).filter(Boolean);
-  return [item.title,item.arabicTitle,item.category,item.coverText,...parts]
+  return [item.title,item.arabicTitle,item.category,...parts]
     .filter(Boolean).join(' ').toLocaleLowerCase('id-ID');
 }
 
@@ -449,45 +438,135 @@ function renderCollection(id){
   wrap.innerHTML=item.parts.map((part,i)=>{
     const pr=partProgress(part);
     const label=pr.page>1?`Terakhir hal. ${pr.page}/${pr.total}`:`${pr.total} halaman`;
-    return `<button class="collection-part" type="button" data-part="${part.id}">
-      <span class="part-number">${String(i+1).padStart(2,'0')}</span>
-      <span class="part-copy"><b>${part.title}</b><small>${label}</small></span>
-      <span class="chevron">›</span>
-    </button>`;
+    const fav=isPartFavorite(item.id,part.id);
+    return `<div class="collection-part-row">
+      <button class="collection-part" type="button" data-part="${part.id}">
+        <span class="part-number">${String(i+1).padStart(2,'0')}</span>
+        <span class="part-copy"><b>${part.title}</b><small>${label}</small></span>
+        <span class="chevron">›</span>
+      </button>
+      <button class="favorite-btn part-favorite-btn ${fav?'active':''}" type="button" data-part-favorite="${part.id}" aria-label="${fav?'Hapus dari favorit':'Tambahkan bagian ke favorit'}" title="${fav?'Hapus dari favorit':'Favoritkan bagian ini'}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>
+      </button>
+    </div>`;
   }).join('');
 
   wrap.querySelectorAll('[data-part]').forEach(btn=>btn.onclick=()=>openPart(item.id,btn.dataset.part));
+  wrap.querySelectorAll('[data-part-favorite]').forEach(btn=>btn.onclick=e=>{
+    e.stopPropagation();
+    togglePartFavorite(item.id,btn.dataset.partFavorite);
+    renderCollection(item.id);
+  });
 }
 
 const FAVORITES_KEY='amaliyah:favorites';
+function favoriteItemKey(itemId){return `item:${itemId}`}
+function favoritePartKey(itemId,partId){return `part:${itemId}:${partId}`}
+
+function normalizeFavoriteKey(value){
+  const key=String(value||'');
+
+  if(key.startsWith('item:')){
+    const itemId=key.slice(5);
+    return getItem(itemId)?favoriteItemKey(itemId):null;
+  }
+
+  if(key.startsWith('part:')){
+    const rest=key.slice(5);
+    const split=rest.indexOf(':');
+    if(split<1)return null;
+    const itemId=rest.slice(0,split);
+    const partId=rest.slice(split+1);
+    const item=getItem(itemId);
+    const part=item?.type==='single'?null:item?.parts?.find(p=>p.id===partId);
+    return item&&part?favoritePartKey(itemId,partId):null;
+  }
+
+  // Kompatibilitas favorit versi lama: ID bacaan tetap menjadi favorit utama,
+  // sedangkan ID sub-bacaan dipertahankan sebagai favorit bagian (tidak lagi
+  // dipaksa menjadi favorit induk).
+  const item=getItem(key);
+  if(item)return favoriteItemKey(item.id);
+
+  const found=resolvePart(key);
+  if(found){
+    return found.parent.type==='single'
+      ? favoriteItemKey(found.parent.id)
+      : favoritePartKey(found.parent.id,found.part.id);
+  }
+
+  return null;
+}
+
 function getFavorites(){
   try{
-    const v=JSON.parse(store.getItem(FAVORITES_KEY)||'[]');
-    return Array.isArray(v)?v.filter(id=>getItem(id)):[];
+    const raw=JSON.parse(store.getItem(FAVORITES_KEY)||'[]');
+    if(!Array.isArray(raw))return [];
+    const normalized=[...new Set(raw.map(normalizeFavoriteKey).filter(Boolean))];
+    if(JSON.stringify(raw)!==JSON.stringify(normalized)){
+      store.setItem(FAVORITES_KEY,JSON.stringify(normalized));
+    }
+    return normalized;
   }catch{return []}
 }
-function saveFavorites(ids){store.setItem(FAVORITES_KEY,JSON.stringify([...new Set(ids)]))}
-function isFavorite(id){return getFavorites().includes(id)}
-function toggleFavorite(id){
-  let ids=getFavorites();
-  ids=ids.includes(id)?ids.filter(x=>x!==id):[...ids,id];
-  saveFavorites(ids);
+function saveFavorites(keys){
+  const normalized=[...new Set(keys.map(normalizeFavoriteKey).filter(Boolean))];
+  store.setItem(FAVORITES_KEY,JSON.stringify(normalized));
+}
+function isFavorite(id){return getFavorites().includes(favoriteItemKey(id))}
+function isPartFavorite(itemId,partId){return getFavorites().includes(favoritePartKey(itemId,partId))}
+function toggleFavoriteKey(key){
+  let keys=getFavorites();
+  keys=keys.includes(key)?keys.filter(x=>x!==key):[...keys,key];
+  saveFavorites(keys);
   renderLibrary(activeLibraryCategory);
   renderHomeFavorites();
 }
+function toggleFavorite(id){toggleFavoriteKey(favoriteItemKey(id))}
+function togglePartFavorite(itemId,partId){toggleFavoriteKey(favoritePartKey(itemId,partId))}
+
+function resolveFavoriteEntry(key){
+  if(key.startsWith('item:')){
+    const item=getItem(key.slice(5));
+    return item?{key,kind:'item',item,part:null}:null;
+  }
+  if(key.startsWith('part:')){
+    const rest=key.slice(5);
+    const split=rest.indexOf(':');
+    if(split<1)return null;
+    const item=getItem(rest.slice(0,split));
+    const part=item?.parts?.find(p=>p.id===rest.slice(split+1));
+    return item&&part?{key,kind:'part',item,part}:null;
+  }
+  return null;
+}
+
 function renderHomeFavorites(){
   const section=$('#favoritesSection'),wrap=$('#favoriteBooks');
   if(!section||!wrap)return;
-  const fav=getFavorites().map(getItem).filter(Boolean);
+  const fav=getFavorites().map(resolveFavoriteEntry).filter(Boolean);
   section.classList.toggle('hidden',!fav.length);
   if(!fav.length){wrap.innerHTML='';return}
 
-  wrap.innerHTML=fav.map(item=>`<button class="favorite-card" type="button" data-fav="${item.id}">
-    <span class="favorite-icon">${item.icon||'◈'}</span>
-    <span class="favorite-copy"><b>${item.title}</b><small>${item.type==='collection'?'Koleksi':item.type==='group'?'Kelompok':item.category}</small></span>
-    <span class="favorite-star">★</span>
-  </button>`).join('');
-  wrap.querySelectorAll('[data-fav]').forEach(btn=>btn.onclick=()=>openItem(btn.dataset.fav));
+  wrap.innerHTML=fav.map(entry=>{
+    const isPart=entry.kind==='part';
+    const title=isPart?entry.part.title:entry.item.title;
+    const meta=isPart
+      ? `${entry.item.title} • Bagian`
+      : (entry.item.type==='collection'?'Koleksi':entry.item.type==='group'?'Kelompok':entry.item.category);
+    return `<button class="favorite-card ${isPart?'favorite-card-part':''}" type="button" data-fav-key="${entry.key}">
+      <span class="favorite-icon">${entry.item.icon||'◈'}</span>
+      <span class="favorite-copy"><b>${title}</b><small>${meta}</small></span>
+      <span class="favorite-star">★</span>
+    </button>`;
+  }).join('');
+
+  wrap.querySelectorAll('[data-fav-key]').forEach(btn=>btn.onclick=()=>{
+    const entry=resolveFavoriteEntry(btn.dataset.favKey);
+    if(!entry)return;
+    if(entry.kind==='part')openPart(entry.item.id,entry.part.id);
+    else openItem(entry.item.id);
+  });
 }
 
 function recordHistoryEntry(itemId,partId,page=1){

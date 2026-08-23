@@ -2088,3 +2088,38 @@ dialog.batch-dialog{width:min(780px,calc(100% - 28px))}
   font-size:7.5px;
   font-weight:750;
 }
+
+/* =========================================================
+   V2.34 — Comfort: halaman otomatis + logo + tanpa cover
+   ========================================================= */
+.pdf-workflow-grid{grid-template-columns:minmax(0,1fr)}
+.pdf-picker-actions{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:5px;
+}
+.text-action{
+  border:0;
+  background:transparent;
+  color:#4b6d62;
+  padding:2px 3px;
+  font-size:8.5px;
+  font-weight:700;
+  cursor:pointer;
+}
+.text-action:hover{color:var(--green);text-decoration:underline}
+.page-status{color:#4f7568!important;font-weight:650}
+.page-correction-field{align-self:start}
+.compact-note{margin-top:10px}
+.batch-pages-manual{min-width:92px}
+.batch-pages-manual span{color:#9a5c3e;font-weight:750}
+.preview-hero p{display:none}
+
+@media(max-width:620px){
+  .pdf-picker-card{align-items:flex-start;flex-wrap:wrap}
+  .pdf-picker-actions{width:100%;flex-direction:row;align-items:center;justify-content:flex-end}
+  .technical-grid{grid-template-columns:1fr}
+  .technical-grid .span-2{grid-column:auto}
+}

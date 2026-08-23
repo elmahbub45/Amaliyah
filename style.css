@@ -1248,3 +1248,31 @@ body{
   }
 }
 
+
+/* =========================================================
+   V2.34 — Favorite sub-bacaan + list tanpa cover
+   ========================================================= */
+.collection-part-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 42px;
+  gap:6px;
+  align-items:stretch;
+}
+.collection-part-row+.collection-part-row{margin-top:8px}
+.collection-part-row .collection-part{margin:0}
+.collection-part-row .part-favorite-btn{
+  min-height:64px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--surface);
+}
+.collection-part-row .part-favorite-btn.active{
+  border-color:#ead8ad;
+  background:#fbf5e9;
+}
+.favorite-card-part .favorite-copy small{color:#6f827a}
+
+/* Cover lama tidak lagi dipakai pada daftar/kartu bacaan. */
+.cover,.favorite-cover{display:none!important}
+.about-app-mark{overflow:hidden;padding:3px}
+.about-app-mark img{width:100%;height:100%;display:block;object-fit:cover;border-radius:inherit}
