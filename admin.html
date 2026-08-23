@@ -29,10 +29,10 @@
 
     <div class="top-actions">
       <button id="backupBtn" class="top-btn" type="button" title="Backup & pemulihan">
-        <span>↶</span><b>Backup</b>
+        <span class="ui-icon i-backup" aria-hidden="true"></span><b>Backup</b>
       </button>
       <button id="saveDraftBtn" class="top-btn primary-soft" type="button" title="Simpan draft lokal">
-        <span>✓</span><b>Simpan Draft</b>
+        <span class="ui-icon i-save" aria-hidden="true"></span><b>Simpan Draft</b>
       </button>
     </div>
   </header>
@@ -73,7 +73,7 @@
         <div id="categoryTree" class="category-tree" aria-label="Daftar kategori"></div>
 
         <div class="category-pane-note">
-          <span>⌘</span>
+          <span class="ui-icon i-info" aria-hidden="true"></span>
           <small>Folder yang memiliki subfolder tetap Group. Folder terakhir menjadi Collection.</small>
         </div>
       </aside>
@@ -85,14 +85,14 @@
             <nav id="explorerBreadcrumb" class="explorer-breadcrumb" aria-label="Lokasi Explorer"></nav>
           </div>
           <div class="sidebar-add-actions">
-            <button id="batchImportBtn" class="ghost small" type="button">⇧ Import</button>
-            <button id="addItemBtn" class="primary small" type="button">+ Tambah</button>
+            <button id="batchImportBtn" class="ghost small icon-label" type="button"><span class="ui-icon i-import" aria-hidden="true"></span><span>Import</span></button>
+            <button id="addItemBtn" class="primary small icon-label" type="button"><span class="ui-icon i-plus" aria-hidden="true"></span><span>Tambah</span></button>
           </div>
         </div>
 
         <div class="toolbar explorer-toolbar">
           <div class="search-wrap">
-            <span>⌕</span>
+            <span class="ui-icon i-search" aria-hidden="true"></span>
             <input id="searchInput" type="search" placeholder="Cari judul, bagian, ID bacaan…">
           </div>
           <select id="categoryFilter" aria-label="Filter kategori"></select>
@@ -103,8 +103,8 @@
             <option value="group">Group</option>
           </select>
           <div class="view-switch" aria-label="Tampilan Explorer">
-            <button id="listViewBtn" type="button" class="view-btn active" title="List">☷</button>
-            <button id="gridViewBtn" type="button" class="view-btn" title="Grid">▦</button>
+            <button id="listViewBtn" type="button" class="view-btn active" title="List" aria-label="Tampilan list"><span class="ui-icon i-list" aria-hidden="true"></span></button>
+            <button id="gridViewBtn" type="button" class="view-btn" title="Grid" aria-label="Tampilan grid"><span class="ui-icon i-grid" aria-hidden="true"></span></button>
           </div>
         </div>
 
@@ -114,8 +114,8 @@
         <div id="itemList" class="item-list"></div>
 
         <div class="sidebar-foot">
-          <span>⌑</span>
-          <small>Klik folder untuk membuka. Klik bacaan untuk mengedit. Drag tetap tersedia untuk mengatur urutan.</small>
+          <span class="ui-icon i-move" aria-hidden="true"></span>
+          <small>Drag bacaan ke folder/kategori untuk memindahkan. Drop target akan menyala seperti File Explorer.</small>
         </div>
       </section>
     </section>
@@ -284,14 +284,14 @@
     </div>
 
     <div class="actions">
-      <button id="undoStepBtn" class="ghost" type="button" disabled title="Undo (Ctrl+Z)">↶ Undo</button>
-      <button id="redoStepBtn" class="ghost" type="button" disabled title="Redo (Ctrl+Y / Ctrl+Shift+Z)">↷ Redo</button>
-      <button id="undoBtn" class="ghost" type="button">Batalkan Semua</button>
-      <button id="reloadBtn" class="ghost" type="button">Muat Ulang Server</button>
-      <button id="importBtn" class="ghost" type="button">Import JSON</button>
+      <button id="undoStepBtn" class="ghost icon-label" type="button" disabled title="Undo (Ctrl+Z)"><span class="ui-icon i-undo" aria-hidden="true"></span><span>Undo</span></button>
+      <button id="redoStepBtn" class="ghost icon-label" type="button" disabled title="Redo (Ctrl+Y / Ctrl+Shift+Z)"><span class="ui-icon i-redo" aria-hidden="true"></span><span>Redo</span></button>
+      <button id="undoBtn" class="ghost icon-label" type="button"><span class="ui-icon i-trash-restore" aria-hidden="true"></span><span>Batalkan Semua</span></button>
+      <button id="reloadBtn" class="ghost icon-label" type="button"><span class="ui-icon i-refresh" aria-hidden="true"></span><span>Muat Ulang Server</span></button>
+      <button id="importBtn" class="ghost icon-label" type="button"><span class="ui-icon i-file-import" aria-hidden="true"></span><span>Import JSON</span></button>
       <input id="importFile" type="file" accept=".json,application/json" hidden>
-      <button id="validateBtn" class="ghost accent" type="button">Cek Data</button>
-      <button id="exportBtn" class="primary" type="button">Preview & Download</button>
+      <button id="validateBtn" class="ghost accent icon-label" type="button"><span class="ui-icon i-shield" aria-hidden="true"></span><span>Cek Data</span></button>
+      <button id="exportBtn" class="primary icon-label" type="button"><span class="ui-icon i-download" aria-hidden="true"></span><span>Preview & Download</span></button>
     </div>
   </footer>
 

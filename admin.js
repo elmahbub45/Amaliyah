@@ -13,6 +13,8 @@ let editingPartIndex=-1;
 let dirty=false;
 let mainDragIndex=null;
 let partDragIndex=null;
+let explorerDragPayload=null;
+let workspaceResizeTimer=null;
 let autosaveTimer=null;
 let confirmResolver=null;
 let batchEntries=[];
@@ -54,7 +56,9 @@ async function boot(){
 
   selectedId=null;
   showEmptyEditor();
+  requestAnimationFrame(syncWorkspaceHeight);
 }
+
 
 async function fetchBooks(){
   const r=await fetch('./books.json',{cache:'no-store'});
@@ -172,6 +176,11 @@ function bind(){
     }
   });
 
+  window.addEventListener('resize',()=>{
+    clearTimeout(workspaceResizeTimer);
+    workspaceResizeTimer=setTimeout(syncWorkspaceHeight,60);
+  });
+
   window.addEventListener('keydown',e=>{
     const mod=e.ctrlKey||e.metaKey;
     const key=e.key.toLowerCase();
@@ -200,6 +209,21 @@ function bind(){
   });
 }
 
+
+
+function syncWorkspaceHeight(){
+  if(window.innerWidth<=1040){
+    document.documentElement.style.removeProperty('--admin-workspace-height');
+    return;
+  }
+  const layout=$('.layout');
+  const footer=$('.bottom-actions');
+  if(!layout||!footer)return;
+  const top=Math.max(0,layout.getBoundingClientRect().top);
+  const footerHeight=Math.max(64,footer.getBoundingClientRect().height||0);
+  const available=Math.max(470,Math.floor(window.innerHeight-top-footerHeight-12));
+  document.documentElement.style.setProperty('--admin-workspace-height',`${available}px`);
+}
 
 /* ===================== UNDO / REDO SESSION ===================== */
 function initHistory(){
@@ -408,13 +432,13 @@ function renderCategoryTree(){
     const roots=explorerRoots(category);
     const nested=active && chain.length
       ? `<div class="tree-branch">${chain.map((item,i)=>`
-          <button type="button" class="category-tree-row tree-child ${item.id===explorerItemId?'active':''}" data-tree-item="${esc(item.id)}" style="--tree-depth:${i+1}">
+          <button type="button" class="category-tree-row tree-child ${item.id===explorerItemId?'active':''}" data-tree-item="${esc(item.id)}" data-drop-item="${esc(item.id)}" style="--tree-depth:${i+1}">
             <span class="tree-folder ${item.type==='single'?'tree-file':''}" aria-hidden="true"></span>
             <span class="tree-label"><b>${esc(item.title||item.id)}</b><small>${esc(item.type)}</small></span>
           </button>`).join('')}</div>`
       : '';
     return `<div class="tree-category-wrap">
-      <button type="button" class="category-tree-row ${active&&!explorerItemId?'active':''}" data-tree-category="${esc(category)}">
+      <button type="button" class="category-tree-row ${active&&!explorerItemId?'active':''}" data-tree-category="${esc(category)}" data-drop-category="${esc(category)}">
         <span class="tree-folder" aria-hidden="true"></span>
         <span class="tree-label"><b>${esc(category)}</b><small>${roots.length} item</small></span>
       </button>${nested}
@@ -436,6 +460,10 @@ function renderCategoryTree(){
     showEmptyEditor();
     renderList();
   });
+
+  bindExplorerDropTarget(root,{kind:'root'});
+  $$('[data-drop-category]',host).forEach(btn=>bindExplorerDropTarget(btn,{kind:'category',category:btn.dataset.dropCategory}));
+  $$('[data-drop-item]',host).forEach(btn=>bindExplorerDropTarget(btn,{kind:'item',itemId:btn.dataset.dropItem}));
 }
 
 function uniqueItemId(base){
@@ -685,6 +713,283 @@ function findExplorerParent(itemId){
   return pid?data.items.find(x=>x.id===pid)||null:null;
 }
 
+function detachItemFromGroups(itemId){
+  let changed=false;
+  data.items.forEach(parent=>{
+    if(parent.type!=='group'||!Array.isArray(parent.parts))return;
+    const before=parent.parts.length;
+    parent.parts=parent.parts.filter(p=>p.itemId!==itemId);
+    if(parent.parts.length!==before)changed=true;
+  });
+  return changed;
+}
+
+function isExplorerDescendant(candidateId,ancestorId){
+  let current=findExplorerParent(candidateId);
+  const guard=new Set();
+  while(current && !guard.has(current.id)){
+    if(current.id===ancestorId)return true;
+    guard.add(current.id);
+    current=findExplorerParent(current.id);
+  }
+  return false;
+}
+
+function explorerDragStart(payload,row,e){
+  explorerDragPayload=payload;
+  row?.classList.add('drag-source');
+  document.body.classList.add('explorer-dragging');
+  try{
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain',JSON.stringify(payload));
+  }catch{}
+}
+
+function explorerDragEnd(){
+  explorerDragPayload=null;
+  document.body.classList.remove('explorer-dragging');
+  $$('.drag-source,.drop-target,.drop-invalid').forEach(el=>el.classList.remove('drag-source','drop-target','drop-invalid'));
+}
+
+function canDropOnCategory(payload){
+  return !!payload && payload.kind==='item';
+}
+
+function canDropOnItem(payload,target){
+  if(!payload||!target)return false;
+  if(payload.kind==='item'){
+    if(payload.itemId===target.id)return false;
+    const source=data.items.find(x=>x.id===payload.itemId);
+    if(!source)return false;
+    if(target.type==='collection')return source.type==='single';
+    if(target.type==='group'){
+      if(source.type==='group' && isExplorerDescendant(target.id,source.id))return false;
+      return true;
+    }
+    return !findExplorerParent(source.id) && !findExplorerParent(target.id);
+  }
+  if(payload.kind==='part'){
+    if(target.type==='single')return false;
+    return true;
+  }
+  return false;
+}
+
+function bindExplorerDropTarget(el,descriptor){
+  if(!el)return;
+  if(el.dataset.explorerDropBound==='1')return;
+  el.dataset.explorerDropBound='1';
+  const targetItem=descriptor.itemId?data.items.find(x=>x.id===descriptor.itemId):null;
+  const allowed=()=>descriptor.kind==='category'||descriptor.kind==='root'
+    ?canDropOnCategory(explorerDragPayload)
+    :canDropOnItem(explorerDragPayload,targetItem);
+
+  el.addEventListener('dragenter',e=>{
+    if(!explorerDragPayload)return;
+    if(allowed()){
+      e.preventDefault();
+      el.classList.add('drop-target');
+    }else{
+      el.classList.add('drop-invalid');
+    }
+  });
+  el.addEventListener('dragover',e=>{
+    if(!explorerDragPayload)return;
+    if(allowed()){
+      e.preventDefault();
+      try{e.dataTransfer.dropEffect='move'}catch{}
+      el.classList.add('drop-target');
+      el.classList.remove('drop-invalid');
+    }
+  });
+  el.addEventListener('dragleave',e=>{
+    if(el.contains(e.relatedTarget))return;
+    el.classList.remove('drop-target','drop-invalid');
+  });
+  el.addEventListener('drop',async e=>{
+    if(!explorerDragPayload)return;
+    e.preventDefault();
+    e.stopPropagation();
+    el.classList.remove('drop-target','drop-invalid');
+    const payload=clone(explorerDragPayload);
+    if(descriptor.kind==='category')await dropExplorerOnCategory(payload,descriptor.category);
+    else if(descriptor.kind==='root')await dropExplorerOnRoot(payload);
+    else await dropExplorerOnItem(payload,descriptor.itemId);
+    explorerDragEnd();
+  });
+}
+
+async function dropExplorerOnCategory(payload,category){
+  if(!canDropOnCategory(payload)){
+    toast('Hanya bacaan/folder yang dapat dipindahkan ke kategori.','warn');
+    return;
+  }
+  const item=data.items.find(x=>x.id===payload.itemId);
+  if(!item)return;
+  const oldParent=findExplorerParent(item.id);
+  const same=!oldParent && !item.hidden && item.category===category;
+  if(same)return;
+
+  detachItemFromGroups(item.id);
+  item.hidden=false;
+  item.category=category;
+  explorerCategory=category;
+  explorerItemId=null;
+  $('#categoryFilter').value=category;
+  markDirty(`"${item.title}" dipindahkan ke kategori ${category}`);
+  renderList();
+  selectItem(item.id);
+  toast(`${item.title} dipindahkan ke ${category}.`,'ok');
+}
+
+async function dropExplorerOnRoot(payload){
+  if(!canDropOnCategory(payload))return;
+  const item=data.items.find(x=>x.id===payload.itemId);
+  if(!item)return;
+  const parent=findExplorerParent(item.id);
+  if(!parent&&!item.hidden)return;
+  detachItemFromGroups(item.id);
+  item.hidden=false;
+  explorerItemId=null;
+  markDirty(`"${item.title}" dilepas dari folder induk`);
+  renderList();
+  selectItem(item.id);
+  toast(`${item.title} kembali menjadi bacaan utama.`,'ok');
+}
+
+function removeDirectPart(parent,index){
+  if(!parent||!Array.isArray(parent.parts)||index<0||index>=parent.parts.length)return null;
+  return parent.parts.splice(index,1)[0]||null;
+}
+
+async function dropExplorerOnItem(payload,targetId){
+  const target=data.items.find(x=>x.id===targetId);
+  if(!target||!canDropOnItem(payload,target)){
+    toast('Item tersebut tidak dapat diletakkan di folder ini.','warn');
+    return;
+  }
+
+  if(payload.kind==='item'){
+    const source=data.items.find(x=>x.id===payload.itemId);
+    if(!source)return;
+
+    if(target.type==='collection'){
+      const ok=await confirmInternal(
+        'Pindahkan menjadi Bagian?',
+        `"${source.title}" akan menjadi bagian dari Collection "${target.title}". PDF tidak diunggah ulang dan ID bagian tetap dipertahankan.`,
+        'Pindahkan',
+        'Batal'
+      );
+      if(!ok)return;
+      createBackup(`Sebelum drag ${source.title} ke ${target.title}`);
+      detachItemFromGroups(source.id);
+      target.parts=Array.isArray(target.parts)?target.parts:[];
+      target.parts.push({id:source.id,title:source.title,file:source.file||'',pages:Math.max(1,Number(source.pages)||1)});
+      data.items=data.items.filter(x=>x.id!==source.id);
+      explorerCategory=target.category||explorerCategory;
+      explorerItemId=target.id;
+      selectedId=target.id;
+      markDirty(`${source.title} dipindahkan menjadi bagian ${target.title}`);
+      selectItem(target.id);
+      renderList();
+      toast(`${source.title} sekarang menjadi bagian ${target.title}.`,'ok');
+      return;
+    }
+
+    if(target.type==='group'){
+      const oldParent=findExplorerParent(source.id);
+      if(oldParent?.id===target.id)return;
+      const ok=await confirmInternal(
+        'Pindahkan ke folder?',
+        `"${source.title}" akan dipindahkan ke dalam Group "${target.title}". Struktur PDF tidak berubah.`,
+        'Pindahkan',
+        'Batal'
+      );
+      if(!ok)return;
+      createBackup(`Sebelum drag ${source.title} ke Group ${target.title}`);
+      detachItemFromGroups(source.id);
+      source.hidden=true;
+      source.category=target.category||source.category;
+      target.parts=Array.isArray(target.parts)?target.parts:[];
+      if(!target.parts.some(p=>p.itemId===source.id)){
+        target.parts.push({id:uniqueGlobal(`${target.id}-ref-${source.id}`),title:source.title,itemId:source.id});
+      }
+      explorerCategory=target.category||explorerCategory;
+      explorerItemId=target.id;
+      selectedId=target.id;
+      markDirty(`${source.title} dipindahkan ke Group ${target.title}`);
+      selectItem(target.id);
+      renderList();
+      toast(`${source.title} dipindahkan ke ${target.title}.`,'ok');
+      return;
+    }
+
+    // Drop onto another document keeps the familiar reorder behavior.
+    const from=data.items.indexOf(source);
+    const to=data.items.indexOf(target);
+    if(from>=0&&to>=0)moveMainItem(from,to);
+    return;
+  }
+
+  if(payload.kind==='part'){
+    const sourceParent=data.items.find(x=>x.id===payload.parentId);
+    if(!sourceParent||!Array.isArray(sourceParent.parts))return;
+    const part=sourceParent.parts[payload.partIndex];
+    if(!part||part.itemId){
+      toast('Folder referensi dipindahkan sebagai folder, bukan sebagai PDF bagian.','warn');
+      return;
+    }
+    if(sourceParent.id===target.id)return;
+    const ok=await confirmInternal(
+      'Pindahkan bagian?',
+      `"${part.title}" akan dipindahkan dari "${sourceParent.title}" ke "${target.title}".`,
+      'Pindahkan',
+      'Batal'
+    );
+    if(!ok)return;
+    createBackup(`Sebelum drag bagian ${part.title}`);
+    const moved=removeDirectPart(sourceParent,payload.partIndex);
+    if(!moved)return;
+    target.parts=Array.isArray(target.parts)?target.parts:[];
+    target.parts.push(moved);
+    explorerCategory=target.category||explorerCategory;
+    explorerItemId=target.id;
+    selectedId=target.id;
+    markDirty(`${moved.title} dipindahkan ke ${target.title}`);
+    selectItem(target.id);
+    renderList();
+    toast(`${moved.title} dipindahkan ke ${target.title}.`,'ok');
+  }
+}
+
+function bindExplorerPartReorder(list){
+  $$('.part-file[data-part-index]',list).forEach(row=>{
+    row.draggable=true;
+    row.addEventListener('dragstart',e=>{
+      const parent=data.items.find(x=>x.id===explorerItemId);
+      if(!parent)return;
+      explorerDragStart({kind:'part',parentId:parent.id,partIndex:Number(row.dataset.partIndex)},row,e);
+    });
+    row.addEventListener('dragend',explorerDragEnd);
+    row.addEventListener('dragover',e=>{
+      if(explorerDragPayload?.kind!=='part'||explorerDragPayload.parentId!==explorerItemId)return;
+      e.preventDefault();row.classList.add('drop-target');
+    });
+    row.addEventListener('dragleave',()=>row.classList.remove('drop-target'));
+    row.addEventListener('drop',e=>{
+      if(explorerDragPayload?.kind!=='part'||explorerDragPayload.parentId!==explorerItemId)return;
+      e.preventDefault();e.stopPropagation();row.classList.remove('drop-target');
+      const parent=data.items.find(x=>x.id===explorerItemId);
+      const from=Number(explorerDragPayload.partIndex),to=Number(row.dataset.partIndex);
+      if(parent&&from!==to&&from>=0&&to>=0){
+        const [moved]=parent.parts.splice(from,1);parent.parts.splice(to,0,moved);
+        markDirty('Urutan bagian di Explorer diubah');renderList();renderParts();
+      }
+      explorerDragEnd();
+    });
+  });
+}
+
 function renderExplorerBreadcrumb(){
   const host=$('#explorerBreadcrumb');
   if(!host)return;
@@ -710,6 +1015,12 @@ function renderExplorerBreadcrumb(){
     else explorerItemId=btn.dataset.crumbId;
     selectedId=null;showEmptyEditor();renderList();
   });
+  $$('[data-crumb-kind]',host).forEach(btn=>{
+    const kind=btn.dataset.crumbKind;
+    if(kind==='root')bindExplorerDropTarget(btn,{kind:'root'});
+    else if(kind==='category')bindExplorerDropTarget(btn,{kind:'category',category:explorerCategory});
+    else bindExplorerDropTarget(btn,{kind:'item',itemId:btn.dataset.crumbId});
+  });
   renderCategoryTree();
 }
 
@@ -731,7 +1042,7 @@ function explorerCardForItem(x,index){
   const countValue=x.type==='single'?Math.max(1,Number(x.pages)||1):(x.parts||[]).length;
   const countLabel=x.type==='single'?'hal.':'isi';
   const typeLabel=x.type==='group'?'Group':x.type==='collection'?'Collection':'Single';
-  return `<div class="explorer-entry ${isFolder?'is-folder':'is-file'} ${x.id===selectedId?'active':''}" draggable="${!x.hidden}" data-id="${esc(x.id)}" data-main-index="${index}">
+  return `<div class="explorer-entry ${isFolder?'is-folder':'is-file'} ${x.id===selectedId?'active':''}" draggable="true" data-id="${esc(x.id)}" data-main-index="${index}">
     <button class="explorer-open" type="button" data-open-explorer="${esc(x.id)}" title="${isFolder?'Buka folder':'Edit bacaan'}">
       <span class="explorer-icon ${isFolder?'folder-icon':'file-icon'}" aria-hidden="true"></span>
       <span class="explorer-entry-copy"><b>${esc(x.title||'(Tanpa judul)')}</b><small>${isFolder?'Folder bacaan':'Dokumen PDF'}</small></span>
@@ -750,7 +1061,7 @@ function explorerCardForPart(parent,p,i){
     const child=data.items.find(x=>x.id===p.itemId);
     return child?explorerCardForItem(child,data.items.indexOf(child)):'';
   }
-  return `<div class="explorer-entry is-file part-file" data-part-index="${i}">
+  return `<div class="explorer-entry is-file part-file" draggable="true" data-part-index="${i}">
     <button class="explorer-open" type="button" data-edit-part-index="${i}">
       <span class="explorer-icon file-icon" aria-hidden="true"></span>
       <span class="explorer-entry-copy"><b>${esc(p.title||'(Tanpa judul)')}</b><small>Dokumen PDF</small></span>
@@ -778,7 +1089,7 @@ function renderList(){
   let html='';
   if(!explorerCategory && !explorerItemId && !q && !type){
     const cats=categories();
-    html=cats.map(c=>`<div class="explorer-entry is-folder category-folder"><button class="explorer-open" type="button" data-open-category="${esc(c)}"><span class="explorer-icon folder-icon" aria-hidden="true"></span><span class="explorer-entry-copy"><b>${esc(c)}</b><small>Folder kategori</small></span></button><span class="explorer-col explorer-col-type"><small>Kategori</small></span><span class="explorer-col explorer-col-count"><b>${explorerRoots(c).length}</b><small>item</small></span><div class="explorer-entry-actions"></div></div>`).join('');
+    html=cats.map(c=>`<div class="explorer-entry is-folder category-folder" data-drop-category-entry="${esc(c)}"><button class="explorer-open" type="button" data-open-category="${esc(c)}"><span class="explorer-icon folder-icon" aria-hidden="true"></span><span class="explorer-entry-copy"><b>${esc(c)}</b><small>Folder kategori</small></span></button><span class="explorer-col explorer-col-type"><small>Kategori</small></span><span class="explorer-col explorer-col-count"><b>${explorerRoots(c).length}</b><small>item</small></span><div class="explorer-entry-actions"></div></div>`).join('');
   }else if(explorerItemId){
     const parent=data.items.find(x=>x.id===explorerItemId);
     if(!parent){explorerItemId=null;return renderList();}
@@ -802,21 +1113,25 @@ function renderList(){
   list.innerHTML=html;
 
   $$('[data-open-category]',list).forEach(btn=>btn.onclick=()=>{explorerCategory=btn.dataset.openCategory;explorerItemId=null;$('#categoryFilter').value=explorerCategory;selectedId=null;showEmptyEditor();renderList();});
+  $$('[data-drop-category-entry]',list).forEach(row=>bindExplorerDropTarget(row,{kind:'category',category:row.dataset.dropCategoryEntry}));
   $$('[data-open-explorer]',list).forEach(btn=>btn.onclick=()=>openExplorerItem(btn.dataset.openExplorer));
   $$('[data-edit-explorer]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();selectItem(btn.dataset.editExplorer);});
   $$('[data-edit-part-index]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();const i=Number(btn.dataset.editPartIndex);const parent=data.items.find(x=>x.id===explorerItemId);if(parent){selectedId=parent.id;selectItem(parent.id);openPartDialog(i);}});
 
-  // Double click folder = open; single click = select/edit.
+  // Double click folder = open; drag = move like a file explorer.
   $$('.explorer-entry[data-id]',list).forEach(row=>{
     row.ondblclick=()=>{const id=row.dataset.id;const item=data.items.find(x=>x.id===id);if(item?.type!=='single')openExplorerItem(id);};
-    if(row.getAttribute('draggable')==='true'){
-      row.addEventListener('dragstart',e=>{mainDragIndex=Number(row.dataset.mainIndex);row.classList.add('dragging');try{e.dataTransfer.effectAllowed='move'}catch{}});
-      row.addEventListener('dragend',()=>{mainDragIndex=null;row.classList.remove('dragging');});
-      row.addEventListener('dragover',e=>{e.preventDefault();row.classList.add('drag-over');});
-      row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
-      row.addEventListener('drop',e=>{e.preventDefault();row.classList.remove('drag-over');const to=Number(row.dataset.mainIndex);if(mainDragIndex!==null&&mainDragIndex!==to)moveMainItem(mainDragIndex,to);});
-    }
+    row.addEventListener('dragstart',e=>{
+      const id=row.dataset.id;
+      const item=data.items.find(x=>x.id===id);
+      if(!item)return;
+      mainDragIndex=Number(row.dataset.mainIndex);
+      explorerDragStart({kind:'item',itemId:id},row,e);
+    });
+    row.addEventListener('dragend',()=>{mainDragIndex=null;explorerDragEnd();});
+    bindExplorerDropTarget(row,{kind:'item',itemId:row.dataset.id});
   });
+  bindExplorerPartReorder(list);
   $$('[data-main-up]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();moveMainItem(Number(btn.dataset.mainUp),Number(btn.dataset.mainUp)-1);});
   $$('[data-main-down]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();moveMainItem(Number(btn.dataset.mainDown),Number(btn.dataset.mainDown)+1);});
 
