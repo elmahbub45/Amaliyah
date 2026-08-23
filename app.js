@@ -1,6 +1,165 @@
 const $ = s => document.querySelector(s);
 const store = localStorage;
 
+function ensureAppDialogStyles(){
+  if(document.getElementById('amaliyah-dialog-style'))return;
+
+  const style=document.createElement('style');
+  style.id='amaliyah-dialog-style';
+  style.textContent=`
+    .amaliyah-dialog-backdrop{
+      position:fixed;
+      inset:0;
+      z-index:99999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+      background:rgba(8,29,24,.58);
+      backdrop-filter:blur(4px);
+      -webkit-backdrop-filter:blur(4px);
+    }
+    .amaliyah-dialog-card{
+      width:min(100%,390px);
+      border-radius:26px;
+      padding:24px 22px 18px;
+      background:#fffdf8;
+      color:#24352f;
+      box-shadow:0 24px 70px rgba(0,0,0,.25);
+      border:1px solid rgba(175,139,65,.22);
+      animation:amaliyahDialogIn .18s ease-out;
+    }
+    .amaliyah-dialog-brand{
+      display:flex;
+      align-items:center;
+      gap:11px;
+      margin-bottom:14px;
+      font-size:19px;
+      font-weight:800;
+      color:#0d5b49;
+    }
+    .amaliyah-dialog-mark{
+      width:38px;
+      height:38px;
+      border-radius:13px;
+      display:grid;
+      place-items:center;
+      background:#0d5b49;
+      color:#e5bd63;
+      font-family:Georgia,serif;
+      font-size:21px;
+      font-weight:800;
+    }
+    .amaliyah-dialog-message{
+      white-space:pre-line;
+      font-size:15.5px;
+      line-height:1.58;
+      color:#46534e;
+    }
+    .amaliyah-dialog-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:22px;
+    }
+    .amaliyah-dialog-btn{
+      border:0;
+      min-height:44px;
+      padding:0 20px;
+      border-radius:15px;
+      font:inherit;
+      font-weight:750;
+      cursor:pointer;
+    }
+    .amaliyah-dialog-btn.primary{
+      background:#0d5b49;
+      color:#fff;
+    }
+    .amaliyah-dialog-btn.secondary{
+      background:#f1ece2;
+      color:#43504b;
+    }
+    @keyframes amaliyahDialogIn{
+      from{opacity:0;transform:translateY(8px) scale(.98)}
+      to{opacity:1;transform:none}
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function showAppDialog(message,{
+  confirmText='Oke',
+  cancelText='',
+  title='Amaliyah'
+}={}){
+  ensureAppDialogStyles();
+
+  return new Promise(resolve=>{
+    document.querySelector('.amaliyah-dialog-backdrop')?.remove();
+
+    const backdrop=document.createElement('div');
+    backdrop.className='amaliyah-dialog-backdrop';
+    backdrop.setAttribute('role','presentation');
+
+    const card=document.createElement('div');
+    card.className='amaliyah-dialog-card';
+    card.setAttribute('role','dialog');
+    card.setAttribute('aria-modal','true');
+    card.setAttribute('aria-label',title);
+
+    card.innerHTML=`
+      <div class="amaliyah-dialog-brand">
+        <span class="amaliyah-dialog-mark">ا</span>
+        <span>${title}</span>
+      </div>
+      <div class="amaliyah-dialog-message"></div>
+      <div class="amaliyah-dialog-actions">
+        ${cancelText?`<button class="amaliyah-dialog-btn secondary" data-dialog-cancel>${cancelText}</button>`:''}
+        <button class="amaliyah-dialog-btn primary" data-dialog-confirm>${confirmText}</button>
+      </div>
+    `;
+
+    card.querySelector('.amaliyah-dialog-message').textContent=String(message||'');
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    const close=value=>{
+      backdrop.remove();
+      resolve(value);
+    };
+
+    card.querySelector('[data-dialog-confirm]').onclick=()=>close(true);
+    card.querySelector('[data-dialog-cancel]')?.addEventListener('click',()=>close(false));
+
+    backdrop.addEventListener('click',e=>{
+      if(e.target===backdrop && cancelText)close(false);
+    });
+
+    const onKey=e=>{
+      if(e.key==='Escape' && cancelText){
+        document.removeEventListener('keydown',onKey);
+        close(false);
+      }
+    };
+    document.addEventListener('keydown',onKey);
+
+    card.querySelector('[data-dialog-confirm]')?.focus();
+  });
+}
+
+function appNotice(message,options={}){
+  return showAppDialog(message,options);
+}
+
+function appConfirm(message,options={}){
+  return showAppDialog(message,{
+    confirmText:'Hapus',
+    cancelText:'Batal',
+    ...options
+  });
+}
+
+
 const catalog = await fetch('./books.json', {cache:'no-store'}).then(r=>{
   if(!r.ok) throw new Error('books.json gagal dimuat');
   return r.json();
@@ -428,9 +587,15 @@ function deleteHistoryEntry(entry){
   renderHistory();
 }
 
-function clearAllHistory(){
+async function clearAllHistory(){
   if(!getHistoryEntries().length)return;
-  if(!confirm('Hapus semua riwayat bacaan?\\n\\nProgres, bookmark, dan favorit tidak akan terhapus.'))return;
+
+  const ok=await appConfirm(
+    'Hapus semua riwayat bacaan?\n\nProgres, bookmark, dan favorit tidak akan terhapus.'
+  );
+
+  if(!ok)return;
+
   store.removeItem('amaliyah_history');
   renderHistory();
 }
@@ -1063,9 +1228,9 @@ async function testPushNotification(){
     const j=await r.json().catch(()=>({}));
     if(!r.ok || !j.ok)throw new Error(j.error||'Tes notifikasi gagal.');
 
-    alert('Tes dikirim. Tutup/minimalkan aplikasi dan periksa notifikasi HP.');
+    await appNotice('Tes dikirim. Tutup/minimalkan aplikasi dan periksa notifikasi HP.');
   }catch(err){
-    alert(`Tes notifikasi gagal: ${err.message}`);
+    await appNotice(`Tes notifikasi gagal: ${err.message}`);
     await updatePushStatus(err);
   }finally{
     if(btn){btn.textContent='Tes Notifikasi';}
@@ -1123,10 +1288,10 @@ function syncNotificationUI(){
   updatePushStatus();
 }
 async function requestNotifications(){
-  if(!pushSupported())return alert('Browser ini tidak mendukung Web Push.');
+  if(!pushSupported())return appNotice('Browser ini tidak mendukung Web Push.');
   if(Notification.permission==='denied'){
     syncNotificationUI();
-    return alert('Izin notifikasi diblokir. Aktifkan kembali melalui pengaturan situs/browser.');
+    return appNotice('Izin notifikasi diblokir. Aktifkan kembali melalui pengaturan situs/browser.');
   }
 
   const p=Notification.permission==='granted'
@@ -1144,7 +1309,7 @@ async function requestNotifications(){
       await syncPushSubscription({silent:false});
       await showAppNotification('Amaliyah','Notifikasi berhasil diaktifkan. Perangkat sedang disiapkan untuk Web Push.');
     }catch(err){
-      alert(`Izin aktif, tetapi Web Push belum tersambung: ${err.message}`);
+      await appNotice(`Izin aktif, tetapi Web Push belum tersambung: ${err.message}`);
     }
   }else{
     syncNotificationUI();
@@ -1166,7 +1331,7 @@ async function setNotificationMaster(enabled){
 
   if(enabled){
     try{await syncPushSubscription({silent:false});}
-    catch(err){alert(`Web Push belum tersambung: ${err.message}`);}
+    catch(err){await appNotice(`Web Push belum tersambung: ${err.message}`);}
   }else{
     await disablePushSubscription();
     await updatePushStatus();
