@@ -519,6 +519,7 @@ function cleanTime(v=''){return String(v).split(' ')[0].slice(0,5);}
 function renderPrayerData(data){
   latestPrayerTimes=data.timings||null;
   renderPrayers(data.timings);
+  queuePushSync();
   startPrayerNotificationScheduler();
   const hijri=data.date?.hijri;
   if(hijri){
@@ -566,11 +567,186 @@ async function loadMonthlyPrayerTimes(){
 function changeMonth(step){monthlyOffset+=step;renderMonthlyHeader();loadMonthlyPrayerTimes();}
 
 const NOTIF_SETTINGS_KEY='amaliyah:prayerNotifications';
+const PUSH_API='https://amaliyah-notify.elmahbub45.workers.dev';
+let pushSyncTimer=null;
 const DEFAULT_NOTIF_SETTINGS={
   enabled:false,
   lead:0,
   prayers:{Subuh:true,Dzuhur:true,Ashar:true,Maghrib:true,Isya:true}
 };
+
+
+function pushSupported(){
+  return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=atob(base64);
+  return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)));
+}
+async function getPushRegistration(){
+  if(!pushSupported())throw new Error('Web Push tidak didukung browser ini.');
+  const registration=await navigator.serviceWorker.ready;
+  if(!registration)throw new Error('Service Worker belum siap.');
+  return registration;
+}
+async function getPushSubscription(){
+  if(!pushSupported())return null;
+  try{
+    const reg=await getPushRegistration();
+    return await reg.pushManager.getSubscription();
+  }catch{return null}
+}
+async function getVapidPublicKey(){
+  const r=await fetch(`${PUSH_API}/vapid-public-key`,{cache:'no-store'});
+  if(!r.ok)throw new Error('Public key notifikasi gagal dimuat.');
+  const j=await r.json();
+  if(!j?.publicKey)throw new Error('Public key notifikasi tidak tersedia.');
+  return j.publicKey;
+}
+async function ensurePushSubscription(){
+  if(!pushSupported())throw new Error('Browser ini tidak mendukung Web Push.');
+  if(Notification.permission!=='granted')throw new Error('Izin notifikasi belum diberikan.');
+
+  const reg=await getPushRegistration();
+  let sub=await reg.pushManager.getSubscription();
+  if(sub)return sub;
+
+  const publicKey=await getVapidPublicKey();
+  sub=await reg.pushManager.subscribe({
+    userVisibleOnly:true,
+    applicationServerKey:urlBase64ToUint8Array(publicKey)
+  });
+  return sub;
+}
+function buildPushSchedule(){
+  if(!latestPrayerTimes)return {};
+  const map=[
+    ['Subuh','Fajr'],['Dzuhur','Dhuhr'],['Ashar','Asr'],
+    ['Maghrib','Maghrib'],['Isya','Isha']
+  ];
+  const out={};
+  for(const [name,key] of map){
+    const value=cleanTime(latestPrayerTimes[key]);
+    if(value)out[name]=value;
+  }
+  return out;
+}
+async function syncPushSubscription({silent=true}={}){
+  const settings=getNotificationSettings();
+  if(!settings.enabled || Notification.permission!=='granted')return null;
+
+  try{
+    const sub=await ensurePushSubscription();
+    const payload={
+      subscription:sub.toJSON(),
+      prayers:{
+        subuh:!!settings.prayers.Subuh,
+        dzuhur:!!settings.prayers.Dzuhur,
+        ashar:!!settings.prayers.Ashar,
+        maghrib:!!settings.prayers.Maghrib,
+        isya:!!settings.prayers.Isya
+      },
+      leadMinutes:Number(settings.lead||0),
+      timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Makassar',
+      schedule:buildPushSchedule()
+    };
+
+    const r=await fetch(`${PUSH_API}/subscribe`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok || !j.ok)throw new Error(j.error||'Subscription gagal disimpan.');
+
+    await updatePushStatus();
+    return sub;
+  }catch(err){
+    await updatePushStatus(err);
+    if(!silent)throw err;
+    return null;
+  }
+}
+function queuePushSync(){
+  clearTimeout(pushSyncTimer);
+  pushSyncTimer=setTimeout(()=>syncPushSubscription({silent:true}),700);
+}
+async function disablePushSubscription(){
+  const sub=await getPushSubscription();
+  if(!sub)return;
+
+  try{
+    await fetch(`${PUSH_API}/unsubscribe`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({endpoint:sub.endpoint})
+    });
+  }catch{}
+
+  try{await sub.unsubscribe();}catch{}
+}
+async function updatePushStatus(error=null){
+  const status=$('#notificationStatusText');
+  const testBtn=$('#notificationTestBtn');
+  const note=$('#notificationPushNote');
+  const s=getNotificationSettings();
+
+  if(!pushSupported()){
+    if(testBtn)testBtn.disabled=true;
+    return;
+  }
+
+  const sub=await getPushSubscription();
+
+  if(testBtn)testBtn.disabled=!(Notification.permission==='granted' && !!sub);
+
+  if(error){
+    if(status){
+      status.textContent=`Push belum tersambung • ${error.message||'coba lagi'}`;
+      status.classList.add('notification-push-error');
+      status.classList.remove('notification-push-live');
+    }
+    return;
+  }
+
+  status?.classList.remove('notification-push-error','notification-push-live');
+
+  if(Notification.permission==='granted' && s.enabled && sub){
+    if(status){
+      status.textContent='Notifikasi Push Aktif • perangkat tersambung';
+      status.classList.add('notification-push-live');
+    }
+    if(note)note.textContent='Perangkat sudah terhubung ke Web Push. Gunakan “Tes Notifikasi” untuk memastikan notifikasi dapat diterima saat aplikasi ditutup.';
+  }else if(note){
+    note.textContent='Web Push akan menghubungkan perangkat ini ke layanan notifikasi Amaliyah. Setelah tes berhasil, tahap berikutnya adalah menjadwalkan pengiriman sholat dari server.';
+  }
+}
+async function testPushNotification(){
+  const btn=$('#notificationTestBtn');
+  try{
+    if(btn){btn.disabled=true;btn.textContent='Mengirim…';}
+    const sub=await syncPushSubscription({silent:false});
+    if(!sub)throw new Error('Subscription belum tersedia.');
+
+    const r=await fetch(`${PUSH_API}/test-push`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({endpoint:sub.endpoint})
+    });
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok || !j.ok)throw new Error(j.error||'Tes notifikasi gagal.');
+
+    alert('Tes dikirim. Tutup/minimalkan aplikasi dan periksa notifikasi HP.');
+  }catch(err){
+    alert(`Tes notifikasi gagal: ${err.message}`);
+    await updatePushStatus(err);
+  }finally{
+    if(btn){btn.textContent='Tes Notifikasi';}
+    await updatePushStatus();
+  }
+}
 
 function getNotificationSettings(){
   try{
@@ -619,36 +795,57 @@ function syncNotificationUI(){
     if(btn){btn.textContent='Aktifkan Izin Notifikasi';btn.disabled=false;btn.classList.remove('hidden');}
   }
   $('#notifBtn')?.classList.toggle('notification-active',permission==='granted'&&s.enabled);
+  updatePushStatus();
 }
 async function requestNotifications(){
-  if(!('Notification'in window))return alert('Browser ini tidak mendukung notifikasi web.');
+  if(!pushSupported())return alert('Browser ini tidak mendukung Web Push.');
   if(Notification.permission==='denied'){
     syncNotificationUI();
     return alert('Izin notifikasi diblokir. Aktifkan kembali melalui pengaturan situs/browser.');
   }
-  const p=Notification.permission==='granted'?'granted':await Notification.requestPermission();
+
+  const p=Notification.permission==='granted'
+    ? 'granted'
+    : await Notification.requestPermission();
+
   if(p==='granted'){
     const s=getNotificationSettings();
     s.enabled=true;
     setNotificationSettings(s);
     syncNotificationUI();
     startPrayerNotificationScheduler();
-    await showAppNotification('Amaliyah','Notifikasi sholat berhasil diaktifkan.');
+
+    try{
+      await syncPushSubscription({silent:false});
+      await showAppNotification('Amaliyah','Notifikasi berhasil diaktifkan. Perangkat sedang disiapkan untuk Web Push.');
+    }catch(err){
+      alert(`Izin aktif, tetapi Web Push belum tersambung: ${err.message}`);
+    }
   }else{
     syncNotificationUI();
   }
 }
-function setNotificationMaster(enabled){
+async function setNotificationMaster(enabled){
   const s=getNotificationSettings();
+
   if(enabled && notificationPermission()!=='granted'){
     $('#notificationMaster').checked=false;
-    requestNotifications();
+    await requestNotifications();
     return;
   }
+
   s.enabled=!!enabled;
   setNotificationSettings(s);
   syncNotificationUI();
   startPrayerNotificationScheduler();
+
+  if(enabled){
+    try{await syncPushSubscription({silent:false});}
+    catch(err){alert(`Web Push belum tersambung: ${err.message}`);}
+  }else{
+    await disablePushSubscription();
+    await updatePushStatus();
+  }
 }
 function saveNotificationSettings(){
   const s=getNotificationSettings();
@@ -659,6 +856,7 @@ function saveNotificationSettings(){
   setNotificationSettings(s);
   syncNotificationUI();
   startPrayerNotificationScheduler();
+  queuePushSync();
 }
 async function showAppNotification(title,body){
   if(notificationPermission()!=='granted')return;
@@ -757,6 +955,7 @@ window.getPrayerTimes=getPrayerTimes;
 window.requestNotifications=requestNotifications;
 window.setNotificationMaster=setNotificationMaster;
 window.saveNotificationSettings=saveNotificationSettings;
+window.testPushNotification=testPushNotification;
 window.clearAllHistory=clearAllHistory;
 
 const savedScreen=getSavedScreenState();

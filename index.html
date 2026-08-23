@@ -178,8 +178,11 @@
     </label>
   </div>
 
-  <button id="notificationPermissionBtn" class="primary notification-permission-btn" type="button" onclick="requestNotifications()">Aktifkan Izin Notifikasi</button>
-  <small class="notification-note">Pengingat web berjalan saat aplikasi/PWA aktif. Notifikasi background penuh akan kita sempurnakan pada tahap APK/push.</small>
+  <div class="notification-action-row">
+    <button id="notificationPermissionBtn" class="primary notification-permission-btn" type="button" onclick="requestNotifications()">Aktifkan Izin Notifikasi</button>
+    <button id="notificationTestBtn" class="secondary notification-test-btn" type="button" onclick="testPushNotification()">Tes Notifikasi</button>
+  </div>
+  <small class="notification-note" id="notificationPushNote">Web Push akan menghubungkan perangkat ini ke layanan notifikasi Amaliyah. Setelah tes berhasil, tahap berikutnya adalah menjadwalkan pengiriman sholat dari server.</small>
 </div>
 
 <div class="settings-card">
