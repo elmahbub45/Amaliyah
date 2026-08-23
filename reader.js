@@ -112,12 +112,11 @@ const canvas=$('#pdf');
 const ctx=canvas.getContext('2d');
 const counter=$('#counter');
 const stage=$('#stage');
+const nextButton=$('#next');
+const partsButton=$('#partsBtn');
 const sheet=$('#readerSheet');
 const sheetTitle=$('#sheetTitle');
 const sheetContent=$('#sheetContent');
-const nextPartBar=$('#nextPartBar');
-const nextPartText=$('#nextPartText');
-const nextPartBtn=$('#nextPartBtn');
 
 document.title=item.type==='single'?item.title:`${item.title} — ${part.title}`;
 $('#readerTitle').textContent=item.type==='single'?item.title:part.title;
@@ -125,6 +124,10 @@ $('#readerTitle').textContent=item.type==='single'?item.title:part.title;
 localStorage.setItem('amaliyah:lastItem',item.id);
 localStorage.setItem('amaliyah:lastBook',part.id);
 if(item.type!=='single')localStorage.setItem(`collection:${item.id}:lastPart`,part.id);
+if(partsButton){
+  partsButton.classList.toggle('hidden',item.type!=='collection');
+  document.body.classList.toggle('has-parts-menu',item.type==='collection');
+}
 
 const pageKey=`book:${part.id}:page`;
 const bookmarkKey=`amaliyah_bookmark_${part.id}`;
@@ -170,22 +173,37 @@ function collectionPosition(){
   return {index,next:item.parts[index+1]||null,last:index===item.parts.length-1};
 }
 
-function updateNextPart(){
-  if(!nextPartBar)return;
-  if(item.type!=='collection' || !pdfDoc || page!==pdfDoc.numPages){
-    nextPartBar.classList.add('hidden');return;
-  }
+function updateNavigationState(){
+  if(!pdfDoc || !nextButton)return;
+
+  const atLastPage=page>=pdfDoc.numPages;
   const pos=collectionPosition();
-  nextPartBar.classList.remove('hidden');
-  if(pos.next){
-    nextPartText.textContent=`Bagian berikutnya: ${pos.next.title}`;
-    nextPartBtn.classList.remove('hidden');
-    nextPartBtn.textContent='Lanjut ←';
-    nextPartBtn.onclick=()=>openNextPart(pos.next);
-  }else{
-    nextPartText.textContent='Ini adalah bagian terakhir';
-    nextPartBtn.classList.add('hidden');
+
+  // Normal page navigation before the last page.
+  if(!atLastPage){
+    nextButton.classList.remove('hidden','next-part-mode');
+    nextButton.setAttribute('aria-label','Halaman berikutnya');
+    nextButton.onclick=e=>{e.stopPropagation();go(1)};
+    return;
   }
+
+  // At the last page of a collection, the same navigation position
+  // becomes "Lanjut" only if another part exists.
+  if(item.type==='collection' && pos.next){
+    nextButton.classList.remove('hidden');
+    nextButton.classList.add('next-part-mode');
+    nextButton.setAttribute('aria-label',`Lanjut ke ${pos.next.title}`);
+    nextButton.onclick=e=>{
+      e.stopPropagation();
+      openNextPart(pos.next);
+    };
+    return;
+  }
+
+  // Last page of single/group, or final part of collection:
+  // no next navigation.
+  nextButton.classList.remove('next-part-mode');
+  nextButton.classList.add('hidden');
 }
 
 function openNextPart(next){
@@ -228,7 +246,7 @@ async function drawPage(){
       localStorage.setItem(pageKey,String(page));
       localStorage.setItem('amaliyah:lastItem',item.id);
       if(item.type!=='single')localStorage.setItem(`collection:${item.id}:lastPart`,part.id);
-      recordHistory();syncBookmarkState();updateNextPart();
+      recordHistory();syncBookmarkState();updateNavigationState();
     }
   }finally{
     rendering=false;
@@ -278,6 +296,63 @@ async function shareReading(){
   try{await navigator.clipboard.writeText(data.url);alert('Tautan bacaan sudah disalin.')}
   catch{prompt('Salin tautan bacaan ini:',data.url)}
 }
+function openParts(){
+  if(item.type!=='collection')return;
+
+  const pos=collectionPosition();
+
+  showSheet('Bagian',container=>{
+    const head=document.createElement('div');
+    head.className='parts-sheet-context';
+    head.innerHTML=`<b>${item.title}</b><small>Bagian ${pos.index+1} dari ${item.parts.length}</small>`;
+    container.appendChild(head);
+
+    const list=document.createElement('div');
+    list.className='parts-sheet-list';
+
+    item.parts.forEach((p,index)=>{
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.className='parts-sheet-item';
+      if(p.id===part.id)btn.classList.add('active');
+
+      const savedPage=Math.max(1,+(localStorage.getItem(`book:${p.id}:page`)||1));
+      btn.innerHTML=`
+        <span class="parts-sheet-number">${String(index+1).padStart(2,'0')}</span>
+        <span class="parts-sheet-copy">
+          <b>${escapeHtml(p.title)}</b>
+          <small>${p.id===part.id?'Sedang dibaca':savedPage>1?`Terakhir halaman ${savedPage}`:`Bagian ${index+1}`}</small>
+        </span>
+        <span class="parts-sheet-state">${p.id===part.id?'✓':'‹'}</span>
+      `;
+
+      btn.onclick=()=>{
+        if(p.id===part.id){
+          closeSheet();
+          return;
+        }
+        localStorage.setItem(`collection:${item.id}:lastPart`,p.id);
+        location.replace(
+          `reader.html?book=${encodeURIComponent(item.id)}&part=${encodeURIComponent(p.id)}`
+        );
+      };
+      list.appendChild(btn);
+    });
+
+    container.appendChild(list);
+  });
+}
+
+function escapeHtml(value=''){
+  return String(value).replace(/[&<>"']/g,ch=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[ch]));
+}
+
 function openMore(){
   showSheet('Lainnya',container=>{
     if(item.type!=='single'){
@@ -295,12 +370,12 @@ function openMore(){
 
 $('#readerBack').onclick=e=>{e.stopPropagation();leaveReader()};
 $('#prev').onclick=e=>{e.stopPropagation();go(-1)};
-$('#next').onclick=e=>{e.stopPropagation();go(1)};
 $('#zoomIn').onclick=e=>{e.stopPropagation();scale=Math.min(2.2,scale+.2);drawPage()};
 $('#zoomOut').onclick=e=>{e.stopPropagation();scale=Math.max(.8,scale-.2);drawPage()};
 $('#bookmarkTop').onclick=e=>{e.stopPropagation();toggleBookmark()};
 $('#bookmarkBottom').onclick=e=>{e.stopPropagation();toggleBookmark()};
 $('#tocBtn').onclick=e=>{e.stopPropagation();openToc()};
+if(partsButton)partsButton.onclick=e=>{e.stopPropagation();openParts()};
 $('#moreBtn').onclick=e=>{e.stopPropagation();openMore()};
 $('#sheetClose').onclick=closeSheet;
 sheet.onclick=e=>{if(e.target===sheet)closeSheet()};
@@ -308,7 +383,7 @@ $('.sheet-card').onclick=e=>e.stopPropagation();
 
 window.addEventListener('popstate',()=>{if(sheetOpen)hideSheetOnly()});
 stage.addEventListener('click',e=>{
-  if(e.target.closest('button')||e.target.closest('#nextPartBar')||swiped){swiped=false;return}
+  if(e.target.closest('button')||swiped){swiped=false;return}
   document.body.classList.toggle('controls-off');scale=1;drawPage();
 });
 stage.addEventListener('touchstart',e=>{
@@ -317,12 +392,28 @@ stage.addEventListener('touchstart',e=>{
 stage.addEventListener('touchend',e=>{
   const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;
   if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.4){
-    swiped=true;if(dx>0)go(1);else go(-1);setTimeout(()=>{swiped=false},300);
+    swiped=true;if(dx>0){
+      if(pdfDoc && page>=pdfDoc.numPages && item.type==='collection'){
+        const pos=collectionPosition();
+        if(pos.next)openNextPart(pos.next);
+      }else{
+        go(1);
+      }
+    }else{
+      go(-1);
+    }
+    setTimeout(()=>{swiped=false},300);
   }
 },{passive:true});
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&sheetOpen){closeSheet();return}
-  if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);
+  if(e.key==='ArrowRight'){
+    if(pdfDoc && page>=pdfDoc.numPages && item.type==='collection'){
+      const pos=collectionPosition();
+      if(pos.next)openNextPart(pos.next);
+    }else go(1);
+  }
+  if(e.key==='ArrowLeft')go(-1);
 });
 window.addEventListener('resize',()=>drawPage());
 window.addEventListener('pagehide',recordHistory);

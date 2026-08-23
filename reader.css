@@ -390,3 +390,174 @@ body.controls-off #readerDocument{
   55%{left:55%}
   100%{left:105%}
 }
+
+
+/* =========================================================
+   V2.26 — Collection Reader Final Navigation
+   ========================================================= */
+
+/* Old next-part bar is removed from HTML; keep it force-hidden in case
+   an old cached HTML survives briefly. */
+#nextPartBar,
+.next-part-bar{
+  display:none !important;
+}
+
+/* Footer: 5 controls for single/group, 6 for collection. */
+footer{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+}
+body.has-parts-menu footer{
+  grid-template-columns:repeat(6,minmax(0,1fr));
+}
+body.has-parts-menu footer button{
+  padding-left:2px;
+  padding-right:2px;
+}
+body.has-parts-menu footer small{
+  font-size:7.8px;
+}
+
+/* Normal next-page arrow remains subtle and transparent. */
+#next .arrow-label{
+  display:none;
+}
+
+/* On final page of a collection, the existing next position becomes
+   a compact Lanjut control instead of adding another overlay/bar. */
+#next.next-part-mode{
+  width:auto !important;
+  min-width:82px;
+  height:42px;
+  left:7px;
+  padding:0 11px 0 10px;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  border-radius:999px;
+  background:rgba(5,68,55,.72) !important;
+  border:1px solid rgba(229,189,105,.48) !important;
+  color:#f5e3b1 !important;
+  backdrop-filter:blur(7px) !important;
+  -webkit-backdrop-filter:blur(7px) !important;
+}
+#next.next-part-mode .arrow-label{
+  display:inline;
+  font-size:10.5px;
+  font-weight:800;
+  white-space:nowrap;
+}
+#next.next-part-mode svg{
+  width:17px;
+  height:17px;
+}
+#next.hidden{
+  display:none !important;
+}
+
+/* Collection parts sheet. */
+.parts-sheet-context{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:11px 12px;
+  margin-bottom:10px;
+  border-radius:13px;
+  background:#eee6d9;
+  color:#29443a;
+}
+.parts-sheet-context b{
+  min-width:0;
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.parts-sheet-context small{
+  flex:0 0 auto;
+  font-size:9.5px;
+  color:#738078;
+}
+.parts-sheet-list{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.parts-sheet-item{
+  width:100%;
+  min-height:58px;
+  display:grid;
+  grid-template-columns:37px minmax(0,1fr) 24px;
+  gap:9px;
+  align-items:center;
+  padding:8px 10px;
+  border:1px solid #e5dccd;
+  border-radius:13px;
+  background:#fff;
+  color:#233a32;
+  text-align:left;
+}
+.parts-sheet-item.active{
+  border-color:#86ad9e;
+  background:#eaf4ef;
+  box-shadow:0 0 0 2px rgba(7,91,73,.05);
+}
+.parts-sheet-number{
+  width:35px;
+  height:35px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:#edf3ef;
+  color:#17614d;
+  font-size:9.5px;
+  font-weight:800;
+}
+.parts-sheet-item.active .parts-sheet-number{
+  background:#0b5b49;
+  color:#f3dfaa;
+}
+.parts-sheet-copy{
+  min-width:0;
+}
+.parts-sheet-copy b{
+  display:block;
+  font-size:11.5px;
+  line-height:1.25;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.parts-sheet-copy small{
+  display:block;
+  margin-top:3px;
+  font-size:9px;
+  color:#849089;
+}
+.parts-sheet-state{
+  display:grid;
+  place-items:center;
+  color:#8c9a93;
+  font-size:15px;
+}
+.parts-sheet-item.active .parts-sheet-state{
+  color:#0b5b49;
+  font-weight:900;
+}
+
+@media(max-width:390px){
+  body.has-parts-menu footer small{
+    font-size:7.1px;
+  }
+  body.has-parts-menu footer svg{
+    width:18px;
+    height:18px;
+  }
+  #next.next-part-mode{
+    min-width:76px;
+    height:40px;
+  }
+}
