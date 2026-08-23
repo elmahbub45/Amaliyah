@@ -15,6 +15,8 @@ let mainDragIndex=null;
 let partDragIndex=null;
 let autosaveTimer=null;
 let confirmResolver=null;
+let batchEntries=[];
+let batchDragIndex=null;
 
 async function boot(){
   original=await fetchBooks();
@@ -60,8 +62,30 @@ function bind(){
   $('#categoryFilter').addEventListener('change',renderList);
   $('#typeFilter').addEventListener('change',renderList);
 
+  $('#workspaceStatusBtn').onclick=()=>openValidationDialog(false);
+  $('#metricErrorsBtn').onclick=()=>openValidationDialog(false);
+  $('#metricWarningsBtn').onclick=()=>openValidationDialog(false);
+
   $('#addItemBtn').onclick=openItemDialog;
   $('#createItemBtn').onclick=createItem;
+  $('#itemForm').onsubmit=e=>{e.preventDefault();createItem();};
+  $('#closeItemDialogBtn').onclick=()=>$('#itemDialog').close();
+  $('#cancelItemBtn').onclick=()=>$('#itemDialog').close();
+
+  $('#batchImportBtn').onclick=openBatchDialog;
+  $('#closeBatchBtn').onclick=closeBatchDialog;
+  $('#cancelBatchBtn').onclick=closeBatchDialog;
+  $('#batchChooseFilesBtn').onclick=()=>$('#batchFilesInput').click();
+  $('#batchChooseFolderBtn').onclick=()=>$('#batchFolderInput').click();
+  $('#batchFilesInput').onchange=handleBatchFiles;
+  $('#batchFolderInput').onchange=handleBatchFiles;
+  $('#batchModeInput').onchange=()=>{
+    updateBatchModeUI();
+    renderBatchReview();
+  };
+  $('#batchCategoryInput').oninput=renderBatchReview;
+  $('#batchTitleInput').oninput=renderBatchReview;
+  $('#applyBatchBtn').onclick=applyBatchImport;
 
   $('#deleteItemBtn').onclick=deleteItem;
   $('#previewBtn').onclick=()=>showItemPreview(getSelected());
@@ -81,14 +105,20 @@ function bind(){
     'pages',
     Math.max(1,Number($('#singlePagesInput').value)||1)
   );
+  $('#singlePdfChooseBtn').onclick=()=>$('#singlePdfPicker').click();
   $('#singlePdfPicker').onchange=handleSinglePdfPicker;
+  $('#editSinglePathBtn').onclick=()=>toggleTechnicalInput($('#singleFileInput'),$('#editSinglePathBtn'));
 
   $('#addPartBtn').onclick=()=>openPartDialog();
   $('#savePartBtn').onclick=savePart;
+  $('#partForm').onsubmit=e=>{e.preventDefault();savePart();};
   $('#partTitleInput').oninput=onPartTitleInput;
-  $('#partIdInput').oninput=()=>$('#partIdInput').dataset.touched='1';
   $('#partFileInput').oninput=updatePartR2Key;
+  $('#partPdfChooseBtn').onclick=()=>$('#partPdfPicker').click();
   $('#partPdfPicker').onchange=handlePartPdfPicker;
+  $('#editPartPathBtn').onclick=()=>toggleTechnicalInput($('#partFileInput'),$('#editPartPathBtn'));
+  $('#closePartDialogBtn').onclick=closePartDialog;
+  $('#cancelPartBtn').onclick=closePartDialog;
 
   $('#saveDraftBtn').onclick=()=>saveDraft('Draft disimpan manual');
   $('#backupBtn').onclick=openBackupDialog;
@@ -142,6 +172,83 @@ function slugify(s=''){
     .replace(/[^a-z0-9]+/g,'-')
     .replace(/^-+|-+$/g,'')
     .slice(0,70)||'bacaan-baru';
+}
+
+function safePdfFilename(name=''){
+  const raw=String(name||'').split(/[\\/]/).pop().trim();
+  const cleaned=raw
+    .replace(/[\u0000-\u001f\u007f]/g,'')
+    .replace(/[\\/:*?"<>|]/g,'-')
+    .replace(/\s+/g,' ')
+    .trim();
+  const base=cleaned.replace(/\.pdf$/i,'')||'bacaan';
+  return `${base}.pdf`;
+}
+
+function titleFromFilename(name=''){
+  const title=safePdfFilename(name)
+    .replace(/\.pdf$/i,'')
+    .replace(/^\s*\d+[\s._-]*/,'')
+    .replace(/[_-]+/g,' ')
+    .replace(/\s+/g,' ')
+    .trim() || 'Bacaan';
+
+  return title.charAt(0).toLocaleUpperCase('id-ID')+title.slice(1);
+}
+
+function basename(path=''){
+  return String(path).split('/').filter(Boolean).pop()||'';
+}
+
+function naturalCompare(a,b){
+  return String(a).localeCompare(String(b),'id',{numeric:true,sensitivity:'base'});
+}
+
+function categoryFolder(category=''){
+  const key=String(category).trim();
+  return {
+    "Al-Qur'an":'quran',
+    "Al-Qur’an":'quran',
+    Quran:'quran',
+    Wirid:'wirid',
+    Doa:'doa',
+    Maulid:'maulid',
+    Dalail:'dalail',
+    Syair:'syair',
+    Khutbah:'khutbah'
+  }[key]||slugify(key||'doa');
+}
+
+function toggleTechnicalInput(input,button){
+  const willEdit=input.readOnly;
+  input.readOnly=!willEdit;
+  button.textContent=willEdit?'Kunci kembali':'Edit teknis';
+  if(willEdit){
+    input.focus();
+    input.select();
+  }
+}
+
+function showFormError(host,message=''){
+  host.textContent=message;
+  host.classList.toggle('hidden',!message);
+}
+
+async function detectPdfPages(file){
+  try{
+    if(!file || !/\.pdf$/i.test(file.name||''))return null;
+    const buffer=await file.arrayBuffer();
+    const text=new TextDecoder('latin1').decode(buffer);
+    const pageMatches=text.match(/\/Type\s*\/Page\b/g);
+    if(pageMatches?.length)return pageMatches.length;
+
+    const counts=[...text.matchAll(/\/Count\s+(\d+)/g)]
+      .map(m=>Number(m[1]))
+      .filter(n=>Number.isInteger(n)&&n>0&&n<20000);
+    return counts.length?Math.max(...counts):null;
+  }catch{
+    return null;
+  }
 }
 
 function r2Key(file=''){
@@ -232,6 +339,15 @@ function updateAllStatus(isDirty=dirty,msg=''){
       : dirty
         ? 'Perubahan belum diekspor'
         : 'Data siap';
+
+  $('#workspaceStatusBtn').classList.toggle('has-issue',validation.errors.length>0||validation.warnings.length>0);
+  $('#workspaceStatusBtn').title=validation.errors.length
+    ? `Klik untuk melihat ${validation.errors.length} error`
+    : validation.warnings.length
+      ? `Klik untuk melihat ${validation.warnings.length} peringatan`
+      : 'Klik untuk melihat kesehatan data';
+  $('#metricErrorsBtn').classList.toggle('has-error',validation.errors.length>0);
+  $('#metricWarningsBtn').classList.toggle('has-warning',validation.warnings.length>0);
 
   $('#metricItems').textContent=data.items.length;
   $('#metricPdf').textContent=totalPdf();
@@ -409,10 +525,9 @@ function renderList(){
         <button class="main-drag-handle" type="button" title="Drag">☰</button>
 
         <button class="item-select" type="button" data-select-id="${esc(x.id)}">
-          <span class="item-icon">${esc(x.icon||'◈')}</span>
           <span class="item-copy">
             <b>${esc(x.title||'(Tanpa judul)')}</b>
-            <small>${esc(x.category||'Tanpa kategori')} • ${esc(x.type)}</small>
+            <small>${esc(x.category||'Tanpa kategori')} <i>•</i> ${esc(x.type)}</small>
           </span>
           <span class="item-count">${esc(count)}</span>
         </button>
@@ -520,8 +635,11 @@ function selectItem(id){
 
   if(x.type==='single'){
     $('#singleFileInput').value=x.file||'';
+    $('#singleFileInput').readOnly=true;
+    $('#editSinglePathBtn').textContent='Edit teknis';
     $('#singlePagesInput').value=Math.max(1,Number(x.pages)||1);
     $('#singlePdfPicker').value='';
+    $('#singlePdfName').textContent=x.file?basename(x.file):'Belum memilih PDF';
     updateSingleR2Key();
   }else{
     renderParts();
@@ -604,22 +722,32 @@ function updateSingleR2Key(){
   $('#singleR2Key').textContent=`R2 key: ${r2Key($('#singleFileInput').value)||'—'}`;
 }
 
-function handleSinglePdfPicker(){
+async function handleSinglePdfPicker(){
   const f=$('#singlePdfPicker').files?.[0];
   const x=getSelected();
   if(!f||!x)return;
 
-  let current=$('#singleFileInput').value.trim();
+  const current=$('#singleFileInput').value.trim();
+  const folder=current.includes('/')
+    ? current.slice(0,current.lastIndexOf('/')+1)
+    : suggestFolderPath(x);
+  const base=folder.endsWith('/')?folder:`${folder}/`;
+  const file=`${base}${safePdfFilename(f.name)}`;
 
-  if(!current || current.endsWith('/')){
-    const base=current||suggestFolderPath(x);
-    $('#singleFileInput').value=
-      `${base}${base.endsWith('/')?'':'/'}${slugify(f.name.replace(/\.pdf$/i,''))}.pdf`;
-  }
-
-  x.file=$('#singleFileInput').value;
+  $('#singleFileInput').value=file;
+  $('#singlePdfName').textContent=`${f.name} • mendeteksi halaman…`;
+  x.file=file;
   updateSingleR2Key();
-  markDirty('Path PDF diperbarui dari nama file');
+
+  const detected=await detectPdfPages(f);
+  if(detected){
+    $('#singlePagesInput').value=detected;
+    x.pages=detected;
+    $('#singlePdfName').textContent=`${f.name} • ${detected} halaman`;
+  }else{
+    $('#singlePdfName').textContent=f.name;
+  }
+  markDirty(detected?'PDF & jumlah halaman diperbarui':'PDF bacaan diperbarui');
 }
 
 /* ===================== PARTS ===================== */
@@ -735,33 +863,34 @@ function openPartDialog(i=-1){
   $('#partDialogTitle').textContent=i>=0?'Edit Bagian':'Tambah Bagian';
   $('#partTitleInput').value=p?.title||'';
   $('#partIdInput').value=p?.id||'';
-  $('#partIdInput').readOnly=i>=0;
-  $('#partIdInput').dataset.touched='';
-  $('#partFileInput').value=p?.file||suggestFolderPath(x);
+  $('#partIdInput').readOnly=true;
+  $('#partFileInput').value=p?.file||'';
+  $('#partFileInput').readOnly=true;
+  $('#editPartPathBtn').textContent='Edit teknis';
   $('#partPagesInput').value=Math.max(1,Number(p?.pages)||1);
   $('#partPdfPicker').value='';
+  $('#partPdfName').textContent=p?.file?basename(p.file):'Belum memilih PDF';
+  showFormError($('#partFormError'),'');
   updatePartR2Key();
 
   $('#partDialog').showModal();
+  setTimeout(()=>$('#partTitleInput').focus(),40);
+}
+
+function closePartDialog(){
+  showFormError($('#partFormError'),'');
+  $('#partDialog').close();
 }
 
 function onPartTitleInput(){
-  if(editingPartIndex<0 && !$('#partIdInput').dataset.touched){
-    $('#partIdInput').value=uniquePartId(slugify($('#partTitleInput').value));
+  if(editingPartIndex<0){
+    const title=$('#partTitleInput').value.trim();
+    $('#partIdInput').value=title?uniquePartId(slugify(title)):'';
   }
 }
 
 function suggestFolderPath(x){
-  const folder={
-    "Al-Qur'an":'quran',
-    Wirid:'wirid',
-    Doa:'doa',
-    Maulid:'maulid',
-    Dalail:'dalail',
-    Syair:'syair',
-    Khutbah:'khutbah'
-  }[x.category]||slugify(x.category||'doa');
-
+  const folder=categoryFolder(x.category);
   const sub=x.type==='single'?'':`${slugify(x.id||x.title)}/`;
   return `assets/pdf-v2/${folder}/${sub}`;
 }
@@ -770,28 +899,37 @@ function updatePartR2Key(){
   $('#partR2Key').textContent=`R2 key: ${r2Key($('#partFileInput').value)||'—'}`;
 }
 
-function handlePartPdfPicker(){
+async function handlePartPdfPicker(){
   const f=$('#partPdfPicker').files?.[0];
   const x=getSelected();
   if(!f||!x)return;
 
-  let current=$('#partFileInput').value.trim();
+  const current=$('#partFileInput').value.trim();
+  const folder=current.includes('/')
+    ? current.slice(0,current.lastIndexOf('/')+1)
+    : suggestFolderPath(x);
+  const base=folder.endsWith('/')?folder:`${folder}/`;
 
-  if(!current||current.endsWith('/')){
-    const base=current||suggestFolderPath(x);
-    $('#partFileInput').value=
-      `${base}${base.endsWith('/')?'':'/'}${slugify(f.name.replace(/\.pdf$/i,''))}.pdf`;
+  $('#partFileInput').value=`${base}${safePdfFilename(f.name)}`;
+  $('#partPdfName').textContent=`${f.name} • mendeteksi halaman…`;
+
+  if(!$('#partTitleInput').value.trim()){
+    $('#partTitleInput').value=titleFromFilename(f.name);
   }
 
-  if(!$('#partTitleInput').value){
-    $('#partTitleInput').value=
-      f.name.replace(/\.pdf$/i,'').replace(/[-_]+/g,' ');
-  }
-
-  if(editingPartIndex<0 && !$('#partIdInput').value){
+  if(editingPartIndex<0){
     $('#partIdInput').value=uniquePartId(slugify($('#partTitleInput').value));
   }
 
+  const detected=await detectPdfPages(f);
+  if(detected){
+    $('#partPagesInput').value=detected;
+    $('#partPdfName').textContent=`${f.name} • ${detected} halaman`;
+  }else{
+    $('#partPdfName').textContent=f.name;
+  }
+
+  showFormError($('#partFormError'),'');
   updatePartR2Key();
 }
 
@@ -802,22 +940,27 @@ function savePart(){
   const title=$('#partTitleInput').value.trim();
   let id=$('#partIdInput').value.trim();
   const file=$('#partFileInput').value.trim();
-  const pages=Math.max(1,Number($('#partPagesInput').value)||1);
+  const rawPages=Number($('#partPagesInput').value);
+  const pages=Math.floor(rawPages);
+
+  showFormError($('#partFormError'),'');
 
   if(!title){
-    toast('Judul bagian wajib diisi.','error');
+    showFormError($('#partFormError'),'Judul Bagian belum diisi.');
     $('#partTitleInput').focus();
     return;
   }
 
-  if(!file){
-    toast('Path PDF wajib diisi.','error');
-    $('#partFileInput').focus();
+  if(!file || !/\.pdf$/i.test(file)){
+    showFormError($('#partFormError'),'Pilih PDF bacaan terlebih dahulu.');
+    $('#partPdfChooseBtn').focus();
     return;
   }
 
-  if(!file.startsWith('assets/pdf-v2/')){
-    toast('Path sebaiknya diawali assets/pdf-v2/.','warn');
+  if(!Number.isInteger(pages)||pages<1){
+    showFormError($('#partFormError'),'Jumlah halaman harus minimal 1.');
+    $('#partPagesInput').focus();
+    return;
   }
 
   if(editingPartIndex<0){
@@ -828,11 +971,7 @@ function savePart(){
       ...data.items.flatMap(it=>(it.parts||[]).map(p=>p.id))
     ]);
 
-    if(used.has(id)){
-      toast('ID sudah digunakan.','error');
-      return;
-    }
-
+    if(used.has(id))id=uniquePartId(id);
     x.parts.push({id,title,file,pages});
   }else{
     const p=x.parts[editingPartIndex];
@@ -844,6 +983,262 @@ function savePart(){
   $('#partDialog').close();
   markDirty(editingPartIndex<0?'Bagian baru ditambahkan':'Bagian diperbarui');
   renderParts();
+}
+
+/* ===================== BATCH IMPORT PDF ===================== */
+function openBatchDialog(){
+  batchEntries=[];
+  $('#batchModeInput').value='singles';
+  $('#batchCategoryInput').value=categories()[0]||'Doa';
+  $('#batchTitleInput').value='';
+  $('#batchFilesInput').value='';
+  $('#batchFolderInput').value='';
+  updateBatchModeUI();
+  renderBatchReview();
+  $('#batchDialog').showModal();
+}
+
+function closeBatchDialog(){
+  batchEntries=[];
+  $('#batchDialog').close();
+}
+
+function updateBatchModeUI(){
+  const mode=$('#batchModeInput').value;
+  $('#batchTitleField').classList.toggle('hidden',mode==='singles');
+}
+
+async function handleBatchFiles(e){
+  const files=[...(e.target.files||[])]
+    .filter(f=>/\.pdf$/i.test(f.name))
+    .sort((a,b)=>naturalCompare(a.webkitRelativePath||a.name,b.webkitRelativePath||b.name));
+
+  if(!files.length){
+    toast('Tidak ada file PDF yang dipilih.','warn');
+    return;
+  }
+
+  batchEntries=files.map(f=>({
+    file:f,
+    filename:safePdfFilename(f.name),
+    title:titleFromFilename(f.name),
+    pages:1,
+    detecting:true,
+    detected:false
+  }));
+
+  const mode=$('#batchModeInput').value;
+  if(mode!=='singles' && !$('#batchTitleInput').value.trim()){
+    const firstPath=files[0].webkitRelativePath||'';
+    const folderName=firstPath.includes('/')?firstPath.split('/')[0]:'';
+    if(folderName)$('#batchTitleInput').value=folderName.replace(/[_-]+/g,' ');
+  }
+
+  renderBatchReview();
+  e.target.value='';
+
+  for(let i=0;i<batchEntries.length;i++){
+    const entry=batchEntries[i];
+    const detected=await detectPdfPages(entry.file);
+    entry.detecting=false;
+    if(detected){
+      entry.pages=detected;
+      entry.detected=true;
+    }
+    renderBatchReview();
+  }
+}
+
+function batchTargetId(){
+  const title=$('#batchTitleInput').value.trim()||'koleksi-baru';
+  return uniqueItemId(slugify(title));
+}
+
+function batchPathFor(entry,index){
+  const category=$('#batchCategoryInput').value.trim()||'Lainnya';
+  const folder=categoryFolder(category);
+  const mode=$('#batchModeInput').value;
+
+  if(mode==='singles'){
+    return `assets/pdf-v2/${folder}/${entry.filename}`;
+  }
+
+  const collectionId=batchTargetId();
+  return `assets/pdf-v2/${folder}/${collectionId}/${entry.filename}`;
+}
+
+function renderBatchReview(){
+  const host=$('#batchReviewList');
+  $('#batchFileCount').textContent=batchEntries.length;
+  $('#applyBatchBtn').disabled=!batchEntries.length;
+
+  if(!batchEntries.length){
+    host.innerHTML='<div class="batch-empty">Belum ada PDF dipilih.</div>';
+    return;
+  }
+
+  const duplicateNames=new Set();
+  const seen=new Set();
+  batchEntries.forEach(e=>{
+    const k=e.filename.toLowerCase();
+    if(seen.has(k))duplicateNames.add(k);
+    seen.add(k);
+  });
+
+  host.innerHTML=batchEntries.map((entry,i)=>{
+    const duplicate=duplicateNames.has(entry.filename.toLowerCase());
+    return `
+      <div class="batch-row ${duplicate?'batch-row-error':''}" draggable="true" data-batch-index="${i}">
+        <button class="batch-drag" type="button" title="Drag">☰</button>
+        <span class="batch-num">${String(i+1).padStart(2,'0')}</span>
+        <div class="batch-row-main">
+          <input class="batch-title-input" data-batch-title="${i}" value="${esc(entry.title)}" aria-label="Judul PDF ${i+1}">
+          <small>${esc(entry.filename)}${duplicate?' • Nama file duplikat':''}${entry.detecting?' • mendeteksi halaman…':entry.detected?` • ${entry.pages} hal. terdeteksi`:''}</small>
+          <code>${esc(r2Key(batchPathFor(entry,i)))}</code>
+        </div>
+        <label class="batch-pages">
+          <span>Hal.</span>
+          <input type="number" min="1" value="${Math.max(1,Number(entry.pages)||1)}" data-batch-pages="${i}">
+        </label>
+        <span class="batch-order-actions">
+          <button type="button" data-batch-up="${i}" title="Naik">↑</button>
+          <button type="button" data-batch-down="${i}" title="Turun">↓</button>
+        </span>
+      </div>`;
+  }).join('');
+
+  $$('[data-batch-title]',host).forEach(input=>{
+    input.oninput=()=>{
+      const i=Number(input.dataset.batchTitle);
+      if(batchEntries[i])batchEntries[i].title=input.value;
+    };
+  });
+
+  $$('[data-batch-pages]',host).forEach(input=>{
+    input.oninput=()=>{
+      const i=Number(input.dataset.batchPages);
+      if(batchEntries[i])batchEntries[i].pages=Math.max(1,Math.floor(Number(input.value)||1));
+    };
+  });
+
+  $$('[data-batch-up]',host).forEach(btn=>btn.onclick=()=>moveBatchEntry(Number(btn.dataset.batchUp),Number(btn.dataset.batchUp)-1));
+  $$('[data-batch-down]',host).forEach(btn=>btn.onclick=()=>moveBatchEntry(Number(btn.dataset.batchDown),Number(btn.dataset.batchDown)+1));
+
+  $$('.batch-row',host).forEach(row=>{
+    row.addEventListener('dragstart',e=>{
+      batchDragIndex=Number(row.dataset.batchIndex);
+      row.classList.add('dragging');
+      try{e.dataTransfer.effectAllowed='move'}catch{}
+    });
+    row.addEventListener('dragend',()=>{
+      batchDragIndex=null;
+      row.classList.remove('dragging');
+      $$('.drag-over',host).forEach(el=>el.classList.remove('drag-over'));
+    });
+    row.addEventListener('dragover',e=>{
+      e.preventDefault();
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+    row.addEventListener('drop',e=>{
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const to=Number(row.dataset.batchIndex);
+      if(batchDragIndex===null||batchDragIndex===to)return;
+      moveBatchEntry(batchDragIndex,to);
+    });
+  });
+
+  $('#applyBatchBtn').disabled=duplicateNames.size>0;
+}
+
+function moveBatchEntry(from,to){
+  if(from<0||to<0||from>=batchEntries.length||to>=batchEntries.length||from===to)return;
+  const [entry]=batchEntries.splice(from,1);
+  batchEntries.splice(to,0,entry);
+  renderBatchReview();
+}
+
+function applyBatchImport(){
+  if(!batchEntries.length)return;
+
+  const mode=$('#batchModeInput').value;
+  const category=$('#batchCategoryInput').value.trim()||'Lainnya';
+  const invalid=batchEntries.find(e=>!e.title.trim()||!Number.isInteger(Number(e.pages))||Number(e.pages)<1);
+  if(invalid){
+    toast('Periksa judul dan jumlah halaman pada daftar PDF.','error');
+    return;
+  }
+
+  createBackup('Sebelum Batch Import PDF');
+
+  if(mode==='singles'){
+    const created=[];
+    for(const entry of batchEntries){
+      const title=entry.title.trim();
+      const id=uniqueItemId(slugify(title));
+      const item={
+        id,
+        title,
+        category,
+        type:'single',
+        icon:'◈',
+        coverText:title,
+        file:batchPathFor(entry,0),
+        pages:Math.max(1,Math.floor(Number(entry.pages)||1))
+      };
+      data.items.push(item);
+      created.push(item);
+    }
+    selectedId=created[0]?.id||null;
+  }else{
+    const title=$('#batchTitleInput').value.trim();
+    if(!title){
+      toast('Judul Collection / Group belum diisi.','error');
+      $('#batchTitleInput').focus();
+      return;
+    }
+
+    const id=uniqueItemId(slugify(title));
+    const used=new Set([
+      ...data.items.map(x=>x.id),
+      ...data.items.flatMap(x=>(x.parts||[]).map(p=>p.id))
+    ]);
+    const parts=[];
+
+    for(const entry of batchEntries){
+      const partTitle=entry.title.trim();
+      let partId=`${id}-${slugify(partTitle)}`;
+      let n=2;
+      while(used.has(partId))partId=`${id}-${slugify(partTitle)}-${n++}`;
+      used.add(partId);
+      const folder=categoryFolder(category);
+      parts.push({
+        id:partId,
+        title:partTitle,
+        file:`assets/pdf-v2/${folder}/${id}/${entry.filename}`,
+        pages:Math.max(1,Math.floor(Number(entry.pages)||1))
+      });
+    }
+
+    data.items.push({
+      id,
+      title,
+      category,
+      type:mode,
+      icon:'◈',
+      coverText:title,
+      parts
+    });
+    selectedId=id;
+  }
+
+  refreshCategoryUI();
+  markDirty(`${batchEntries.length} PDF ditambahkan melalui Batch Import`);
+  const id=selectedId;
+  closeBatchDialog();
+  if(id)selectItem(id);
+  toast('Batch Import selesai. Jangan lupa unggah PDF fisik ke R2 sesuai key yang dibuat.','ok');
 }
 
 /* ===================== CREATE / DELETE ITEM ===================== */
@@ -877,7 +1272,7 @@ function createItem(){
   };
 
   if(type==='single'){
-    item.file=`assets/pdf-v2/${slugify(category)}/`;
+    item.file='';
     item.pages=1;
   }else{
     item.parts=[];
@@ -924,7 +1319,7 @@ function validateAll(){
   const oks=[];
 
   if(!data || !Array.isArray(data.items)){
-    errors.push({scope:'Root',message:'items[] tidak ditemukan.'});
+    errors.push({scope:'Root',message:'items[] tidak ditemukan.',fix:'Muat ulang books.json yang valid.',field:'root'});
     return {errors,warnings,oks};
   }
 
@@ -934,74 +1329,79 @@ function validateAll(){
 
   data.items.forEach((item,index)=>{
     const label=item.title||`Item #${index+1}`;
+    const base={itemId:item.id||'',itemIndex:index};
 
     if(!item.id){
-      errors.push({scope:label,message:'ID bacaan kosong.'});
+      errors.push({...base,scope:label,message:'ID bacaan kosong.',fix:'Buat ulang bacaan atau muat data yang benar. ID normalnya dibuat otomatis.',field:'id'});
     }else{
       if(topIds.has(item.id)){
-        errors.push({scope:label,message:`ID bacaan duplikat: ${item.id}`});
+        errors.push({...base,scope:label,message:`ID bacaan duplikat: ${item.id}`,fix:'Ada dua bacaan dengan ID teknis yang sama. Periksa hasil import JSON atau buat ulang item duplikat.',field:'id'});
       }
       topIds.set(item.id,index);
     }
 
     if(!String(item.title||'').trim()){
-      errors.push({scope:label,message:'Judul tampilan kosong.'});
+      errors.push({...base,scope:label,message:'Judul tampilan kosong.',fix:'Isi Judul Tampilan.',field:'title'});
     }
 
     if(!String(item.category||'').trim()){
-      errors.push({scope:label,message:'Kategori kosong.'});
+      errors.push({...base,scope:label,message:'Kategori kosong.',fix:'Pilih atau isi kategori bacaan.',field:'category'});
     }
 
     if(!VALID_TYPES.has(item.type)){
-      errors.push({scope:label,message:`Tipe tidak valid: ${item.type||'(kosong)'}`});
+      errors.push({...base,scope:label,message:`Tipe tidak valid: ${item.type||'(kosong)'}`,fix:'Pilih Single, Collection, atau Group.',field:'type'});
     }
 
     if(!String(item.icon||'').trim()){
-      warnings.push({scope:label,message:'Icon kartu kosong.'});
+      warnings.push({...base,scope:label,message:'Icon kartu kosong.',fix:'Isi icon jika ingin kartu aplikasi memiliki tanda visual.',field:'icon'});
     }
 
     if(!String(item.coverText??'').trim()){
-      warnings.push({scope:label,message:'Teks cover/kartu kosong.'});
+      warnings.push({...base,scope:label,message:'Teks cover/kartu kosong.',fix:'Isi teks kartu jika diperlukan.',field:'cover'});
     }
 
     if(item.type==='single'){
-      validateFile(label,item.file,item.pages,errors,warnings,paths);
+      validateFile(label,item.file,item.pages,errors,warnings,paths,{...base,field:'single-file'});
     }else if(VALID_TYPES.has(item.type)){
       if(!Array.isArray(item.parts)){
-        errors.push({scope:label,message:'parts[] tidak ditemukan.'});
+        errors.push({...base,scope:label,message:'parts[] tidak ditemukan.',fix:'Ubah tipe lalu kembalikan, atau buat ulang struktur bagian.',field:'parts'});
       }else if(!item.parts.length){
-        errors.push({scope:label,message:'Belum memiliki bagian/PDF.'});
+        errors.push({...base,scope:label,message:'Belum memiliki bagian/PDF.',fix:'Klik “+ Tambah Bagian” atau gunakan Batch Import PDF.',field:'parts'});
       }else{
         item.parts.forEach((p,i)=>{
           const pLabel=`${label} → Bagian ${i+1}${p.title?` (${p.title})`:''}`;
+          const meta={...base,partIndex:i,field:'part'};
 
           if(!p.id){
-            errors.push({scope:pLabel,message:'ID bagian kosong.'});
+            errors.push({...meta,scope:pLabel,message:'ID bagian kosong.',fix:'Buka bagian ini lalu simpan ulang. ID baru dibuat otomatis.',field:'part-id'});
           }else{
             if(topIds.has(p.id)){
-              errors.push({scope:pLabel,message:`ID bagian sama dengan ID bacaan utama: ${p.id}`});
+              errors.push({...meta,scope:pLabel,message:`ID bagian sama dengan ID bacaan utama: ${p.id}`,fix:'ID teknis bentrok. Buat ulang bagian ini agar ID otomatis dibuat baru.',field:'part-id'});
             }
             if(partIds.has(p.id)){
-              errors.push({scope:pLabel,message:`ID bagian duplikat: ${p.id}`});
+              errors.push({...meta,scope:pLabel,message:`ID bagian duplikat: ${p.id}`,fix:'Ada dua bagian dengan ID sama. Buat ulang salah satu bagian.',field:'part-id'});
             }
             partIds.set(p.id,pLabel);
           }
 
           if(!String(p.title||'').trim()){
-            errors.push({scope:pLabel,message:'Judul bagian kosong.'});
+            errors.push({...meta,scope:pLabel,message:'Judul bagian kosong.',fix:'Buka bagian ini dan isi Judul Bagian.',field:'part-title'});
           }
 
-          validateFile(pLabel,p.file,p.pages,errors,warnings,paths);
+          validateFile(pLabel,p.file,p.pages,errors,warnings,paths,meta);
         });
       }
     }
   });
 
-  for(const [path,labels] of paths.entries()){
-    if(labels.length>1){
+  for(const [path,entries] of paths.entries()){
+    if(entries.length>1){
+      const first=entries[0];
       warnings.push({
+        ...first.meta,
         scope:'PDF',
-        message:`Path dipakai ${labels.length} kali: ${path}`
+        message:`Path dipakai ${entries.length} kali: ${path}`,
+        fix:'Pastikan memang ingin beberapa bacaan memakai file PDF yang sama.'
       });
     }
   }
@@ -1013,31 +1413,28 @@ function validateAll(){
   return {errors,warnings,oks};
 }
 
-function validateFile(label,file,pages,errors,warnings,paths){
+function validateFile(label,file,pages,errors,warnings,paths,meta={}){
   const path=String(file||'').trim();
 
   if(!path){
-    errors.push({scope:label,message:'Path PDF kosong.'});
+    errors.push({...meta,scope:label,message:'PDF belum dipilih.',fix:'Pilih PDF bacaan. Path dan R2 key akan dibuat otomatis.',field:meta.partIndex>=0?'part-file':'single-file'});
   }else{
     if(!path.startsWith('assets/pdf-v2/')){
-      errors.push({
-        scope:label,
-        message:'Path PDF harus diawali assets/pdf-v2/ agar pemetaan R2 konsisten.'
-      });
+      errors.push({...meta,scope:label,message:'Alamat PDF tidak memakai struktur assets/pdf-v2/.',fix:'Pilih ulang PDF atau buka Detail Teknis jika memang perlu memperbaiki path lama.',field:meta.partIndex>=0?'part-file':'single-file'});
     }
 
     if(!/\.pdf$/i.test(path)){
-      warnings.push({scope:label,message:'Path tidak berakhiran .pdf.'});
+      warnings.push({...meta,scope:label,message:'Alamat PDF tidak berakhiran .pdf.',fix:'Pilih ulang file PDF yang benar.',field:meta.partIndex>=0?'part-file':'single-file'});
     }
 
     const arr=paths.get(path)||[];
-    arr.push(label);
+    arr.push({label,meta});
     paths.set(path,arr);
   }
 
   const n=Number(pages);
   if(!Number.isInteger(n)||n<1){
-    errors.push({scope:label,message:'Jumlah halaman harus bilangan bulat minimal 1.'});
+    errors.push({...meta,scope:label,message:'Jumlah halaman belum valid.',fix:'Isi jumlah halaman minimal 1.',field:meta.partIndex>=0?'part-pages':'single-pages'});
   }
 }
 
@@ -1063,16 +1460,19 @@ function renderItemValidation(){
   }
 
   host.innerHTML=[
-    ...r.errors.map(e=>`<div class="validation-entry error"><b>!</b><span>${esc(e.message)}</span></div>`),
-    ...r.warnings.map(w=>`<div class="validation-entry warning"><b>△</b><span>${esc(w.message)}</span></div>`)
+    ...r.errors.map((e,i)=>`<button class="validation-entry error validation-jump" type="button" data-local-error="${i}"><b>!</b><span><strong>${esc(e.message)}</strong><small>${esc(e.fix||'Klik untuk melihat bagian terkait.')}</small></span><i>›</i></button>`),
+    ...r.warnings.map((w,i)=>`<button class="validation-entry warning validation-jump" type="button" data-local-warning="${i}"><b>△</b><span><strong>${esc(w.message)}</strong><small>${esc(w.fix||'Klik untuk melihat bagian terkait.')}</small></span><i>›</i></button>`)
   ].join('');
+
+  $$('[data-local-error]',host).forEach(btn=>btn.onclick=()=>focusIssue(r.errors[Number(btn.dataset.localError)]));
+  $$('[data-local-warning]',host).forEach(btn=>btn.onclick=()=>focusIssue(r.warnings[Number(btn.dataset.localWarning)]));
 }
 
 function openValidationDialog(forExport=false){
   const r=validateAll();
 
   $('#validationDialogTitle').textContent=
-    forExport?'Preview sebelum Download':'Validasi books.json';
+    forExport?'Preview sebelum Download':'Kesehatan Data';
 
   $('#validationSummary').innerHTML=`
     <div class="validation-summary-card">
@@ -1088,21 +1488,25 @@ function openValidationDialog(forExport=false){
 
   if(r.errors.length){
     blocks.push('<div class="validation-group-title">ERROR — WAJIB DIPERBAIKI</div>');
-    blocks.push(...r.errors.map(e=>
-      `<div class="validation-detail error"><b>${esc(e.scope)}</b><br>${esc(e.message)}</div>`
+    blocks.push(...r.errors.map((e,i)=>
+      `<button class="validation-detail error actionable" type="button" data-global-error="${i}">
+        <span><b>${esc(e.scope)}</b><strong>${esc(e.message)}</strong><small>${esc(e.fix||'Klik untuk menuju bagian yang bermasalah.')}</small></span><i>Perbaiki ›</i>
+      </button>`
     ));
   }
 
   if(r.warnings.length){
     blocks.push('<div class="validation-group-title">PERINGATAN — PERLU DICEK</div>');
-    blocks.push(...r.warnings.map(w=>
-      `<div class="validation-detail warning"><b>${esc(w.scope)}</b><br>${esc(w.message)}</div>`
+    blocks.push(...r.warnings.map((w,i)=>
+      `<button class="validation-detail warning actionable" type="button" data-global-warning="${i}">
+        <span><b>${esc(w.scope)}</b><strong>${esc(w.message)}</strong><small>${esc(w.fix||'Klik untuk menuju bagian terkait.')}</small></span><i>Lihat ›</i>
+      </button>`
     ));
   }
 
   if(!r.errors.length){
     blocks.unshift(
-      '<div class="validation-detail ok"><b>✓ Struktur aman untuk diekspor.</b><br>'+
+      '<div class="validation-detail ok"><b>✓ Struktur aman untuk diekspor.</b><br>'+ 
       (r.warnings.length
         ? 'Ada peringatan, tetapi tidak memblokir download.'
         : 'Tidak ada error atau peringatan yang terdeteksi.')+
@@ -1111,10 +1515,62 @@ function openValidationDialog(forExport=false){
   }
 
   details.innerHTML=blocks.join('');
+  $$('[data-global-error]',details).forEach(btn=>btn.onclick=()=>focusIssue(r.errors[Number(btn.dataset.globalError)],true));
+  $$('[data-global-warning]',details).forEach(btn=>btn.onclick=()=>focusIssue(r.warnings[Number(btn.dataset.globalWarning)],true));
+
   $('#confirmExportBtn').classList.toggle('hidden',!forExport);
   $('#confirmExportBtn').disabled=r.errors.length>0;
 
   $('#validationDialog').showModal();
+}
+
+function focusIssue(issue,closeValidation=false){
+  if(!issue)return;
+  if(closeValidation && $('#validationDialog').open)$('#validationDialog').close();
+
+  const item=issue.itemId
+    ? data.items.find(x=>x.id===issue.itemId)
+    : Number.isInteger(issue.itemIndex)
+      ? data.items[issue.itemIndex]
+      : null;
+
+  if(!item){
+    toast(issue.fix||issue.message,'warn');
+    return;
+  }
+
+  selectItem(item.id);
+
+  setTimeout(()=>{
+    if(Number.isInteger(issue.partIndex)){
+      openPartDialog(issue.partIndex);
+      const target={
+        'part-title':'#partTitleInput',
+        'part-file':'#partPdfChooseBtn',
+        'part-pages':'#partPagesInput',
+        'part-id':'#partTitleInput'
+      }[issue.field]||'#partTitleInput';
+      $(target)?.focus();
+      if(issue.fix)showFormError($('#partFormError'),issue.fix);
+      return;
+    }
+
+    const selector={
+      title:'#titleInput',
+      category:'#categoryInput',
+      type:'#typeInput',
+      icon:'#iconInput',
+      cover:'#coverTextInput',
+      'single-file':'#singlePdfChooseBtn',
+      'single-pages':'#singlePagesInput',
+      parts:'#addPartBtn'
+    }[issue.field];
+
+    const el=selector?$(selector):$('#editorContent');
+    el?.scrollIntoView({behavior:'smooth',block:'center'});
+    el?.focus?.();
+    if(issue.fix)toast(issue.fix,issue.message?.includes('belum')?'warn':'ok');
+  },60);
 }
 
 /* ===================== PREVIEW ===================== */
@@ -1173,7 +1629,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.32-admin';
+  data.version='2.33-admin-comfort';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);

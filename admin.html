@@ -11,7 +11,10 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="brand-mark">ا</div>
+      <div class="brand-mark" aria-label="Logo Amaliyah">
+        <img src="./icons/icon-192.png" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+        <span class="brand-fallback" hidden>A</span>
+      </div>
       <div>
         <small>AMALIYAH • MAINTENANCE</small>
         <h1>Admin Koleksi</h1>
@@ -30,19 +33,20 @@
 
   <section class="workspace-strip">
     <div class="workspace-inner">
-      <div class="workspace-stat">
+      <button id="workspaceStatusBtn" class="workspace-stat status-action" type="button" title="Lihat detail kesehatan data">
         <span id="workspaceStatusDot" class="status-dot"></span>
-        <div>
+        <span>
           <small>STATUS</small>
           <b id="workspaceStatus">Memuat books.json…</b>
-        </div>
-      </div>
+        </span>
+        <span class="status-chevron">›</span>
+      </button>
 
       <div class="workspace-metrics">
         <span><b id="metricItems">0</b><small>Bacaan</small></span>
         <span><b id="metricPdf">0</b><small>PDF</small></span>
-        <span><b id="metricErrors">0</b><small>Error</small></span>
-        <span><b id="metricWarnings">0</b><small>Peringatan</small></span>
+        <button id="metricErrorsBtn" type="button" class="metric-action"><b id="metricErrors">0</b><small>Error</small></button>
+        <button id="metricWarningsBtn" type="button" class="metric-action"><b id="metricWarnings">0</b><small>Peringatan</small></button>
       </div>
     </div>
   </section>
@@ -55,7 +59,10 @@
           <b>Daftar Koleksi</b>
           <small id="catalogInfo">Memuat…</small>
         </div>
-        <button id="addItemBtn" class="primary small" type="button">+ Tambah</button>
+        <div class="sidebar-add-actions">
+          <button id="batchImportBtn" class="ghost small" type="button">Import PDF</button>
+          <button id="addItemBtn" class="primary small" type="button">+ Tambah</button>
+        </div>
       </div>
 
       <div class="toolbar">
@@ -82,7 +89,7 @@
 
     <section class="editor card">
       <div id="emptyEditor" class="empty-editor">
-        <div class="empty-ornament">ا</div>
+        <div class="empty-ornament">✦</div>
         <h2>Pilih bacaan untuk diedit</h2>
         <p>Semua perubahan dilakukan pada data editor terlebih dahulu. PDF di R2 tidak akan terhapus otomatis.</p>
       </div>
@@ -106,7 +113,7 @@
 
         <div class="preview-inline">
           <div id="liveCardPreview" class="mini-book-card">
-            <span id="previewIcon" class="mini-book-icon">ا</span>
+            <span id="previewIcon" class="mini-book-icon">◈</span>
             <span class="mini-book-copy">
               <small id="previewCategory">KATEGORI</small>
               <b id="previewTitle">Judul Bacaan</b>
@@ -146,11 +153,21 @@
             <small>Disarankan 1–3 karakter.</small>
           </label>
 
-          <label class="field">
-            <span>ID Bacaan</span>
-            <input id="idInput" type="text" readonly>
-            <small>ID dikunci agar progres, favorit, riwayat, dan bookmark lama aman.</small>
-          </label>
+          <div class="auto-managed-note">
+            <span class="auto-managed-icon">✓</span>
+            <span><b>Detail teknis dikelola otomatis.</b><small>ID, slug, dan key tidak perlu Kakak atur manual.</small></span>
+          </div>
+
+          <details class="technical-details span-2">
+            <summary>Detail teknis <small>opsional dilihat</small></summary>
+            <div class="technical-grid">
+              <label class="field">
+                <span>ID Bacaan</span>
+                <input id="idInput" type="text" readonly>
+                <small>Dikunci agar progres, favorit, riwayat, dan bookmark lama aman.</small>
+              </label>
+            </div>
+          </details>
 
           <label class="field span-2">
             <span>Teks Cover / Kartu</span>
@@ -168,24 +185,34 @@
             </div>
           </div>
 
-          <div class="form-grid compact">
-            <label class="field span-2">
-              <span>Path PDF Virtual</span>
-              <input id="singleFileInput" type="text" autocomplete="off" placeholder="assets/pdf-v2/wirid/nama-file.pdf">
-              <small id="singleR2Key" class="r2-key">R2 key: —</small>
-            </label>
+          <div class="pdf-workflow-grid">
+            <div class="pdf-picker-card">
+              <div class="pdf-picker-copy">
+                <span class="field-title">PDF Bacaan</span>
+                <b id="singlePdfName">Belum memilih file baru</b>
+                <small>Pilih PDF jika ingin mengisi atau mengganti nama file. File fisik tetap diunggah ke R2.</small>
+              </div>
+              <button id="singlePdfChooseBtn" class="ghost accent" type="button">Pilih PDF</button>
+              <input id="singlePdfPicker" type="file" accept="application/pdf,.pdf" hidden>
+            </div>
 
-            <label class="field">
-              <span>Jumlah Halaman</span>
+            <label class="field pages-field">
+              <span>Jumlah Halaman <small class="auto-label">otomatis</small></span>
               <input id="singlePagesInput" type="number" min="1">
             </label>
-
-            <label class="file-helper">
-              <span>Pilih nama PDF (opsional)</span>
-              <input id="singlePdfPicker" type="file" accept="application/pdf,.pdf">
-              <small>Hanya membantu mengisi nama/path. PDF tetap di-upload sendiri ke Cloudflare R2.</small>
-            </label>
           </div>
+
+          <details class="technical-details pdf-technical">
+            <summary>Alamat PDF di R2 <small>dibuat otomatis</small></summary>
+            <div class="technical-grid">
+              <label class="field span-2">
+                <span>Path Virtual</span>
+                <input id="singleFileInput" type="text" autocomplete="off" placeholder="assets/pdf-v2/.../nama-file.pdf" readonly>
+                <small id="singleR2Key" class="r2-key">R2 key: —</small>
+              </label>
+              <button id="editSinglePathBtn" class="ghost tiny technical-edit-btn" type="button">Edit teknis</button>
+            </div>
+          </details>
         </div>
 
         <div id="partsSection" class="section-box hidden">
@@ -233,59 +260,76 @@
 
   <!-- Dialog tambah/edit bagian -->
   <dialog id="partDialog">
-    <form method="dialog" class="dialog-card" id="partForm">
+    <form class="dialog-card part-dialog-card" id="partForm" novalidate>
       <div class="dialog-head">
         <div>
           <small id="partDialogMode">BAGIAN</small>
           <h3 id="partDialogTitle">Tambah Bagian</h3>
         </div>
-        <button value="cancel" class="icon-btn dark" type="submit">✕</button>
+        <button id="closePartDialogBtn" class="icon-btn dark" type="button" aria-label="Tutup">✕</button>
       </div>
+
+      <div id="partFormError" class="form-error hidden" role="alert"></div>
 
       <label class="field">
         <span>Judul Bagian</span>
-        <input id="partTitleInput" required autocomplete="off">
+        <input id="partTitleInput" autocomplete="off" placeholder="Contoh: Pembukaan">
       </label>
 
-      <label class="field">
-        <span>ID Bagian</span>
-        <input id="partIdInput" required autocomplete="off">
-        <small>Bagian lama dikunci. Untuk bagian baru ID dibuat otomatis dari judul.</small>
-      </label>
+      <div class="pdf-picker-card dialog-pdf-picker">
+        <div class="pdf-picker-copy">
+          <span class="field-title">PDF Bacaan</span>
+          <b id="partPdfName">Belum memilih PDF</b>
+          <small>Pilih file agar ID, path virtual, dan R2 key dibuat otomatis.</small>
+        </div>
+        <button id="partPdfChooseBtn" class="ghost accent" type="button">Pilih PDF</button>
+        <input id="partPdfPicker" type="file" accept="application/pdf,.pdf" hidden>
+      </div>
 
-      <label class="field">
-        <span>Path PDF Virtual</span>
-        <input id="partFileInput" required autocomplete="off" placeholder="assets/pdf-v2/.../nama-file.pdf">
-        <small id="partR2Key" class="r2-key">R2 key: —</small>
-      </label>
+      <div class="dialog-inline-grid">
+        <label class="field pages-field">
+          <span>Jumlah Halaman <small class="auto-label">otomatis</small></span>
+          <input id="partPagesInput" type="number" min="1" value="1">
+        </label>
 
-      <label class="field">
-        <span>Jumlah Halaman</span>
-        <input id="partPagesInput" type="number" min="1" value="1" required>
-      </label>
+        <div class="auto-managed-note compact-note">
+          <span class="auto-managed-icon">✓</span>
+          <span><b>Teknis otomatis</b><small>ID & key tidak perlu diketik.</small></span>
+        </div>
+      </div>
 
-      <label class="file-helper dialog-file-helper">
-        <span>Pilih nama PDF (opsional)</span>
-        <input id="partPdfPicker" type="file" accept="application/pdf,.pdf">
-        <small>File fisik tetap diunggah ke Cloudflare R2 dengan key yang sesuai.</small>
-      </label>
+      <details class="technical-details dialog-technical">
+        <summary>Detail teknis <small>opsional dilihat</small></summary>
+        <div class="technical-grid">
+          <label class="field">
+            <span>ID Bagian</span>
+            <input id="partIdInput" autocomplete="off" readonly>
+          </label>
+          <label class="field">
+            <span>Path Virtual</span>
+            <input id="partFileInput" autocomplete="off" placeholder="assets/pdf-v2/.../nama-file.pdf" readonly>
+            <small id="partR2Key" class="r2-key">R2 key: —</small>
+          </label>
+          <button id="editPartPathBtn" class="ghost tiny technical-edit-btn" type="button">Edit teknis</button>
+        </div>
+      </details>
 
-      <div class="dialog-actions">
-        <button value="cancel" class="ghost" type="submit">Batal</button>
-        <button id="savePartBtn" value="default" class="primary" type="button">Simpan Bagian</button>
+      <div class="dialog-actions sticky-dialog-actions">
+        <button id="cancelPartBtn" class="ghost" type="button">Batal</button>
+        <button id="savePartBtn" class="primary" type="button">Simpan Bagian</button>
       </div>
     </form>
   </dialog>
 
   <!-- Dialog bacaan baru -->
   <dialog id="itemDialog">
-    <form method="dialog" class="dialog-card" id="itemForm">
+    <form class="dialog-card" id="itemForm" novalidate>
       <div class="dialog-head">
         <div>
           <small>BACAAN BARU</small>
           <h3>Tambah Bacaan</h3>
         </div>
-        <button value="cancel" class="icon-btn dark" type="submit">✕</button>
+        <button id="closeItemDialogBtn" class="icon-btn dark" type="button">✕</button>
       </div>
 
       <label class="field">
@@ -315,10 +359,71 @@
       </label>
 
       <div class="dialog-actions">
-        <button value="cancel" class="ghost" type="submit">Batal</button>
+        <button id="cancelItemBtn" class="ghost" type="button">Batal</button>
         <button id="createItemBtn" class="primary" type="button">Buat Bacaan</button>
       </div>
     </form>
+  </dialog>
+
+  <!-- Batch import PDF -->
+  <dialog id="batchDialog" class="wide-dialog batch-dialog">
+    <div class="dialog-card batch-dialog-card">
+      <div class="dialog-head">
+        <div>
+          <small>IMPORT BANYAK PDF</small>
+          <h3>Batch Import PDF</h3>
+        </div>
+        <button id="closeBatchBtn" class="icon-btn dark" type="button">✕</button>
+      </div>
+
+      <p class="dialog-note batch-note">Pilih banyak PDF atau satu folder. Admin menyiapkan judul, ID, urutan, path virtual, dan R2 key otomatis. File fisik tidak diunggah dari halaman ini.</p>
+
+      <div class="batch-settings">
+        <label class="field">
+          <span>Masukkan sebagai</span>
+          <select id="batchModeInput">
+            <option value="singles">Banyak bacaan Single</option>
+            <option value="collection">Satu Collection</option>
+            <option value="group">Satu Group</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Kategori</span>
+          <input id="batchCategoryInput" list="categoryOptions" autocomplete="off">
+        </label>
+        <label id="batchTitleField" class="field span-2 hidden">
+          <span>Judul Collection / Group</span>
+          <input id="batchTitleInput" autocomplete="off" placeholder="Contoh: Maulid Baru">
+        </label>
+      </div>
+
+      <div class="batch-pick-zone">
+        <div>
+          <b>Pilih PDF yang ingin dimasukkan</b>
+          <small>Bisa memilih banyak file sekaligus. Di Chrome desktop juga bisa memilih satu folder.</small>
+        </div>
+        <div class="batch-pick-actions">
+          <button id="batchChooseFilesBtn" class="primary-soft-btn" type="button">Pilih Banyak PDF</button>
+          <button id="batchChooseFolderBtn" class="ghost" type="button">Pilih Folder</button>
+        </div>
+        <input id="batchFilesInput" type="file" accept="application/pdf,.pdf" multiple hidden>
+        <input id="batchFolderInput" type="file" accept="application/pdf,.pdf" multiple webkitdirectory directory hidden>
+      </div>
+
+      <div class="batch-summary-row">
+        <span><b id="batchFileCount">0</b> PDF dipilih</span>
+        <small>Urutan awal mengikuti nama file. Judul dan halaman bisa dikoreksi sebelum ditambahkan.</small>
+      </div>
+
+      <div id="batchReviewList" class="batch-review-list">
+        <div class="batch-empty">Belum ada PDF dipilih.</div>
+      </div>
+
+      <div class="dialog-actions sticky-dialog-actions">
+        <button id="cancelBatchBtn" class="ghost" type="button">Batal</button>
+        <button id="applyBatchBtn" class="primary" type="button" disabled>Tambahkan ke Katalog</button>
+      </div>
+    </div>
   </dialog>
 
   <!-- Preview -->

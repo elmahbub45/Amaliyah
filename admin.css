@@ -1430,3 +1430,661 @@ textarea{
     font-size:8px;
   }
 }
+
+/* =========================================================
+   V2.33 — ADMIN COMFORT WORKSPACE
+   Fokus: kerja harian lebih nyaman, compact, minim teknis.
+   ========================================================= */
+
+:root{
+  --workspace-max:1220px;
+  --footer-h:70px;
+  --topbar-h:78px;
+  --status-h:64px;
+}
+
+/* Brand memakai icon PWA yang sama; fallback tanpa huruf Arab. */
+.brand-mark{
+  overflow:hidden;
+  padding:4px;
+}
+.brand-mark img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  border-radius:10px;
+}
+.brand-fallback{
+  width:100%;
+  height:100%;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:linear-gradient(145deg,#0c6a54,#064437);
+  color:#e7c76d;
+  font-family:Georgia,serif;
+  font-weight:700;
+  font-size:20px;
+}
+
+/* Header/footer mengikuti lebar workspace, bukan layar penuh. */
+.topbar{
+  padding-left:max(20px,calc((100vw - var(--workspace-max))/2));
+  padding-right:max(20px,calc((100vw - var(--workspace-max))/2));
+}
+.workspace-inner,
+.layout{
+  width:min(var(--workspace-max),calc(100% - 32px));
+}
+.bottom-actions{
+  padding-left:max(20px,calc((100vw - var(--workspace-max))/2));
+  padding-right:max(20px,calc((100vw - var(--workspace-max))/2));
+}
+
+/* Status sekarang merupakan pintu masuk detail error. */
+.workspace-stat.status-action{
+  appearance:none;
+  border:0;
+  padding:6px 9px 6px 4px;
+  border-radius:11px;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  transition:background .15s ease;
+}
+.workspace-stat.status-action:hover,
+.workspace-stat.status-action:focus-visible{
+  background:rgba(7,91,73,.055);
+  outline:none;
+}
+.workspace-stat.status-action.has-issue{
+  background:rgba(161,61,53,.045);
+}
+.status-chevron{
+  margin-left:3px;
+  color:#9a8771;
+  font-size:20px;
+  line-height:1;
+}
+.workspace-metrics>button{
+  min-width:70px;
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap:5px;
+  padding:7px 9px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:#fffdfa;
+  color:var(--ink);
+}
+.workspace-metrics>button b{font-size:14px}
+.workspace-metrics>button small{font-size:9px;color:var(--muted)}
+.workspace-metrics>button.has-error{
+  border-color:#e6bcb6;
+  background:#fff7f5;
+  color:#8e3e37;
+}
+.workspace-metrics>button.has-warning{
+  border-color:#e6d4aa;
+  background:#fffbf1;
+  color:#84611f;
+}
+
+/* Workspace desktop: sidebar dan editor punya area scroll sendiri. */
+@media(min-width:901px){
+  html,body{height:100%;overflow:hidden}
+  .layout{
+    height:calc(100dvh - var(--topbar-h) - var(--status-h) - var(--footer-h) - 38px);
+    min-height:500px;
+    margin:14px auto 24px;
+    grid-template-columns:350px minmax(0,1fr);
+    gap:14px;
+    overflow:hidden;
+  }
+  .sidebar{
+    position:relative;
+    top:auto;
+    height:100%;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    padding:13px;
+  }
+  .editor{
+    height:100%;
+    min-height:0;
+    overflow:auto;
+    overscroll-behavior:contain;
+    padding:21px 23px 30px;
+  }
+  .item-list{
+    flex:1;
+    min-height:0;
+    max-height:none;
+    overflow:auto;
+    overscroll-behavior:contain;
+  }
+}
+
+/* Sidebar / katalog compact. */
+.sidebar-add-actions{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.sidebar-add-actions .small{
+  min-height:34px;
+  padding:0 10px;
+}
+.sidebar-head{
+  flex:0 0 auto;
+  align-items:flex-start;
+}
+.toolbar{
+  flex:0 0 auto;
+  margin-bottom:9px;
+}
+.item-list{
+  gap:0;
+  padding:2px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+}
+.item-card{
+  min-height:54px;
+  grid-template-columns:23px minmax(0,1fr) 26px;
+  gap:5px;
+  padding:5px 6px;
+  border:0;
+  border-bottom:1px solid #eee8de;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  transform:none!important;
+}
+.item-card:last-child{border-bottom:0}
+.item-card:hover{
+  background:#faf8f3;
+  box-shadow:none;
+}
+.item-card.active{
+  border-color:#eee8de;
+  background:linear-gradient(90deg,#eaf4ef,#f7fbf9);
+  box-shadow:inset 3px 0 0 var(--green);
+}
+.main-drag-handle{
+  width:22px;
+  height:34px;
+  padding:0;
+  font-size:14px;
+  opacity:.55;
+}
+.item-select{
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+}
+.item-copy b{
+  font-size:12.5px;
+  font-weight:720;
+  line-height:1.25;
+}
+.item-copy small{
+  margin-top:3px;
+  font-size:9.3px;
+  line-height:1.25;
+}
+.item-copy small i{
+  font-style:normal;
+  color:#b1a592;
+}
+.item-count{
+  white-space:nowrap;
+  padding:4px 6px;
+  border-radius:999px;
+  background:#f2eee7;
+  color:#68746f;
+  font-size:8.7px;
+  font-weight:700;
+}
+.main-order-actions{
+  display:grid;
+  gap:2px;
+  opacity:.25;
+  transition:opacity .15s ease;
+}
+.item-card:hover .main-order-actions,
+.item-card.active .main-order-actions{opacity:1}
+.main-order-actions button{
+  width:24px;
+  height:21px;
+  border:0;
+  border-radius:6px;
+  background:#f2eee7;
+  color:#68746f;
+  font-size:10px;
+}
+.sidebar-foot{
+  flex:0 0 auto;
+  margin-top:8px;
+  padding:7px 3px 0;
+}
+.sidebar-foot small{font-size:9px}
+
+/* Editor lebih padat dan tidak terasa melebar kosong. */
+.editor-title-row{align-items:flex-start}
+.editor-title-row h2{font-size:22px}
+.preview-inline{margin-top:10px}
+.form-grid{gap:11px 12px}
+.section-box,.validation-panel{
+  margin-top:14px;
+  padding:14px;
+}
+
+/* Semua hal teknis turun ke level sekunder. */
+.auto-managed-note{
+  min-height:64px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:10px 11px;
+  border:1px solid #d5e5de;
+  border-radius:12px;
+  background:#f2f8f5;
+  color:#2e6153;
+}
+.auto-managed-note>span:last-child{min-width:0}
+.auto-managed-note b{
+  display:block;
+  font-size:10.5px;
+}
+.auto-managed-note small{
+  display:block;
+  margin-top:3px;
+  color:#71857d;
+  font-size:9.2px;
+  line-height:1.4;
+}
+.auto-managed-icon{
+  width:25px;
+  height:25px;
+  flex:0 0 25px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  background:#dceee6;
+  color:#1c765c;
+  font-weight:800;
+}
+.compact-note{min-height:58px}
+.technical-details{
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#faf8f4;
+  overflow:hidden;
+}
+.technical-details>summary{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:0 11px;
+  color:#68746f;
+  font-size:10.5px;
+  font-weight:750;
+  cursor:pointer;
+  list-style:none;
+}
+.technical-details>summary::-webkit-details-marker{display:none}
+.technical-details>summary::after{
+  content:'⌄';
+  margin-left:auto;
+  color:#9b8c77;
+}
+.technical-details[open]>summary::after{content:'⌃'}
+.technical-details>summary small{
+  color:#9a948a;
+  font-size:8.8px;
+  font-weight:500;
+}
+.technical-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  padding:0 11px 11px;
+}
+.technical-edit-btn{
+  justify-self:start;
+  min-height:30px!important;
+  padding:0 9px!important;
+  font-size:9px!important;
+}
+
+/* PDF picker custom — tidak lagi memakai kontrol file native yang pecah. */
+.pdf-workflow-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 150px;
+  gap:10px;
+  align-items:stretch;
+}
+.pdf-picker-card{
+  min-height:74px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:11px 12px;
+  border:1px solid #d6e2dc;
+  border-radius:13px;
+  background:#fff;
+}
+.pdf-picker-copy{
+  min-width:0;
+  flex:1;
+}
+.pdf-picker-copy .field-title{
+  display:block;
+  margin-bottom:3px;
+  color:#5d6c66;
+  font-size:10px;
+  font-weight:760;
+}
+.pdf-picker-copy b{
+  display:block;
+  overflow:hidden;
+  color:#23473c;
+  font-size:11.5px;
+  line-height:1.3;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.pdf-picker-copy small{
+  display:block;
+  margin-top:4px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.4;
+}
+.pdf-picker-card>button{flex:0 0 auto}
+.pages-field{align-self:stretch}
+.pages-field input{min-height:46px}
+.pdf-technical{margin-top:9px}
+
+/* Modal Bagian: lebih pendek, fokus ke pekerjaan yang perlu. */
+dialog#partDialog{width:min(570px,calc(100% - 28px))}
+.part-dialog-card{padding:18px 18px 0}
+.part-dialog-card>.field{margin-top:9px}
+.dialog-pdf-picker{margin-top:11px}
+.dialog-inline-grid{
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr);
+  gap:10px;
+  align-items:stretch;
+  margin-top:10px;
+}
+.dialog-technical{margin-top:10px}
+.form-error{
+  margin:0 0 10px;
+  padding:9px 10px;
+  border:1px solid #efc9c4;
+  border-radius:10px;
+  background:#fff5f3;
+  color:#8b3e38;
+  font-size:10px;
+  line-height:1.45;
+}
+.sticky-dialog-actions{
+  position:sticky;
+  bottom:0;
+  z-index:2;
+  margin:14px -18px 0;
+  padding:12px 18px 16px;
+  background:linear-gradient(180deg,rgba(255,253,249,.72),#fffdf9 24%);
+}
+
+/* Validation detail kini menjelaskan dan bisa langsung dibuka. */
+.validation-jump{
+  width:100%;
+  text-align:left;
+  cursor:pointer;
+}
+.validation-jump span{min-width:0;flex:1}
+.validation-jump strong{
+  display:block;
+  font-size:10px;
+}
+.validation-jump small{
+  display:block;
+  margin-top:3px;
+  color:inherit;
+  opacity:.78;
+  font-size:9px;
+  font-weight:500;
+}
+.validation-jump i{
+  margin-left:auto;
+  font-style:normal;
+  font-size:16px;
+  opacity:.65;
+}
+.validation-detail.actionable{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  text-align:left;
+  cursor:pointer;
+}
+.validation-detail.actionable>span{min-width:0}
+.validation-detail.actionable b{
+  display:block;
+  margin-bottom:3px;
+  font-size:9px;
+  opacity:.78;
+}
+.validation-detail.actionable strong{
+  display:block;
+  font-size:10.5px;
+}
+.validation-detail.actionable small{
+  display:block;
+  margin-top:4px;
+  font-size:9px;
+  line-height:1.4;
+  opacity:.78;
+}
+.validation-detail.actionable>i{
+  flex:0 0 auto;
+  font-style:normal;
+  font-size:9.5px;
+  font-weight:800;
+}
+
+/* Batch Import */
+dialog.batch-dialog{width:min(780px,calc(100% - 28px))}
+.batch-dialog-card{padding-bottom:0}
+.batch-note{
+  margin-bottom:12px;
+  padding:9px 10px;
+  border-radius:10px;
+  background:#f2f8f5;
+  color:#526a61;
+}
+.batch-settings{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.batch-pick-zone{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-top:12px;
+  padding:12px;
+  border:1px dashed #c8bca9;
+  border-radius:13px;
+  background:#fffdf9;
+}
+.batch-pick-zone>div:first-child{min-width:0;flex:1}
+.batch-pick-zone b{display:block;font-size:11px}
+.batch-pick-zone small{display:block;margin-top:3px;color:var(--muted);font-size:9px;line-height:1.4}
+.batch-pick-actions{display:flex;gap:6px;flex:0 0 auto}
+.primary-soft-btn{
+  min-height:38px;
+  padding:0 12px;
+  border:1px solid #d9c99f;
+  border-radius:10px;
+  background:#f5ecd8;
+  color:#2d5c4e;
+  font-size:10px;
+  font-weight:750;
+}
+.batch-summary-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:12px 0 7px;
+}
+.batch-summary-row span{font-size:10.5px;color:#40534c}
+.batch-summary-row small{color:var(--muted);font-size:8.8px;text-align:right}
+.batch-review-list{
+  max-height:330px;
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:#fff;
+}
+.batch-empty{
+  padding:26px 14px;
+  color:var(--muted);
+  text-align:center;
+  font-size:10px;
+}
+.batch-row{
+  display:grid;
+  grid-template-columns:24px 31px minmax(0,1fr) 64px 28px;
+  gap:7px;
+  align-items:center;
+  padding:7px 8px;
+  border-bottom:1px solid #eee8de;
+  background:#fff;
+}
+.batch-row:last-child{border-bottom:0}
+.batch-row.dragging{opacity:.45}
+.batch-row.drag-over{box-shadow:inset 0 2px 0 var(--gold)}
+.batch-row-error{background:#fff7f5}
+.batch-drag{
+  width:22px;height:34px;border:0;background:transparent;color:#a69b8b;cursor:grab
+}
+.batch-num{
+  width:29px;height:29px;display:grid;place-items:center;border-radius:8px;background:#edf5f1;color:#2b6958;font-size:8px;font-weight:800
+}
+.batch-row-main{min-width:0}
+.batch-title-input{
+  min-height:33px!important;
+  height:33px;
+  padding:0 8px!important;
+  border-radius:8px!important;
+  font-size:10.5px!important;
+  font-weight:650;
+}
+.batch-row-main small,
+.batch-row-main code{
+  display:block;
+  overflow:hidden;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:8.3px;
+  line-height:1.25;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.batch-row-main code{color:#3b6c5d}
+.batch-pages span{display:block;margin-bottom:3px;color:var(--muted);font-size:8px}
+.batch-pages input{
+  min-height:33px!important;
+  height:33px;
+  padding:0 6px!important;
+  border-radius:8px!important;
+  font-size:10px!important;
+}
+.batch-order-actions{display:grid;gap:2px}
+.batch-order-actions button{
+  width:25px;height:21px;border:0;border-radius:6px;background:#f2eee7;color:#68746f;font-size:10px
+}
+
+/* Mobile/tablet kembali ke alur halaman biasa. */
+@media(max-width:900px){
+  html,body{height:auto;overflow:auto}
+  .layout{
+    width:calc(100% - 20px);
+    height:auto;
+    min-height:0;
+    display:block;
+    overflow:visible;
+  }
+  .sidebar{
+    position:static;
+    height:auto;
+    min-height:0;
+    display:block;
+    overflow:visible;
+  }
+  .item-list{max-height:430px;overflow:auto}
+  .editor{height:auto;min-height:420px;overflow:visible}
+  .workspace-metrics>button{min-width:0}
+}
+
+@media(max-width:620px){
+  .sidebar-head{
+    gap:8px;
+  }
+  .sidebar-add-actions{
+    flex-direction:column-reverse;
+    align-items:stretch;
+  }
+  .sidebar-add-actions button{width:100%}
+  .pdf-workflow-grid,
+  .dialog-inline-grid,
+  .batch-settings{
+    grid-template-columns:1fr;
+  }
+  .technical-grid{grid-template-columns:1fr}
+  .pdf-picker-card{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .pdf-picker-card>button{width:100%}
+  .batch-pick-zone{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .batch-pick-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .batch-summary-row{align-items:flex-start;flex-direction:column}
+  .batch-summary-row small{text-align:left}
+  .batch-row{
+    grid-template-columns:22px 28px minmax(0,1fr) 55px;
+  }
+  .batch-order-actions{
+    grid-column:3 / 5;
+    display:flex;
+    justify-content:flex-end;
+  }
+}
+
+/* V2.33 minor polish */
+.toolbar .search-wrap{grid-row:auto}
+.toolbar #typeFilter{grid-column:1 / 3}
+.auto-label{
+  margin-left:5px;
+  padding:2px 5px;
+  border-radius:999px;
+  background:#eaf4ef;
+  color:#39705f;
+  font-size:7.5px;
+  font-weight:750;
+}
