@@ -91,7 +91,7 @@ function updateNextPart(){
   if(pos.next){
     nextPartText.textContent=`Bagian berikutnya: ${pos.next.title}`;
     nextPartBtn.classList.remove('hidden');
-    nextPartBtn.textContent='Lanjut →';
+    nextPartBtn.textContent='Lanjut ←';
     nextPartBtn.onclick=()=>openNextPart(pos.next);
   }else{
     nextPartText.textContent='Ini adalah bagian terakhir';
@@ -151,12 +151,12 @@ function go(delta){
   if(!pdfDoc)return;
   const target=page+delta;
   if(target<1||target>pdfDoc.numPages)return;
-  page=target;scale=1;syncBookmarkState();drawPage();
+  page=target;scale=1;stage.scrollTop=0;syncBookmarkState();drawPage();
 }
 function goToPage(target){
   if(!pdfDoc)return;
   page=Math.max(1,Math.min(pdfDoc.numPages,Number(target)||1));
-  scale=1;syncBookmarkState();closeSheet();drawPage();
+  scale=1;stage.scrollTop=0;syncBookmarkState();closeSheet();drawPage();
 }
 
 function showSheet(title,contentBuilder){

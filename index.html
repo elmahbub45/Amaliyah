@@ -39,7 +39,7 @@
       <button id="monthlyBtn" class="monthly-link" type="button">▣ Lihat Jadwal Bulanan <span>›</span></button>
     </section>
 
-    <section><div class="section-title">LANJUTKAN MEMBACA</div><article class="reading-card"><div class="cover" id="continueCover">وِرْدُ<br>اللَّطِيف</div><div class="grow"><h3 id="continueTitle">Wirdul Latif</h3><p id="lastPage">Belum dibaca</p><div class="progress"><i id="progressBar"></i></div></div><button class="primary" id="continueBtn">Baca →</button></article></section>
+    <section><div class="section-title">LANJUTKAN MEMBACA</div><article class="reading-card"><div class="home-book-icon" id="continueIcon">و</div><div class="grow"><h3 id="continueTitle">Wirdul Latif</h3><p id="lastPage">Belum dibaca</p><div class="progress"><i id="progressBar"></i></div></div><button class="primary" id="continueBtn">Baca →</button></article></section>
 
 
     <section id="favoritesSection" class="favorites-section hidden">
@@ -82,8 +82,6 @@
         </button>
       </div>
     </section>
-
-    <section><div class="section-title">TERAKHIR DIBACA</div><div class="recent" id="recentBook"><span class="recent-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H12v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M19 4.5A2.5 2.5 0 0 0 16.5 2H12v18h4.5A2.5 2.5 0 0 1 19 22z"/></svg></span><div><b id="recentTitle">Wirdul Latif</b><small id="recentPage">Ketuk untuk membaca</small></div><span class="chevron">›</span></div></section>
   </main>
 
   <nav class="bottom-nav" aria-label="Navigasi utama">
@@ -139,10 +137,50 @@
   <div id="bookmarkList" class="list-wrap"></div>
 </div>
 <div id="history" class="screen hidden">
-  <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Riwayat Bacaan</b><span></span></div>
+  <div class="screenbar history-screenbar">
+    <button onclick="goBackScreen()">‹</button>
+    <b>Riwayat Bacaan</b>
+    <button id="clearHistoryBtn" class="screen-action-btn" type="button" onclick="clearAllHistory()" aria-label="Hapus semua riwayat" title="Hapus semua riwayat">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>
+    </button>
+  </div>
   <div id="historyList" class="list-wrap"></div>
 </div>
-<div id="settings" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Pengaturan</b><span></span></div><div class="settings-card" id="notificationSettings"><h3>Notifikasi Sholat</h3><p>Notifikasi browser memerlukan izin perangkat dan dukungan browser.</p><button class="primary" type="button" onclick="requestNotifications()">Aktifkan Notifikasi</button></div><div class="settings-card"><h3>Lokasi Sholat</h3><p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p><button class="primary" type="button" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button></div></div>
+<div id="settings" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Pengaturan</b><span></span></div><div class="settings-card notification-card" id="notificationSettings">
+  <div class="notification-head">
+    <div>
+      <h3>Notifikasi Sholat</h3>
+      <p id="notificationStatusText">Memeriksa status notifikasi…</p>
+    </div>
+    <label class="switch" aria-label="Aktifkan notifikasi sholat">
+      <input id="notificationMaster" type="checkbox" onchange="setNotificationMaster(this.checked)">
+      <span class="switch-track"></span>
+    </label>
+  </div>
+
+  <div id="notificationControls" class="notification-controls">
+    <div class="notification-label">Waktu yang diingatkan</div>
+    <div class="prayer-toggle-grid">
+      <label><input type="checkbox" data-prayer-notif="Subuh"> <span>Subuh</span></label>
+      <label><input type="checkbox" data-prayer-notif="Dzuhur"> <span>Dzuhur</span></label>
+      <label><input type="checkbox" data-prayer-notif="Ashar"> <span>Ashar</span></label>
+      <label><input type="checkbox" data-prayer-notif="Maghrib"> <span>Maghrib</span></label>
+      <label><input type="checkbox" data-prayer-notif="Isya"> <span>Isya</span></label>
+    </div>
+    <label class="notification-reminder">
+      <span>Waktu pengingat</span>
+      <select id="notificationLead" onchange="saveNotificationSettings()">
+        <option value="0">Tepat waktu sholat</option>
+        <option value="5">5 menit sebelumnya</option>
+        <option value="10">10 menit sebelumnya</option>
+        <option value="15">15 menit sebelumnya</option>
+      </select>
+    </label>
+  </div>
+
+  <button id="notificationPermissionBtn" class="primary notification-permission-btn" type="button" onclick="requestNotifications()">Aktifkan Izin Notifikasi</button>
+  <small class="notification-note">Pengingat web berjalan saat aplikasi/PWA aktif. Notifikasi background penuh akan kita sempurnakan pada tahap APK/push.</small>
+</div><div class="settings-card"><h3>Lokasi Sholat</h3><p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p><button class="primary" type="button" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button></div></div>
 
 <script type="module" src="app.js"></script>
 </body>

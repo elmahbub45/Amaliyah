@@ -553,3 +553,281 @@ main{
 .part-copy{min-width:0}
 .part-copy b{display:block;font-size:12.5px;line-height:1.25}
 .part-copy small{display:block;margin-top:4px;font-size:9.5px;color:#87908b}
+
+
+/* =========================================================
+   V2.22 — Header lebih proporsional
+   ========================================================= */
+.hero .quote{
+  margin-top:20px;
+  padding:11px 13px 10px;
+  border-radius:18px;
+}
+.hero .arabic{
+  font-size:22px !important;
+  line-height:1.45;
+}
+.hero .quote p{
+  max-width:360px;
+  margin:7px auto 2px;
+  font-size:11.5px !important;
+  line-height:1.45 !important;
+}
+.hero .quote small{
+  font-size:8.5px !important;
+}
+@media(max-width:390px){
+  .hero .arabic{font-size:20px !important}
+  .hero .quote p{font-size:10.8px !important}
+}
+
+/* =========================================================
+   V2.22 — Continue Reading + Favorit tanpa cover mini
+   ========================================================= */
+.home-book-icon,
+.favorite-icon{
+  display:grid;
+  place-items:center;
+  background:linear-gradient(145deg,#0c6550,#074638);
+  color:#e7c66f;
+  border:1px solid rgba(214,170,80,.38);
+  font-family:Georgia,serif;
+  font-weight:700;
+  text-align:center;
+}
+.home-book-icon{
+  width:48px;
+  height:48px;
+  flex:0 0 48px;
+  border-radius:13px;
+  font-size:17px;
+}
+.reading-card{
+  min-height:82px;
+}
+.favorite-card{
+  min-height:74px !important;
+  grid-template-columns:42px minmax(0,1fr) !important;
+  padding:9px 10px !important;
+}
+.favorite-icon{
+  width:42px;
+  height:42px;
+  border-radius:11px;
+  font-size:15px;
+}
+.favorite-copy b{
+  font-size:12.5px;
+}
+.favorite-star{
+  top:8px !important;
+  right:9px !important;
+}
+
+/* =========================================================
+   V2.22 — Riwayat bisa dihapus
+   ========================================================= */
+.history-screenbar .screen-action-btn,
+.screen-action-btn{
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:#f1e9dc;
+  color:#8b5a52;
+}
+.screen-action-btn svg{
+  width:18px;
+  height:18px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.history-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 48px;
+  overflow:hidden;
+  margin-bottom:9px;
+  border:1px solid var(--line);
+  border-radius:17px;
+  background:var(--surface);
+  box-shadow:0 4px 14px rgba(63,50,32,.035);
+}
+.history-main{
+  min-width:0;
+  display:grid;
+  grid-template-columns:46px minmax(0,1fr) 16px;
+  align-items:center;
+  gap:11px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  padding:11px 8px 11px 12px;
+}
+.history-copy{min-width:0}
+.history-copy b{
+  display:block;
+  font-size:13px;
+  line-height:1.25;
+}
+.history-copy small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:10.5px;
+  direction:initial;
+  text-align:left;
+}
+.history-delete{
+  border:0;
+  border-left:1px solid #eee4d6;
+  background:#fffaf5;
+  color:#a27068;
+  display:grid;
+  place-items:center;
+}
+.history-delete svg{
+  width:18px;
+  height:18px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.65;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+/* =========================================================
+   V2.22 — Notification settings
+   ========================================================= */
+.notification-card{
+  overflow:hidden;
+}
+.notification-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+}
+.notification-head h3{margin-bottom:4px}
+.notification-head p{margin:0 !important}
+.switch{
+  flex:0 0 auto;
+  position:relative;
+  width:48px;
+  height:28px;
+}
+.switch input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.switch-track{
+  position:absolute;
+  inset:0;
+  border-radius:999px;
+  background:#d8d6cf;
+  transition:.18s;
+}
+.switch-track::after{
+  content:"";
+  position:absolute;
+  width:22px;
+  height:22px;
+  left:3px;
+  top:3px;
+  border-radius:50%;
+  background:white;
+  box-shadow:0 2px 6px rgba(0,0,0,.16);
+  transition:.18s;
+}
+.switch input:checked + .switch-track{
+  background:#0b5b49;
+}
+.switch input:checked + .switch-track::after{
+  transform:translateX(20px);
+}
+.notification-controls{
+  margin-top:15px;
+  padding-top:13px;
+  border-top:1px solid var(--line);
+  transition:.18s;
+}
+.notification-controls.disabled{
+  opacity:.45;
+  pointer-events:none;
+}
+.notification-label{
+  font-size:10px;
+  font-weight:800;
+  margin-bottom:8px;
+  color:#52665e;
+}
+.prayer-toggle-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:6px;
+}
+.prayer-toggle-grid label{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  padding:9px 3px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:#fffdf9;
+  font-size:9.5px;
+}
+.prayer-toggle-grid input{
+  width:16px;
+  height:16px;
+  accent-color:#0b5b49;
+}
+.notification-reminder{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:12px;
+  font-size:11px;
+  font-weight:700;
+}
+.notification-reminder select{
+  max-width:190px;
+  border:1px solid var(--line);
+  background:white;
+  color:var(--ink);
+  border-radius:10px;
+  padding:8px 9px;
+}
+.notification-permission-btn{
+  width:100%;
+  margin-top:13px;
+}
+.notification-permission-btn:disabled{
+  opacity:.62;
+}
+.notification-note{
+  display:block;
+  margin-top:9px;
+  color:var(--muted);
+  font-size:9.5px;
+  line-height:1.45;
+}
+.notif-icon.notification-active{
+  color:#efc96f;
+  border-color:rgba(239,201,111,.42);
+  background:rgba(239,201,111,.10);
+}
+
+@media(max-width:390px){
+  .prayer-toggle-grid{gap:4px}
+  .prayer-toggle-grid label{font-size:8.8px;padding:8px 2px}
+  .notification-reminder{align-items:flex-start;flex-direction:column}
+  .notification-reminder select{max-width:none;width:100%}
+}

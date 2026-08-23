@@ -262,3 +262,30 @@ body.controls-off #readerDocument{
   min-height:100%;
   padding:0 0 18px;
 }
+
+
+/* =========================================================
+   V2.22 — Reader safe top spacing + transparan navigation
+   ========================================================= */
+body.controls-off #readerDocument{
+  padding-top:calc(env(safe-area-inset-top) + 12px) !important;
+}
+
+/* Tombol kiri/kanan tetap mudah ditekan tetapi tidak menutupi bacaan. */
+.arrow{
+  background:rgba(5,68,55,.18) !important;
+  border:1px solid rgba(255,255,255,.38) !important;
+  color:rgba(255,255,255,.94) !important;
+  box-shadow:0 4px 14px rgba(0,0,0,.08) !important;
+  backdrop-filter:blur(3px) !important;
+  -webkit-backdrop-filter:blur(3px) !important;
+}
+.arrow:active{
+  background:rgba(5,68,55,.42) !important;
+}
+
+/* Bar bagian berikutnya tetap di bawah PDF, bukan overlay. */
+.next-part-bar{
+  margin-top:14px;
+  margin-bottom:4px;
+}

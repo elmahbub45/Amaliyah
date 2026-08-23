@@ -8,6 +8,8 @@ const catalog = await fetch('./books.json', {cache:'no-store'}).then(r=>{
 const items = catalog.items || [];
 const categories = catalog.categories || ['Semua'];
 let prayerCountdownTimer = null;
+let prayerNotificationTimer = null;
+let latestPrayerTimes = null;
 let activeLibraryCategory='Semua';
 let librarySearchQuery='';
 let activeCollectionId=null;
@@ -78,6 +80,7 @@ function navigateScreen(screen='home',opts={}){
   if(screen==='collection')renderCollection(itemId||activeCollectionId);
   if(screen==='settings'){
     syncSettingsLocation();
+    syncNotificationUI();
     if(focusNotifications){
       requestAnimationFrame(()=>$('#notificationSettings')?.scrollIntoView({behavior:'smooth',block:'start'}));
     }
@@ -180,7 +183,7 @@ function updateHome(){
   const pr=partProgress(part);
 
   $('#continueTitle').textContent=item.title;
-  $('#continueCover').innerHTML=(item.coverText||item.arabicTitle||item.title).replace(/\n/g,'<br>');
+  $('#continueIcon').textContent=item.icon||'◈';
   if(item.type==='single'){
     $('#lastPage').textContent=pr.page>1?`Halaman terakhir: ${pr.page} / ${pr.total}`:'Belum dibaca';
   }else{
@@ -188,12 +191,6 @@ function updateHome(){
   }
   $('#progressBar').style.width=pr.percent+'%';
   $('#continueBtn').onclick=()=>continueItem(item.id);
-
-  $('#recentTitle').textContent=item.title;
-  $('#recentPage').textContent=item.type==='single'
-    ? (pr.page>1?`Halaman ${pr.page} dari ${pr.total}`:'Ketuk untuk membaca')
-    : `Terakhir: ${part.title}`;
-  $('#recentBook').onclick=()=>continueItem(item.id);
 
   updateCategoryCounts();
   renderHomeFavorites();
@@ -304,7 +301,7 @@ function renderHomeFavorites(){
   if(!fav.length){wrap.innerHTML='';return}
 
   wrap.innerHTML=fav.map(item=>`<button class="favorite-card" type="button" data-fav="${item.id}">
-    <span class="favorite-cover">${(item.coverText||item.arabicTitle||item.icon||'◈').replace(/\n/g,'<br>')}</span>
+    <span class="favorite-icon">${item.icon||'◈'}</span>
     <span class="favorite-copy"><b>${item.title}</b><small>${item.type==='collection'?'Koleksi':item.type==='group'?'Kelompok':item.category}</small></span>
     <span class="favorite-star">★</span>
   </button>`).join('');
@@ -351,30 +348,68 @@ function renderBookmarks(){
   });
 }
 
-function renderHistory(){
-  const wrap=$('#historyList');if(!wrap)return;
-  let hist=[];try{hist=JSON.parse(store.getItem('amaliyah_history')||'[]')}catch{}
-  const normalized=hist.map(h=>{
+function getHistoryEntries(){
+  let hist=[];
+  try{hist=JSON.parse(store.getItem('amaliyah_history')||'[]')}catch{}
+  return hist.map((h,rawIndex)=>{
     if(h.partId){
       const parent=getItem(h.id);
       const part=parent?.type==='single'?parent:parent?.parts?.find(p=>p.id===h.partId);
-      return parent&&part?{parent,part,page:h.page||1}:null;
+      return parent&&part?{parent,part,page:h.page||1,rawIndex,raw:h}:null;
     }
     const old=resolvePart(h.id);
-    return old?{parent:old.parent,part:old.part,page:h.page||1}:null;
+    return old?{parent:old.parent,part:old.part,page:h.page||1,rawIndex,raw:h}:null;
   }).filter(Boolean);
+}
+
+function renderHistory(){
+  const wrap=$('#historyList');if(!wrap)return;
+  const normalized=getHistoryEntries();
+  $('#clearHistoryBtn')?.classList.toggle('hidden',!normalized.length);
 
   if(!normalized.length){
     wrap.innerHTML='<div class="empty-state"><b>Belum ada riwayat</b><p>Bacaan yang dibuka akan tercatat otomatis di sini.</p></div>';return;
   }
-  wrap.innerHTML=normalized.map((x,i)=>`<button class="book-row action-row" data-history="${i}">
-    <div class="book-icon">◷</div><div><b>${x.parent.title}</b>
-    <small>${x.parent.type==='single'?'':x.part.title+' • '}Halaman ${x.page}</small></div><span>›</span>
-  </button>`).join('');
+
+  wrap.innerHTML=normalized.map((x,i)=>`<div class="history-row">
+    <button class="history-main" type="button" data-history="${i}">
+      <div class="book-icon">${x.parent.icon||'◷'}</div>
+      <div class="history-copy"><b>${x.parent.title}</b>
+        <small>${x.parent.type==='single'?'':x.part.title+' • '}Halaman ${x.page}</small>
+      </div>
+      <span class="chevron">›</span>
+    </button>
+    <button class="history-delete" type="button" data-history-delete="${i}" aria-label="Hapus dari riwayat" title="Hapus dari riwayat">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>
+    </button>
+  </div>`).join('');
+
   wrap.querySelectorAll('[data-history]').forEach(btn=>{
     const x=normalized[+btn.dataset.history];
     btn.onclick=()=>openPart(x.parent.id,x.part.id,x.page);
   });
+  wrap.querySelectorAll('[data-history-delete]').forEach(btn=>{
+    btn.onclick=e=>{
+      e.stopPropagation();
+      const x=normalized[+btn.dataset.historyDelete];
+      deleteHistoryEntry(x.raw);
+    };
+  });
+}
+
+function deleteHistoryEntry(entry){
+  let hist=[];
+  try{hist=JSON.parse(store.getItem('amaliyah_history')||'[]')}catch{}
+  hist=hist.filter(h=>!(h.id===entry.id && (h.partId||null)===(entry.partId||null)));
+  store.setItem('amaliyah_history',JSON.stringify(hist));
+  renderHistory();
+}
+
+function clearAllHistory(){
+  if(!getHistoryEntries().length)return;
+  if(!confirm('Hapus semua riwayat bacaan?\\n\\nProgres, bookmark, dan favorit tidak akan terhapus.'))return;
+  store.removeItem('amaliyah_history');
+  renderHistory();
 }
 
 function toggleSearch(){
@@ -460,7 +495,9 @@ function getPrayerTimes(){
 
 function cleanTime(v=''){return String(v).split(' ')[0].slice(0,5);}
 function renderPrayerData(data){
+  latestPrayerTimes=data.timings||null;
   renderPrayers(data.timings);
+  startPrayerNotificationScheduler();
   const hijri=data.date?.hijri;
   if(hijri){
     const h=`${hijri.day} ${hijri.month?.en||''} ${hijri.year} H`;
@@ -506,11 +543,151 @@ async function loadMonthlyPrayerTimes(){
 }
 function changeMonth(step){monthlyOffset+=step;renderMonthlyHeader();loadMonthlyPrayerTimes();}
 
+const NOTIF_SETTINGS_KEY='amaliyah:prayerNotifications';
+const DEFAULT_NOTIF_SETTINGS={
+  enabled:false,
+  lead:0,
+  prayers:{Subuh:true,Dzuhur:true,Ashar:true,Maghrib:true,Isya:true}
+};
+
+function getNotificationSettings(){
+  try{
+    const saved=JSON.parse(store.getItem(NOTIF_SETTINGS_KEY)||'null');
+    return {
+      ...DEFAULT_NOTIF_SETTINGS,
+      ...(saved||{}),
+      prayers:{...DEFAULT_NOTIF_SETTINGS.prayers,...(saved?.prayers||{})}
+    };
+  }catch{return {...DEFAULT_NOTIF_SETTINGS,prayers:{...DEFAULT_NOTIF_SETTINGS.prayers}}}
+}
+function setNotificationSettings(settings){
+  store.setItem(NOTIF_SETTINGS_KEY,JSON.stringify(settings));
+}
+function notificationPermission(){
+  return 'Notification' in window ? Notification.permission : 'unsupported';
+}
+function syncNotificationUI(){
+  const s=getNotificationSettings();
+  const permission=notificationPermission();
+  const master=$('#notificationMaster');
+  if(master)master.checked=!!s.enabled && permission==='granted';
+
+  document.querySelectorAll('[data-prayer-notif]').forEach(box=>{
+    box.checked=!!s.prayers[box.dataset.prayerNotif];
+    box.onchange=saveNotificationSettings;
+  });
+  if($('#notificationLead'))$('#notificationLead').value=String(s.lead||0);
+
+  const controls=$('#notificationControls');
+  controls?.classList.toggle('disabled',!s.enabled || permission!=='granted');
+
+  const status=$('#notificationStatusText');
+  const btn=$('#notificationPermissionBtn');
+  if(permission==='unsupported'){
+    if(status)status.textContent='Browser ini tidak mendukung notifikasi web.';
+    if(btn)btn.classList.add('hidden');
+  }else if(permission==='denied'){
+    if(status)status.textContent='Izin notifikasi diblokir di pengaturan browser.';
+    if(btn){btn.textContent='Izin Diblokir';btn.disabled=true;}
+  }else if(permission==='granted'){
+    if(status)status.textContent=s.enabled?'Notifikasi Aktif':'Izin tersedia • notifikasi sedang OFF';
+    if(btn){btn.textContent='Izin Notifikasi Aktif';btn.disabled=true;}
+  }else{
+    if(status)status.textContent='Notifikasi belum diizinkan.';
+    if(btn){btn.textContent='Aktifkan Izin Notifikasi';btn.disabled=false;btn.classList.remove('hidden');}
+  }
+  $('#notifBtn')?.classList.toggle('notification-active',permission==='granted'&&s.enabled);
+}
 async function requestNotifications(){
   if(!('Notification'in window))return alert('Browser ini tidak mendukung notifikasi web.');
-  const p=await Notification.requestPermission();
-  if(p==='granted')new Notification('Amaliyah',{body:'Izin notifikasi berhasil diaktifkan.'});
-  else alert('Izin notifikasi belum diberikan.');
+  if(Notification.permission==='denied'){
+    syncNotificationUI();
+    return alert('Izin notifikasi diblokir. Aktifkan kembali melalui pengaturan situs/browser.');
+  }
+  const p=Notification.permission==='granted'?'granted':await Notification.requestPermission();
+  if(p==='granted'){
+    const s=getNotificationSettings();
+    s.enabled=true;
+    setNotificationSettings(s);
+    syncNotificationUI();
+    startPrayerNotificationScheduler();
+    await showAppNotification('Amaliyah','Notifikasi sholat berhasil diaktifkan.');
+  }else{
+    syncNotificationUI();
+  }
+}
+function setNotificationMaster(enabled){
+  const s=getNotificationSettings();
+  if(enabled && notificationPermission()!=='granted'){
+    $('#notificationMaster').checked=false;
+    requestNotifications();
+    return;
+  }
+  s.enabled=!!enabled;
+  setNotificationSettings(s);
+  syncNotificationUI();
+  startPrayerNotificationScheduler();
+}
+function saveNotificationSettings(){
+  const s=getNotificationSettings();
+  s.lead=+($('#notificationLead')?.value||0);
+  document.querySelectorAll('[data-prayer-notif]').forEach(box=>{
+    s.prayers[box.dataset.prayerNotif]=box.checked;
+  });
+  setNotificationSettings(s);
+  syncNotificationUI();
+  startPrayerNotificationScheduler();
+}
+async function showAppNotification(title,body){
+  if(notificationPermission()!=='granted')return;
+  try{
+    const reg=await navigator.serviceWorker?.ready;
+    if(reg?.showNotification){
+      await reg.showNotification(title,{
+        body,
+        icon:'./assets/icons/icon-192.png',
+        badge:'./assets/icons/icon-192.png',
+        tag:'amaliyah-prayer',
+        renotify:true
+      });
+      return;
+    }
+  }catch{}
+  try{new Notification(title,{body,icon:'./assets/icons/icon-192.png'});}catch{}
+}
+function startPrayerNotificationScheduler(){
+  clearInterval(prayerNotificationTimer);
+  const check=()=>checkPrayerNotifications();
+  check();
+  prayerNotificationTimer=setInterval(check,30000);
+}
+function checkPrayerNotifications(){
+  const s=getNotificationSettings();
+  if(!s.enabled || notificationPermission()!=='granted' || !latestPrayerTimes)return;
+
+  const map=[
+    ['Subuh','Fajr'],['Dzuhur','Dhuhr'],['Ashar','Asr'],['Maghrib','Maghrib'],['Isya','Isha']
+  ];
+  const now=new Date();
+  const cur=now.getHours()*60+now.getMinutes();
+  const lead=Number(s.lead||0);
+
+  for(const [name,key] of map){
+    if(!s.prayers[name])continue;
+    const tm=cleanTime(latestPrayerTimes[key]);
+    const [h,m]=tm.split(':').map(Number);
+    if(!Number.isFinite(h)||!Number.isFinite(m))continue;
+    const target=h*60+m-lead;
+    if(cur!==target)continue;
+
+    const notifyKey=`amaliyah:notified:${dateKey()}:${name}:${lead}`;
+    if(store.getItem(notifyKey))continue;
+    store.setItem(notifyKey,'1');
+    const body=lead>0
+      ? `${lead} menit lagi masuk waktu ${name} (${tm}).`
+      : `Telah masuk waktu ${name} (${tm}).`;
+    showAppNotification(`Waktu ${name}`,body);
+  }
 }
 
 async function bootPrayer(){
@@ -524,6 +701,19 @@ async function bootPrayer(){
   $('#prayerTimes').innerHTML='<span>Izinkan lokasi untuk menampilkan jadwal sholat.</span>';
 }
 
+
+
+function refreshActiveScreen(){
+  if(currentScreen==='bookmarks')renderBookmarks();
+  if(currentScreen==='history')renderHistory();
+  if(currentScreen==='home')updateHome();
+  if(currentScreen==='settings')syncNotificationUI();
+}
+window.addEventListener('pageshow',refreshActiveScreen);
+window.addEventListener('focus',refreshActiveScreen);
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible')refreshActiveScreen();
+});
 
 window.showHome=showHome;
 window.showLibrary=showLibrary;
@@ -543,11 +733,19 @@ window.clearSearch=clearSearch;
 window.toggleFavorite=toggleFavorite;
 window.getPrayerTimes=getPrayerTimes;
 window.requestNotifications=requestNotifications;
+window.setNotificationMaster=setNotificationMaster;
+window.saveNotificationSettings=saveNotificationSettings;
+window.clearAllHistory=clearAllHistory;
 
 history.replaceState({amaliyah:true,screen:'home'},'',location.href);
 paintScreen('home');
 updateHome();
 renderLibrary('Semua');
 syncSettingsLocation();
+syncNotificationUI();
 bootPrayer();
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('./sw.js').then(()=>startPrayerNotificationScheduler()).catch(()=>{});
+}else{
+  startPrayerNotificationScheduler();
+}

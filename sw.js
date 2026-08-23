@@ -1,4 +1,4 @@
-const C='amaliyah-v2-18-2';
+const C='amaliyah-v2-22';
 const A=['./','./index.html','./style.css','./app.js','./reader.html','./reader.css','./reader.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
 
 self.addEventListener('install',e=>{
@@ -25,5 +25,18 @@ self.addEventListener('fetch',e=>{
       caches.open(C).then(c=>c.put(req,copy));
       return resp;
     }).catch(()=>caches.match(req).then(r=>r||caches.match('./index.html')))
+  );
+});
+
+
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{
+      for(const client of list){
+        if('focus' in client)return client.focus();
+      }
+      if(clients.openWindow)return clients.openWindow('./');
+    })
   );
 });
