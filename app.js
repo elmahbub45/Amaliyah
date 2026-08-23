@@ -490,6 +490,7 @@ async function reverseGeocode(latitude,longitude){
       `&longitude=${encodeURIComponent(longitude)}`+
       `&localityLanguage=id`
     );
+
     if(!r.ok)throw new Error('reverse geocode');
 
     const j=await r.json();
@@ -498,24 +499,28 @@ async function reverseGeocode(latitude,longitude){
       ? j.localityInfo.administrative
       : [];
 
-    // Jangan lagi bergantung pada satu adminLevel tertentu.
-    // Kirim seluruh kandidat administratif ke Worker agar resolver Kemenag
-    // dapat memilih kabupaten/kota yang tepat secara konservatif.
-    const regionCandidates=[
-      ...admins.map(x=>String(x?.name||x?.isoName||'').trim()),
-      String(j.city||'').trim(),
-      String(j.locality||'').trim(),
-      String(j.principalSubdivision||'').trim()
-    ]
-      .filter(Boolean)
-      .filter((v,i,a)=>a.indexOf(v)===i)
+    // Kirim metadata administratif lengkap, bukan hanya nama.
+    // Ini penting untuk kasus nama ambigu seperti "Banjar":
+    // description dapat menunjukkan Regency/Kabupaten atau City/Kota.
+    const regionCandidates=admins
+      .map(x=>({
+        name:String(x?.name||'').trim(),
+        isoName:String(x?.isoName||'').trim(),
+        description:String(x?.description||'').trim(),
+        adminLevel:Number.isFinite(Number(x?.adminLevel))
+          ? Number(x.adminLevel)
+          : null,
+        isoCode:String(x?.isoCode||'').trim(),
+        wikidataId:String(x?.wikidataId||'').trim()
+      }))
+      .filter(x=>x.name||x.isoName)
       .slice(0,20);
 
-    // Tetap simpan satu regionName untuk kompatibilitas lama,
-    // tetapi Worker V2.30.3 memprioritaskan regionCandidates.
     const namedRegion=admins.find(x=>
       /^(kabupaten|kota)\b/i.test(String(x?.name||'')) ||
-      /\b(regency|city|municipality)\b/i.test(String(x?.name||''))
+      /\b(regency|city|municipality)\b/i.test(
+        `${x?.name||''} ${x?.description||''}`
+      )
     );
 
     const regionName=String(
