@@ -4,62 +4,130 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#075b49">
+  <meta name="color-scheme" content="light">
   <title>Admin Koleksi — Amaliyah</title>
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
   <header class="topbar">
-    <div>
-      <small>AMALIYAH</small>
-      <h1>Admin Koleksi</h1>
+    <div class="brand">
+      <div class="brand-mark">ا</div>
+      <div>
+        <small>AMALIYAH • MAINTENANCE</small>
+        <h1>Admin Koleksi</h1>
+      </div>
     </div>
-    <button id="saveDraftBtn" class="icon-btn" type="button" title="Simpan draft lokal">💾</button>
+
+    <div class="top-actions">
+      <button id="backupBtn" class="top-btn" type="button" title="Backup & pemulihan">
+        <span>↶</span><b>Backup</b>
+      </button>
+      <button id="saveDraftBtn" class="top-btn primary-soft" type="button" title="Simpan draft lokal">
+        <span>✓</span><b>Simpan Draft</b>
+      </button>
+    </div>
   </header>
+
+  <section class="workspace-strip">
+    <div class="workspace-inner">
+      <div class="workspace-stat">
+        <span id="workspaceStatusDot" class="status-dot"></span>
+        <div>
+          <small>STATUS</small>
+          <b id="workspaceStatus">Memuat books.json…</b>
+        </div>
+      </div>
+
+      <div class="workspace-metrics">
+        <span><b id="metricItems">0</b><small>Bacaan</small></span>
+        <span><b id="metricPdf">0</b><small>PDF</small></span>
+        <span><b id="metricErrors">0</b><small>Error</small></span>
+        <span><b id="metricWarnings">0</b><small>Peringatan</small></span>
+      </div>
+    </div>
+  </section>
 
   <main class="layout">
     <aside class="sidebar card">
       <div class="sidebar-head">
         <div>
-          <b>Daftar Bacaan</b>
+          <span class="eyebrow">KATALOG BACAAN</span>
+          <b>Daftar Koleksi</b>
           <small id="catalogInfo">Memuat…</small>
         </div>
         <button id="addItemBtn" class="primary small" type="button">+ Tambah</button>
       </div>
 
       <div class="toolbar">
-        <input id="searchInput" type="search" placeholder="Cari judul…">
-        <select id="categoryFilter"></select>
+        <div class="search-wrap">
+          <span>⌕</span>
+          <input id="searchInput" type="search" placeholder="Cari judul, bagian, ID…">
+        </div>
+        <select id="categoryFilter" aria-label="Filter kategori"></select>
+        <select id="typeFilter" aria-label="Filter tipe">
+          <option value="">Semua tipe</option>
+          <option value="single">Single</option>
+          <option value="collection">Collection</option>
+          <option value="group">Group</option>
+        </select>
       </div>
 
       <div id="itemList" class="item-list"></div>
+
+      <div class="sidebar-foot">
+        <span>☷</span>
+        <small>Drag untuk mengatur urutan. Tombol ↑ ↓ tersedia untuk HP.</small>
+      </div>
     </aside>
 
     <section class="editor card">
       <div id="emptyEditor" class="empty-editor">
-        <div class="empty-icon">☰</div>
-        <h2>Pilih bacaan</h2>
-        <p>Pilih salah satu bacaan di sebelah kiri untuk mengedit data koleksi.</p>
+        <div class="empty-ornament">ا</div>
+        <h2>Pilih bacaan untuk diedit</h2>
+        <p>Semua perubahan dilakukan pada data editor terlebih dahulu. PDF di R2 tidak akan terhapus otomatis.</p>
       </div>
 
       <div id="editorContent" class="hidden">
         <div class="editor-title-row">
-          <div>
-            <small id="editorTypeBadge" class="badge"></small>
+          <div class="editor-title-copy">
+            <div class="title-badges">
+              <small id="editorTypeBadge" class="badge"></small>
+              <small id="editorCategoryBadge" class="badge neutral"></small>
+            </div>
             <h2 id="editorHeading">Edit Bacaan</h2>
+            <small id="editorMeta"></small>
           </div>
-          <button id="deleteItemBtn" class="danger ghost" type="button">Hapus</button>
+
+          <div class="editor-actions">
+            <button id="previewBtn" class="ghost" type="button">Preview</button>
+            <button id="deleteItemBtn" class="danger ghost" type="button">Hapus</button>
+          </div>
+        </div>
+
+        <div class="preview-inline">
+          <div id="liveCardPreview" class="mini-book-card">
+            <span id="previewIcon" class="mini-book-icon">ا</span>
+            <span class="mini-book-copy">
+              <small id="previewCategory">KATEGORI</small>
+              <b id="previewTitle">Judul Bacaan</b>
+              <span id="previewCover">Teks kartu</span>
+            </span>
+            <span id="previewType" class="mini-type">SINGLE</span>
+          </div>
         </div>
 
         <div class="form-grid">
           <label class="field span-2">
             <span>Judul Tampilan</span>
-            <input id="titleInput" type="text">
-            <small>Boleh diubah kapan saja tanpa mengganti nama PDF.</small>
+            <input id="titleInput" type="text" autocomplete="off">
+            <small>Boleh diubah tanpa mengganti nama file PDF atau ID.</small>
           </label>
 
           <label class="field">
             <span>Kategori</span>
-            <select id="categoryInput"></select>
+            <input id="categoryInput" list="categoryOptions" type="text" autocomplete="off">
+            <datalist id="categoryOptions"></datalist>
+            <small>Boleh memakai kategori lama atau mengetik kategori baru.</small>
           </label>
 
           <label class="field">
@@ -69,33 +137,53 @@
               <option value="collection">Collection</option>
               <option value="group">Group</option>
             </select>
+            <small>Collection memiliki alur bagian; Group adalah kumpulan bebas.</small>
           </label>
 
           <label class="field">
-            <span>Teks/Icon Kartu Hijau</span>
-            <input id="iconInput" type="text" maxlength="12" placeholder="مثال: و">
-            <small>Disarankan 1–3 karakter agar tetap rapi.</small>
+            <span>Icon Kartu Hijau</span>
+            <input id="iconInput" type="text" maxlength="12" autocomplete="off" placeholder="مثال: و">
+            <small>Disarankan 1–3 karakter.</small>
           </label>
 
           <label class="field">
-            <span>ID</span>
+            <span>ID Bacaan</span>
             <input id="idInput" type="text" readonly>
-            <small>ID dikunci agar progres & bookmark lama tetap aman.</small>
+            <small>ID dikunci agar progres, favorit, riwayat, dan bookmark lama aman.</small>
+          </label>
+
+          <label class="field span-2">
+            <span>Teks Cover / Kartu</span>
+            <textarea id="coverTextInput" rows="3" placeholder="Teks yang ingin disimpan untuk kartu/cover"></textarea>
+            <small>Boleh berbeda dari judul dan nama file.</small>
           </label>
         </div>
 
         <div id="singleFields" class="section-box hidden">
           <div class="section-heading">
-            <div><b>File PDF</b><small>Bacaan tunggal</small></div>
+            <div>
+              <span class="eyebrow">PDF TUNGGAL</span>
+              <b>File Bacaan</b>
+              <small>Path ini adalah path virtual yang dipetakan ke object key R2 private.</small>
+            </div>
           </div>
-          <div class="form-grid">
+
+          <div class="form-grid compact">
             <label class="field span-2">
-              <span>Path PDF</span>
-              <input id="singleFileInput" type="text">
+              <span>Path PDF Virtual</span>
+              <input id="singleFileInput" type="text" autocomplete="off" placeholder="assets/pdf-v2/wirid/nama-file.pdf">
+              <small id="singleR2Key" class="r2-key">R2 key: —</small>
             </label>
+
             <label class="field">
               <span>Jumlah Halaman</span>
               <input id="singlePagesInput" type="number" min="1">
+            </label>
+
+            <label class="file-helper">
+              <span>Pilih nama PDF (opsional)</span>
+              <input id="singlePdfPicker" type="file" accept="application/pdf,.pdf">
+              <small>Hanya membantu mengisi nama/path. PDF tetap di-upload sendiri ke Cloudflare R2.</small>
             </label>
           </div>
         </div>
@@ -103,13 +191,26 @@
         <div id="partsSection" class="section-box hidden">
           <div class="section-heading">
             <div>
+              <span class="eyebrow" id="partsEyebrow">STRUKTUR</span>
               <b id="partsHeading">Bagian</b>
-              <small>Drag untuk mengubah urutan. ID bagian tetap dipertahankan.</small>
+              <small>Urutan di sini adalah urutan yang dipakai aplikasi.</small>
             </div>
             <button id="addPartBtn" class="primary small" type="button">+ Tambah Bagian</button>
           </div>
+
           <div id="partsList" class="parts-list"></div>
         </div>
+
+        <section class="validation-panel">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">VALIDASI ITEM</span>
+              <b>Kesehatan Data</b>
+              <small>Pengecekan otomatis untuk item yang sedang dipilih.</small>
+            </div>
+          </div>
+          <div id="itemValidation" class="validation-list"></div>
+        </section>
       </div>
     </section>
   </main>
@@ -119,42 +220,56 @@
       <span id="dirtyDot"></span>
       <span id="statusText">Belum ada perubahan</span>
     </div>
+
     <div class="actions">
-      <button id="resetBtn" class="ghost" type="button">Muat Ulang</button>
+      <button id="undoBtn" class="ghost" type="button">Batalkan Semua</button>
+      <button id="reloadBtn" class="ghost" type="button">Muat Ulang Server</button>
       <button id="importBtn" class="ghost" type="button">Import JSON</button>
       <input id="importFile" type="file" accept=".json,application/json" hidden>
-      <button id="exportBtn" class="primary" type="button">Download books.json</button>
+      <button id="validateBtn" class="ghost accent" type="button">Cek Data</button>
+      <button id="exportBtn" class="primary" type="button">Preview & Download</button>
     </div>
   </footer>
 
+  <!-- Dialog tambah/edit bagian -->
   <dialog id="partDialog">
     <form method="dialog" class="dialog-card" id="partForm">
       <div class="dialog-head">
-        <div><small id="partDialogMode">BAGIAN</small><h3 id="partDialogTitle">Tambah Bagian</h3></div>
-        <button value="cancel" class="icon-btn" type="submit">✕</button>
+        <div>
+          <small id="partDialogMode">BAGIAN</small>
+          <h3 id="partDialogTitle">Tambah Bagian</h3>
+        </div>
+        <button value="cancel" class="icon-btn dark" type="submit">✕</button>
       </div>
+
       <label class="field">
         <span>Judul Bagian</span>
-        <input id="partTitleInput" required>
+        <input id="partTitleInput" required autocomplete="off">
       </label>
+
       <label class="field">
         <span>ID Bagian</span>
-        <input id="partIdInput" required>
-        <small>Untuk bagian lama jangan diubah. Bagian baru akan dibuat otomatis dari judul.</small>
+        <input id="partIdInput" required autocomplete="off">
+        <small>Bagian lama dikunci. Untuk bagian baru ID dibuat otomatis dari judul.</small>
       </label>
+
       <label class="field">
-        <span>Path PDF</span>
-        <input id="partFileInput" required placeholder="assets/pdf-v2/.../nama-file.pdf">
+        <span>Path PDF Virtual</span>
+        <input id="partFileInput" required autocomplete="off" placeholder="assets/pdf-v2/.../nama-file.pdf">
+        <small id="partR2Key" class="r2-key">R2 key: —</small>
       </label>
+
       <label class="field">
         <span>Jumlah Halaman</span>
         <input id="partPagesInput" type="number" min="1" value="1" required>
       </label>
-      <label class="file-helper">
-        <span>Pilih PDF dari komputer (opsional)</span>
+
+      <label class="file-helper dialog-file-helper">
+        <span>Pilih nama PDF (opsional)</span>
         <input id="partPdfPicker" type="file" accept="application/pdf,.pdf">
-        <small>Admin hanya membaca nama file untuk membantu path. PDF tetap perlu di-upload ke GitHub.</small>
+        <small>File fisik tetap diunggah ke Cloudflare R2 dengan key yang sesuai.</small>
       </label>
+
       <div class="dialog-actions">
         <button value="cancel" class="ghost" type="submit">Batal</button>
         <button id="savePartBtn" value="default" class="primary" type="button">Simpan Bagian</button>
@@ -162,28 +277,117 @@
     </form>
   </dialog>
 
+  <!-- Dialog bacaan baru -->
   <dialog id="itemDialog">
     <form method="dialog" class="dialog-card" id="itemForm">
       <div class="dialog-head">
-        <div><small>BACAAN BARU</small><h3>Tambah Bacaan</h3></div>
-        <button value="cancel" class="icon-btn" type="submit">✕</button>
+        <div>
+          <small>BACAAN BARU</small>
+          <h3>Tambah Bacaan</h3>
+        </div>
+        <button value="cancel" class="icon-btn dark" type="submit">✕</button>
       </div>
-      <label class="field"><span>Judul</span><input id="newTitleInput" required></label>
-      <label class="field"><span>Tipe</span>
-        <select id="newTypeInput">
-          <option value="single">Single</option>
-          <option value="collection">Collection</option>
-          <option value="group">Group</option>
-        </select>
+
+      <label class="field">
+        <span>Judul</span>
+        <input id="newTitleInput" required autocomplete="off">
       </label>
-      <label class="field"><span>Kategori</span><select id="newCategoryInput"></select></label>
-      <label class="field"><span>Teks/Icon Kartu Hijau</span><input id="newIconInput" maxlength="12" placeholder="◈"></label>
+
+      <div class="dialog-grid">
+        <label class="field">
+          <span>Tipe</span>
+          <select id="newTypeInput">
+            <option value="single">Single</option>
+            <option value="collection">Collection</option>
+            <option value="group">Group</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Kategori</span>
+          <input id="newCategoryInput" list="categoryOptions" autocomplete="off">
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Icon Kartu Hijau</span>
+        <input id="newIconInput" maxlength="12" placeholder="◈" autocomplete="off">
+      </label>
+
       <div class="dialog-actions">
         <button value="cancel" class="ghost" type="submit">Batal</button>
         <button id="createItemBtn" class="primary" type="button">Buat Bacaan</button>
       </div>
     </form>
   </dialog>
+
+  <!-- Preview -->
+  <dialog id="previewDialog" class="wide-dialog">
+    <div class="dialog-card preview-dialog-card">
+      <div class="dialog-head">
+        <div>
+          <small>PREVIEW</small>
+          <h3>Pratinjau Bacaan</h3>
+        </div>
+        <button id="closePreviewBtn" class="icon-btn dark" type="button">✕</button>
+      </div>
+
+      <div id="previewDialogContent"></div>
+    </div>
+  </dialog>
+
+  <!-- Validasi / export -->
+  <dialog id="validationDialog" class="wide-dialog">
+    <div class="dialog-card validation-dialog-card">
+      <div class="dialog-head">
+        <div>
+          <small>PEMERIKSAAN DATA</small>
+          <h3 id="validationDialogTitle">Validasi books.json</h3>
+        </div>
+        <button id="closeValidationBtn" class="icon-btn dark" type="button">✕</button>
+      </div>
+
+      <div id="validationSummary"></div>
+      <div id="validationDetails" class="validation-details"></div>
+
+      <div class="dialog-actions">
+        <button id="validationCloseBtn" class="ghost" type="button">Tutup</button>
+        <button id="confirmExportBtn" class="primary" type="button">Download books.json</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Backup -->
+  <dialog id="backupDialog" class="wide-dialog">
+    <div class="dialog-card backup-dialog-card">
+      <div class="dialog-head">
+        <div>
+          <small>PEMULIHAN</small>
+          <h3>Backup Lokal</h3>
+        </div>
+        <button id="closeBackupBtn" class="icon-btn dark" type="button">✕</button>
+      </div>
+
+      <p class="dialog-note">Admin menyimpan beberapa snapshot lokal sebelum perubahan besar. Backup hanya tersimpan di browser/perangkat ini.</p>
+      <div id="backupList" class="backup-list"></div>
+    </div>
+  </dialog>
+
+  <!-- Konfirmasi internal -->
+  <dialog id="confirmDialog">
+    <div class="dialog-card confirm-card">
+      <div class="confirm-mark">!</div>
+      <h3 id="confirmTitle">Konfirmasi</h3>
+      <p id="confirmMessage"></p>
+      <div class="dialog-actions">
+        <button id="confirmCancelBtn" class="ghost" type="button">Batal</button>
+        <button id="confirmOkBtn" class="danger-solid" type="button">Lanjutkan</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Notifikasi internal -->
+  <div id="toastHost" class="toast-host" aria-live="polite"></div>
 
   <script type="module" src="admin.js"></script>
 </body>

@@ -1,26 +1,80 @@
-ADMIN KOLEKSI — AMALIYAH
+AMALIYAH — ADMIN KOLEKSI V2.32 FINAL
+=====================================
 
-Cara akses setelah di-upload ke root repository:
-https://elmahbub45.github.io/Amaliyah/admin.html
+TUJUAN
+Admin ini dibuat agar pengelolaan books.json bisa dilakukan mandiri tanpa
+mengubah kode aplikasi utama.
 
-Fitur:
-- Edit judul tampilan.
-- Edit teks/icon kartu hijau.
-- Edit kategori dan tipe single/collection/group.
-- Drag-and-drop atau tombol ↑ ↓ untuk mengubah urutan bagian.
-- Tambah, edit, atau hapus subbagian.
-- Tambah bacaan induk baru.
-- Path PDF dan jumlah halaman dapat diedit.
-- ID bacaan lama dikunci agar progres/bookmark pengguna tidak rusak.
-- Draft dapat disimpan sementara di browser.
-- Download books.json yang sudah diperbarui.
+FILE YANG DI-UPDATE DI GITHUB
+- admin.html
+- admin.css
+- admin.js
 
-PENTING:
-Admin ini berjalan sepenuhnya di browser dan TIDAK menulis langsung ke GitHub.
-Setelah klik "Download books.json":
-1. Upload/replace books.json di root repository Amaliyah.
-2. Jika menambah PDF baru, upload PDF tersebut ke path yang ditulis di Admin.
-3. Refresh aplikasi.
+JANGAN REPLACE books.json dengan file dari paket ini.
+Admin otomatis membaca books.json yang SUDAH ADA di root repository.
 
-Menghapus item di Admin hanya menghapus data dari books.json.
-File PDF fisik di GitHub tidak otomatis terhapus.
+FITUR UTAMA
+- Search judul, ID, bagian, dan path.
+- Filter kategori dan tipe.
+- Edit judul tampilan, kategori, tipe, icon, coverText.
+- ID bacaan dan ID bagian lama dikunci.
+- Single: edit path virtual + jumlah halaman.
+- Collection/Group: tambah/edit/hapus/urutkan parts.
+- Drag-and-drop utama dan parts.
+- Tombol ↑ ↓ untuk HP.
+- Preview kartu/bacaan sebelum export.
+- Validasi duplicate ID, path kosong, pages invalid, parts kosong, path salah.
+- Status error/peringatan secara langsung.
+- Draft otomatis di localStorage.
+- Backup lokal otomatis sebelum tindakan besar.
+- Restore/download backup.
+- Batalkan Semua.
+- Muat Ulang Server.
+- Import JSON opsional.
+- Preview & Download books.json.
+- Responsive desktop dan HP.
+- Tidak memakai alert/confirm browser.
+
+PENTING TENTANG PDF / R2
+PDF Amaliyah sekarang PRIVATE di Cloudflare R2.
+
+books.json tetap memakai path virtual seperti:
+assets/pdf-v2/maulid/al-azab/nama-file.pdf
+
+Admin akan menampilkan R2 key:
+maulid/al-azab/nama-file.pdf
+
+Untuk PDF BARU:
+1. Tentukan path virtual pada Admin.
+2. Perhatikan "R2 key" yang ditampilkan.
+3. Upload PDF ke bucket R2 dengan key/folder yang SAMA.
+4. Download books.json dari Admin.
+5. Replace books.json di GitHub dan commit.
+
+JANGAN upload PDF rahasia kembali ke GitHub.
+
+ALUR AMAN SETIAP EDIT
+1. Buka Admin.
+2. Edit data.
+3. Pastikan Error = 0.
+4. Klik Preview & Download.
+5. Download books.json.
+6. Replace books.json di GitHub.
+7. Commit.
+8. Tes satu bacaan yang diedit.
+
+CATATAN ID
+Jangan mengganti ID bacaan/bagian lama.
+ID dipakai untuk progres, bookmark, favorit, dan riwayat pengguna.
+
+SHORTCUT
+Ctrl+S = Simpan draft lokal
+Ctrl+E = Preview/validasi export
+
+BACKUP
+Backup tersimpan lokal di browser/perangkat yang dipakai membuka Admin.
+Backup bukan cloud backup. Untuk backup permanen, download salah satu backup
+dari menu Backup.
+
+VERSI
+Admin Koleksi Final V2.32
