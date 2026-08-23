@@ -26,6 +26,7 @@ let historyCurrent=null;
 let historyLocked=false;
 let explorerCategory='';
 let explorerItemId=null;
+let selectedPartRef=null;
 let explorerView=localStorage.getItem('amaliyah:admin:explorer:view:v2361')||'list';
 
 async function boot(){
@@ -51,6 +52,7 @@ async function boot(){
   refreshCategoryUI();
   explorerCategory='';
   explorerItemId=null;
+  selectedPartRef=null;
   renderList();
   updateAllStatus(false,'books.json siap diedit');
 
@@ -113,6 +115,7 @@ function bind(){
 
   $('#titleInput').oninput=()=>patchSelected('title',$('#titleInput').value);
   $('#categoryInput').oninput=()=>patchSelected('category',$('#categoryInput').value);
+  $('#locationInput').onchange=moveSelectedByLocation;
   $('#typeInput').onchange=changeType;
   $('#iconInput').oninput=()=>patchSelected('icon',$('#iconInput').value);
 
@@ -148,6 +151,13 @@ function bind(){
   $('#editPartPathBtn').onclick=()=>toggleTechnicalInput($('#partFileInput'),$('#editPartPathBtn'));
   $('#closePartDialogBtn').onclick=closePartDialog;
   $('#cancelPartBtn').onclick=closePartDialog;
+  $('#partInspectorEditBtn').onclick=()=>{
+    const ref=selectedPartRef;
+    const parent=ref?data.items.find(x=>x.id===ref.parentId):null;
+    if(!parent||!parent.parts?.[ref.index])return;
+    selectedId=parent.id;
+    openPartDialog(ref.index);
+  };
 
   $('#saveDraftBtn').onclick=()=>saveDraft('Draft disimpan manual');
   $('#backupBtn').onclick=openBackupDialog;
@@ -983,6 +993,11 @@ function bindExplorerPartReorder(list){
       const from=Number(explorerDragPayload.partIndex),to=Number(row.dataset.partIndex);
       if(parent&&from!==to&&from>=0&&to>=0){
         const [moved]=parent.parts.splice(from,1);parent.parts.splice(to,0,moved);
+        if(selectedPartRef?.parentId===parent.id){
+          if(selectedPartRef.index===from)selectedPartRef.index=to;
+          else if(from<selectedPartRef.index&&to>=selectedPartRef.index)selectedPartRef.index-=1;
+          else if(from>selectedPartRef.index&&to<=selectedPartRef.index)selectedPartRef.index+=1;
+        }
         markDirty('Urutan bagian di Explorer diubah');renderList();renderParts();
       }
       explorerDragEnd();
@@ -1061,14 +1076,15 @@ function explorerCardForPart(parent,p,i){
     const child=data.items.find(x=>x.id===p.itemId);
     return child?explorerCardForItem(child,data.items.indexOf(child)):'';
   }
-  return `<div class="explorer-entry is-file part-file" draggable="true" data-part-index="${i}">
-    <button class="explorer-open" type="button" data-edit-part-index="${i}">
+  const active=selectedPartRef?.parentId===parent.id&&selectedPartRef?.index===i;
+  return `<div class="explorer-entry is-file part-file ${active?'active':''}" draggable="true" data-part-index="${i}">
+    <button class="explorer-open" type="button" data-select-part-index="${i}" title="Pilih file">
       <span class="explorer-icon file-icon" aria-hidden="true"></span>
       <span class="explorer-entry-copy"><b>${esc(p.title||'(Tanpa judul)')}</b><small>Dokumen PDF</small></span>
     </button>
     <span class="explorer-col explorer-col-type"><small>PDF</small></span>
     <span class="explorer-col explorer-col-count"><b>${Math.max(1,Number(p.pages)||1)}</b><small>hal.</small></span>
-    <div class="explorer-entry-actions"><button type="button" data-edit-part-index="${i}" title="Edit">✎</button></div>
+    <div class="explorer-entry-actions"><button type="button" class="icon-action edit-action" data-edit-part-index="${i}" title="Edit Bagian"><span class="ui-icon i-edit" aria-hidden="true"></span></button></div>
   </div>`;
 }
 
@@ -1116,7 +1132,18 @@ function renderList(){
   $$('[data-drop-category-entry]',list).forEach(row=>bindExplorerDropTarget(row,{kind:'category',category:row.dataset.dropCategoryEntry}));
   $$('[data-open-explorer]',list).forEach(btn=>btn.onclick=()=>openExplorerItem(btn.dataset.openExplorer));
   $$('[data-edit-explorer]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();selectItem(btn.dataset.editExplorer);});
-  $$('[data-edit-part-index]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();const i=Number(btn.dataset.editPartIndex);const parent=data.items.find(x=>x.id===explorerItemId);if(parent){selectedId=parent.id;selectItem(parent.id);openPartDialog(i);}});
+  $$('[data-select-part-index]',list).forEach(btn=>btn.onclick=e=>{
+    e.stopPropagation();
+    const i=Number(btn.dataset.selectPartIndex);
+    const parent=data.items.find(x=>x.id===explorerItemId);
+    if(parent)showPartInspector(parent,i);
+  });
+  $$('[data-edit-part-index]',list).forEach(btn=>btn.onclick=e=>{
+    e.stopPropagation();
+    const i=Number(btn.dataset.editPartIndex);
+    const parent=data.items.find(x=>x.id===explorerItemId);
+    if(parent){selectedPartRef={parentId:parent.id,index:i};selectedId=parent.id;openPartDialog(i);}
+  });
 
   // Double click folder = open; drag = move like a file explorer.
   $$('.explorer-entry[data-id]',list).forEach(row=>{
@@ -1131,11 +1158,97 @@ function renderList(){
     row.addEventListener('dragend',()=>{mainDragIndex=null;explorerDragEnd();});
     bindExplorerDropTarget(row,{kind:'item',itemId:row.dataset.id});
   });
+  $$('.part-file[data-part-index]',list).forEach(row=>{
+    row.ondblclick=e=>{
+      e.preventDefault();
+      const i=Number(row.dataset.partIndex);
+      const parent=data.items.find(x=>x.id===explorerItemId);
+      if(parent){selectedPartRef={parentId:parent.id,index:i};selectedId=parent.id;openPartDialog(i);}
+    };
+  });
   bindExplorerPartReorder(list);
   $$('[data-main-up]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();moveMainItem(Number(btn.dataset.mainUp),Number(btn.dataset.mainUp)-1);});
   $$('[data-main-down]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();moveMainItem(Number(btn.dataset.mainDown),Number(btn.dataset.mainDown)+1);});
 
   updateAllStatus(dirty);
+}
+
+function explorerPathForItem(item){
+  if(!item)return 'Bacaan';
+  const chain=[];
+  const guard=new Set();
+  let current=item;
+  while(current && !guard.has(current.id)){
+    guard.add(current.id);
+    chain.unshift(current.title||current.id);
+    current=findExplorerParent(current.id);
+  }
+  if(item.category)chain.unshift(item.category);
+  chain.unshift('Bacaan');
+  return chain.join(' › ');
+}
+
+function locationValueForItem(item){
+  const parent=findExplorerParent(item.id);
+  return parent?`item::${parent.id}`:`category::${item.category||''}`;
+}
+
+function buildLocationOptions(item){
+  const select=$('#locationInput');
+  if(!select||!item)return;
+  const current=locationValueForItem(item);
+  const opts=[];
+  categories().forEach(cat=>opts.push({value:`category::${cat}`,label:`Kategori — ${cat}`}));
+  data.items.forEach(target=>{
+    if(target.id===item.id||target.type==='single')return;
+    if(!canDropOnItem({kind:'item',itemId:item.id},target))return;
+    const prefix=target.type==='collection'?'Collection':'Group';
+    opts.push({value:`item::${target.id}`,label:`${prefix} — ${explorerPathForItem(target).replace(/^Bacaan › /,'')}`});
+  });
+  if(!opts.some(o=>o.value===current)){
+    const parent=findExplorerParent(item.id);
+    opts.unshift({value:current,label:parent?`${parent.type==='collection'?'Collection':'Group'} — ${explorerPathForItem(parent).replace(/^Bacaan › /,'')}`:`Kategori — ${item.category||'Tanpa kategori'}`});
+  }
+  select.innerHTML=opts.map(o=>`<option value="${esc(o.value)}">${esc(o.label)}</option>`).join('');
+  select.value=current;
+  $('#locationPathText').textContent=`Lokasi saat ini: ${explorerPathForItem(item)}`;
+}
+
+async function moveSelectedByLocation(){
+  const item=getSelected();
+  const select=$('#locationInput');
+  if(!item||!select)return;
+  const chosen=select.value;
+  const current=locationValueForItem(item);
+  if(!chosen||chosen===current)return;
+  const payload={kind:'item',itemId:item.id};
+  if(chosen.startsWith('category::')){
+    const category=chosen.slice('category::'.length);
+    await dropExplorerOnCategory(payload,category);
+  }else if(chosen.startsWith('item::')){
+    const targetId=chosen.slice('item::'.length);
+    await dropExplorerOnItem(payload,targetId);
+  }
+  const still=data.items.find(x=>x.id===item.id);
+  if(still && selectedId===still.id)buildLocationOptions(still);
+}
+
+function showPartInspector(parent,index){
+  const part=parent?.parts?.[index];
+  if(!parent||!part||part.itemId)return;
+  selectedPartRef={parentId:parent.id,index};
+  selectedId=parent.id;
+  $('#emptyEditor').classList.add('hidden');
+  $('#editorContent').classList.add('hidden');
+  $('#partInspector').classList.remove('hidden');
+  $('#partInspectorTitle').textContent=part.title||'(Tanpa judul)';
+  $('#partInspectorPath').textContent=`${explorerPathForItem(parent)} › ${part.title||part.id||'Bagian'}`;
+  $('#partInspectorParent').textContent=parent.title||parent.id;
+  $('#partInspectorPages').textContent=`${Math.max(1,Number(part.pages)||1)} halaman`;
+  $('#partInspectorFile').textContent=part.file||'—';
+  $('#partInspectorId').textContent=part.id||'—';
+  $('#partInspectorR2').textContent=r2Key(part.file)||'—';
+  renderList();
 }
 
 function moveMainItem(from,to){
@@ -1157,6 +1270,7 @@ function moveMainItem(from,to){
 
 /* ===================== EDITOR ===================== */
 function selectItem(id){
+  selectedPartRef=null;
   selectedId=id;
   renderList();
 
@@ -1164,6 +1278,7 @@ function selectItem(id){
   if(!x)return;
 
   $('#emptyEditor').classList.add('hidden');
+  $('#partInspector')?.classList.add('hidden');
   $('#editorContent').classList.remove('hidden');
 
   $('#editorHeading').textContent=x.title||'Edit Bacaan';
@@ -1176,6 +1291,7 @@ function selectItem(id){
   $('#typeInput').value=x.type||'single';
   $('#iconInput').value=x.icon||'';
   $('#idInput').value=x.id||'';
+  buildLocationOptions(x);
 
   $('#singleFields').classList.toggle('hidden',x.type!=='single');
   $('#partsSection').classList.toggle('hidden',x.type==='single');
@@ -1202,7 +1318,9 @@ function selectItem(id){
 }
 
 function showEmptyEditor(){
+  selectedPartRef=null;
   $('#editorContent').classList.add('hidden');
+  $('#partInspector')?.classList.add('hidden');
   $('#emptyEditor').classList.remove('hidden');
 }
 
@@ -1212,7 +1330,10 @@ function patchSelected(key,value){
   x[key]=value;
 
   if(key==='title')$('#editorHeading').textContent=value||'Edit Bacaan';
-  if(key==='category')$('#editorCategoryBadge').textContent=value||'Tanpa kategori';
+  if(key==='category'){
+    $('#editorCategoryBadge').textContent=value||'Tanpa kategori';
+    buildLocationOptions(x);
+  }
 
   markDirty();
 }
@@ -1403,8 +1524,14 @@ function movePart(from,to){
 
   const [p]=x.parts.splice(from,1);
   x.parts.splice(to,0,p);
+  if(selectedPartRef?.parentId===x.id){
+    if(selectedPartRef.index===from)selectedPartRef.index=to;
+    else if(from<selectedPartRef.index&&to>=selectedPartRef.index)selectedPartRef.index-=1;
+    else if(from>selectedPartRef.index&&to<=selectedPartRef.index)selectedPartRef.index+=1;
+  }
   markDirty('Urutan bagian diubah');
   renderParts();
+  renderList();
 }
 
 async function removePart(i){
@@ -1422,8 +1549,13 @@ async function removePart(i){
 
   createBackup(`Sebelum menghapus bagian: ${p.title}`);
   x.parts.splice(i,1);
+  if(selectedPartRef?.parentId===x.id){
+    if(selectedPartRef.index===i){selectedPartRef=null;selectItem(x.id);}
+    else if(selectedPartRef.index>i)selectedPartRef.index-=1;
+  }
   markDirty('Bagian dihapus dari data');
   renderParts();
+  renderList();
 }
 
 function openPartDialog(i=-1){
@@ -1562,9 +1694,14 @@ function savePart(){
     p.pages=pages;
   }
 
+  const savedIndex=editingPartIndex<0?x.parts.length-1:editingPartIndex;
   $('#partDialog').close();
   markDirty(editingPartIndex<0?'Bagian baru ditambahkan':'Bagian diperbarui');
   renderParts();
+  renderList();
+  if(selectedPartRef?.parentId===x.id&&selectedPartRef.index===savedIndex){
+    showPartInspector(x,savedIndex);
+  }
 }
 
 

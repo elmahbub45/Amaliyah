@@ -2592,3 +2592,159 @@ body.explorer-dragging{cursor:grabbing}
   .sidebar.explorer-workspace,.editor{height:auto!important}
 }
 
+
+/* =========================================================
+   V2.36.3 — PART INSPECTOR + LOKASI / FOLDER
+   ========================================================= */
+.location-field select{
+  width:100%;
+  min-height:46px;
+  border:1px solid var(--line,#ded9cf);
+  border-radius:12px;
+  background:#fff;
+  color:var(--ink,#17392f);
+  padding:0 40px 0 13px;
+  font:inherit;
+  font-weight:650;
+  cursor:pointer;
+}
+.location-field select:focus{
+  outline:none;
+  border-color:rgba(0,105,78,.48);
+  box-shadow:0 0 0 3px rgba(0,105,78,.08);
+}
+#locationPathText{
+  display:block;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:#728078;
+}
+
+.part-inspector{
+  min-height:100%;
+  padding:28px;
+  overflow:auto;
+}
+.part-inspector-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding-bottom:22px;
+  border-bottom:1px solid #e8e3da;
+}
+.part-inspector-head h2{
+  margin:5px 0 6px;
+  color:#123c31;
+  font-size:clamp(22px,2vw,30px);
+  line-height:1.15;
+}
+.part-inspector-head p{
+  margin:0;
+  max-width:680px;
+  color:#7a837e;
+  font-size:12px;
+  line-height:1.55;
+  overflow-wrap:anywhere;
+}
+.part-inspector-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:12px;
+  margin-top:20px;
+}
+.part-property{
+  min-width:0;
+  padding:15px 16px;
+  border:1px solid #e8e2d9;
+  border-radius:14px;
+  background:#fffdfa;
+}
+.part-property.span-2{grid-column:1/-1}
+.part-property>span{
+  display:block;
+  margin-bottom:7px;
+  color:#9a7750;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.075em;
+  text-transform:uppercase;
+}
+.part-property b,
+.part-property code{
+  display:block;
+  max-width:100%;
+  color:#17392f;
+  font-size:13px;
+  line-height:1.55;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.part-property code{
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+  font-size:11px;
+}
+.technical-property{
+  background:#f8fbf9;
+}
+.part-inspector-note{
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  margin-top:18px;
+  padding:14px 15px;
+  border:1px solid #dce9e3;
+  border-radius:14px;
+  background:#f4faf7;
+  color:#184b3e;
+}
+.part-inspector-note .ui-icon{
+  flex:0 0 18px;
+  width:18px;
+  height:18px;
+  margin-top:1px;
+  background:#08765c;
+}
+.part-inspector-note span:last-child{
+  display:grid;
+  gap:3px;
+}
+.part-inspector-note b{font-size:12px}
+.part-inspector-note small{color:#6f7f78;font-size:11px;line-height:1.5}
+
+.explorer-entry.part-file.active{
+  background:#edf7f2;
+  box-shadow:inset 3px 0 0 #08765c;
+}
+.explorer-entry-actions .icon-action{
+  display:inline-grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  padding:0;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#607169;
+}
+.explorer-entry-actions .icon-action:hover{
+  background:#e8f3ee;
+  color:#075f4a;
+}
+.explorer-entry-actions .icon-action .ui-icon{
+  width:15px;
+  height:15px;
+  background:currentColor;
+}
+
+@media (max-width:1040px){
+  .part-inspector{min-height:360px;padding:22px}
+}
+@media (max-width:640px){
+  .part-inspector{padding:18px}
+  .part-inspector-head{flex-direction:column}
+  .part-inspector-head .primary{width:100%;justify-content:center}
+  .part-inspector-grid{grid-template-columns:1fr}
+  .part-property.span-2{grid-column:auto}
+}

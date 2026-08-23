@@ -127,6 +127,45 @@
         <p>Semua perubahan dilakukan pada data editor terlebih dahulu. PDF di R2 tidak akan terhapus otomatis.</p>
       </div>
 
+      <div id="partInspector" class="part-inspector hidden">
+        <div class="part-inspector-head">
+          <div>
+            <span class="eyebrow">FILE / BAGIAN</span>
+            <h2 id="partInspectorTitle">Bagian</h2>
+            <p id="partInspectorPath">—</p>
+          </div>
+          <button id="partInspectorEditBtn" class="primary small icon-label" type="button"><span class="ui-icon i-edit" aria-hidden="true"></span><span>Edit Bagian</span></button>
+        </div>
+
+        <div class="part-inspector-grid">
+          <div class="part-property">
+            <span>Collection / Group</span>
+            <b id="partInspectorParent">—</b>
+          </div>
+          <div class="part-property">
+            <span>Jumlah Halaman</span>
+            <b id="partInspectorPages">—</b>
+          </div>
+          <div class="part-property span-2">
+            <span>PDF</span>
+            <b id="partInspectorFile">—</b>
+          </div>
+          <div class="part-property span-2 technical-property">
+            <span>ID Bagian</span>
+            <code id="partInspectorId">—</code>
+          </div>
+          <div class="part-property span-2 technical-property">
+            <span>R2 Key</span>
+            <code id="partInspectorR2">—</code>
+          </div>
+        </div>
+
+        <div class="part-inspector-note">
+          <span class="ui-icon i-info" aria-hidden="true"></span>
+          <span><b>Klik sekali hanya memilih file.</b><small>Gunakan Edit Bagian, ikon edit, atau double-click untuk membuka editor bagian.</small></span>
+        </div>
+      </div>
+
       <div id="editorContent" class="hidden">
         <div class="editor-title-row">
           <div class="editor-title-copy">
@@ -168,6 +207,12 @@
             <input id="categoryInput" list="categoryOptions" type="text" autocomplete="off">
             <datalist id="categoryOptions"></datalist>
             <small>Boleh memakai kategori lama atau mengetik kategori baru.</small>
+          </label>
+
+          <label class="field location-field">
+            <span>Lokasi / Folder</span>
+            <select id="locationInput"></select>
+            <small id="locationPathText">Lokasi saat ini: —</small>
           </label>
 
           <label class="field">
