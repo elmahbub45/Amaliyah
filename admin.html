@@ -12,8 +12,8 @@
   <header class="topbar">
     <div class="brand">
       <div class="brand-mark" aria-label="Logo Amaliyah">
-        <img src="./assets/icons/icon-192.png" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
-        <span class="brand-fallback" hidden>A</span>
+        <span class="brand-fallback">A</span>
+        <img src="assets/icons/icon-192.png" alt="" onerror="this.remove()">
       </div>
       <div>
         <small>AMALIYAH • MAINTENANCE</small>
@@ -220,7 +220,10 @@
               <b id="partsHeading">Bagian</b>
               <small>Urutan di sini adalah urutan yang dipakai aplikasi.</small>
             </div>
-            <button id="addPartBtn" class="primary small" type="button">+ Tambah Bagian</button>
+            <div class="part-add-actions">
+              <button id="addExistingPartBtn" class="ghost small" type="button">Ambil dari Daftar Bacaan</button>
+              <button id="addPartBtn" class="primary small" type="button">+ PDF Baru</button>
+            </div>
           </div>
 
           <div id="partsList" class="parts-list"></div>
@@ -247,6 +250,8 @@
     </div>
 
     <div class="actions">
+      <button id="undoStepBtn" class="ghost" type="button" disabled title="Undo (Ctrl+Z)">↶ Undo</button>
+      <button id="redoStepBtn" class="ghost" type="button" disabled title="Redo (Ctrl+Y / Ctrl+Shift+Z)">↷ Redo</button>
       <button id="undoBtn" class="ghost" type="button">Batalkan Semua</button>
       <button id="reloadBtn" class="ghost" type="button">Muat Ulang Server</button>
       <button id="importBtn" class="ghost" type="button">Import JSON</button>
@@ -419,6 +424,42 @@
       <div class="dialog-actions sticky-dialog-actions">
         <button id="cancelBatchBtn" class="ghost" type="button">Batal</button>
         <button id="applyBatchBtn" class="primary" type="button" disabled>Tambahkan ke Katalog</button>
+      </div>
+    </div>
+  </dialog>
+
+
+  <!-- Ambil bacaan yang sudah ada menjadi bagian collection -->
+  <dialog id="existingPartDialog" class="wide-dialog">
+    <div class="dialog-card existing-part-dialog-card">
+      <div class="dialog-head">
+        <div>
+          <small>AMBIL DARI KATALOG</small>
+          <h3>Masukkan Bacaan ke Collection</h3>
+        </div>
+        <button id="closeExistingPartBtn" class="icon-btn dark" type="button">✕</button>
+      </div>
+      <p class="dialog-note">Pilih bacaan Single yang sudah ada. PDF tidak perlu diunggah ulang.</p>
+      <div class="existing-picker-toolbar">
+        <div class="search-wrap">
+          <span>⌕</span>
+          <input id="existingPartSearch" type="search" placeholder="Cari bacaan yang sudah ada…">
+        </div>
+      </div>
+      <div id="existingPartList" class="existing-part-list"></div>
+      <div id="existingPartModeBox" class="existing-part-mode hidden">
+        <div>
+          <small>BACAAN DIPILIH</small>
+          <b id="existingPartSelectedTitle">—</b>
+        </div>
+        <div class="mode-choice">
+          <label><input type="radio" name="existingPartMode" value="move" checked> <span><b>Pindahkan</b><small>Hapus dari daftar utama setelah masuk collection.</small></span></label>
+          <label><input type="radio" name="existingPartMode" value="copy"> <span><b>Salin</b><small>Tetap ada di daftar utama dan buat bagian baru.</small></span></label>
+        </div>
+      </div>
+      <div class="dialog-actions sticky-dialog-actions">
+        <button id="cancelExistingPartBtn" class="ghost" type="button">Batal</button>
+        <button id="applyExistingPartBtn" class="primary" type="button" disabled>Masukkan ke Collection</button>
       </div>
     </div>
   </dialog>

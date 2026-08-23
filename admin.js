@@ -17,10 +17,19 @@ let autosaveTimer=null;
 let confirmResolver=null;
 let batchEntries=[];
 let batchDragIndex=null;
+let existingPartSourceId=null;
+let undoStack=[];
+let redoStack=[];
+let historyCurrent=null;
+let historyLocked=false;
 
 async function boot(){
   original=await fetchBooks();
   data=clone(original);
+
+  // Bind seluruh kontrol lebih dulu. Dialog draft dapat muncul segera saat boot,
+  // jadi tombol konfirmasi harus sudah aktif sebelum confirmInternal() dipanggil.
+  bind();
 
   const draft=readDraft();
   if(draft?.items){
@@ -33,7 +42,7 @@ async function boot(){
     if(use)data=draft;
   }
 
-  bind();
+  initHistory();
   refreshCategoryUI();
   renderList();
   updateAllStatus(false,'books.json siap diedit');
@@ -113,6 +122,11 @@ function bind(){
   $('#editSinglePathBtn').onclick=()=>toggleTechnicalInput($('#singleFileInput'),$('#editSinglePathBtn'));
 
   $('#addPartBtn').onclick=()=>openPartDialog();
+  $('#addExistingPartBtn').onclick=openExistingPartDialog;
+  $('#closeExistingPartBtn').onclick=closeExistingPartDialog;
+  $('#cancelExistingPartBtn').onclick=closeExistingPartDialog;
+  $('#existingPartSearch').oninput=renderExistingPartList;
+  $('#applyExistingPartBtn').onclick=applyExistingPart;
   $('#savePartBtn').onclick=savePart;
   $('#partForm').onsubmit=e=>{e.preventDefault();savePart();};
   $('#partTitleInput').oninput=onPartTitleInput;
@@ -127,6 +141,8 @@ function bind(){
   $('#backupBtn').onclick=openBackupDialog;
   $('#closeBackupBtn').onclick=()=>$('#backupDialog').close();
 
+  $('#undoStepBtn').onclick=undoStep;
+  $('#redoStepBtn').onclick=redoStep;
   $('#undoBtn').onclick=undoAll;
   $('#reloadBtn').onclick=reloadServer;
   $('#importBtn').onclick=()=>$('#importFile').click();
@@ -149,15 +165,99 @@ function bind(){
   });
 
   window.addEventListener('keydown',e=>{
-    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){
+    const mod=e.ctrlKey||e.metaKey;
+    const key=e.key.toLowerCase();
+    const target=e.target;
+    const typing=target && (target.matches?.('input,textarea,select') || target.isContentEditable);
+
+    if(mod && key==='s'){
       e.preventDefault();
       saveDraft('Draft disimpan dengan Ctrl+S');
+      return;
     }
-    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='e'){
+    if(mod && key==='e'){
       e.preventDefault();
       openValidationDialog(true);
+      return;
+    }
+    if(!typing && mod && key==='z' && !e.shiftKey){
+      e.preventDefault();
+      undoStep();
+      return;
+    }
+    if(!typing && mod && ((key==='y') || (key==='z' && e.shiftKey))){
+      e.preventDefault();
+      redoStep();
     }
   });
+}
+
+
+/* ===================== UNDO / REDO SESSION ===================== */
+function initHistory(){
+  undoStack=[];
+  redoStack=[];
+  historyCurrent=clone(data);
+  updateUndoRedoButtons();
+}
+
+function trackHistoryChange(){
+  if(historyLocked || !data?.items)return;
+  if(!historyCurrent){
+    historyCurrent=clone(data);
+    updateUndoRedoButtons();
+    return;
+  }
+  const before=JSON.stringify(historyCurrent);
+  const now=JSON.stringify(data);
+  if(before===now)return;
+  undoStack.push(clone(historyCurrent));
+  if(undoStack.length>120)undoStack.shift();
+  historyCurrent=clone(data);
+  redoStack=[];
+  updateUndoRedoButtons();
+}
+
+function updateUndoRedoButtons(){
+  const u=$('#undoStepBtn');
+  const r=$('#redoStepBtn');
+  if(u)u.disabled=undoStack.length===0;
+  if(r)r.disabled=redoStack.length===0;
+}
+
+function applyHistorySnapshot(snapshot,message){
+  historyLocked=true;
+  data=clone(snapshot);
+  historyCurrent=clone(snapshot);
+  if(selectedId && !data.items.some(x=>x.id===selectedId))selectedId=null;
+  refreshCategoryUI();
+  renderList();
+  if(selectedId)selectItem(selectedId); else showEmptyEditor();
+  dirty=JSON.stringify(data)!==JSON.stringify(original);
+  if(dirty)scheduleAutosave(); else localStorage.removeItem(DRAFT_KEY);
+  updateAllStatus(dirty,message);
+  historyLocked=false;
+  updateUndoRedoButtons();
+}
+
+function undoStep(){
+  if(!undoStack.length){
+    toast('Tidak ada langkah yang bisa di-Undo.','warn');
+    return;
+  }
+  redoStack.push(clone(historyCurrent||data));
+  const snapshot=undoStack.pop();
+  applyHistorySnapshot(snapshot,'Undo satu langkah');
+}
+
+function redoStep(){
+  if(!redoStack.length){
+    toast('Tidak ada langkah yang bisa di-Redo.','warn');
+    return;
+  }
+  undoStack.push(clone(historyCurrent||data));
+  const snapshot=redoStack.pop();
+  applyHistorySnapshot(snapshot,'Redo satu langkah');
 }
 
 /* ===================== BASIC HELPERS ===================== */
@@ -364,6 +464,7 @@ function updateAllStatus(isDirty=dirty,msg=''){
 }
 
 function markDirty(msg='Perubahan disimpan di editor'){
+  trackHistoryChange();
   dirty=true;
   scheduleAutosave();
   renderList();
@@ -477,6 +578,7 @@ function renderBackups(){
 
       createBackup('Sebelum memulihkan backup');
       data=clone(b.data);
+      trackHistoryChange();
       selectedId=null;
       dirty=true;
       refreshCategoryUI();
@@ -634,6 +736,7 @@ function selectItem(id){
 
   $('#singleFields').classList.toggle('hidden',x.type!=='single');
   $('#partsSection').classList.toggle('hidden',x.type==='single');
+  $('#addExistingPartBtn').classList.toggle('hidden',x.type!=='collection');
 
   if(x.type==='single'){
     $('#singleFileInput').value=x.file||'';
@@ -1002,6 +1105,112 @@ function savePart(){
   renderParts();
 }
 
+
+/* ===================== AMBIL DARI DAFTAR BACAAN ===================== */
+function openExistingPartDialog(){
+  const target=getSelected();
+  if(!target || target.type!=='collection'){
+    toast('Fitur ini digunakan saat mengedit Collection.','warn');
+    return;
+  }
+  existingPartSourceId=null;
+  $('#existingPartSearch').value='';
+  $('#existingPartModeBox').classList.add('hidden');
+  $('#applyExistingPartBtn').disabled=true;
+  const moveRadio=document.querySelector('input[name="existingPartMode"][value="move"]');
+  if(moveRadio)moveRadio.checked=true;
+  renderExistingPartList();
+  $('#existingPartDialog').showModal();
+  setTimeout(()=>$('#existingPartSearch').focus(),40);
+}
+
+function closeExistingPartDialog(){
+  existingPartSourceId=null;
+  $('#existingPartDialog').close();
+}
+
+function eligibleExistingParts(){
+  const target=getSelected();
+  if(!target)return[];
+  const q=$('#existingPartSearch').value.trim().toLowerCase();
+  return data.items.filter(x=>
+    x.id!==target.id &&
+    x.type==='single' &&
+    (!q || [x.title,x.id,x.category,x.file].join(' ').toLowerCase().includes(q))
+  );
+}
+
+function renderExistingPartList(){
+  const list=$('#existingPartList');
+  const items=eligibleExistingParts();
+  if(!items.length){
+    list.innerHTML='<div class="existing-part-empty">Tidak ada bacaan Single yang cocok.</div>';
+    return;
+  }
+  list.innerHTML=items.map(x=>`
+    <button class="existing-part-row ${existingPartSourceId===x.id?'selected':''}" type="button" data-existing-id="${esc(x.id)}">
+      <span class="existing-icon">${esc(x.icon||'◈')}</span>
+      <span class="existing-copy">
+        <b>${esc(x.title||'(Tanpa judul)')}</b>
+        <small>${esc(x.category||'Tanpa kategori')} • ${esc(basename(x.file||''))} • ${Math.max(1,Number(x.pages)||1)} hal.</small>
+      </span>
+    </button>
+  `).join('');
+  $$('[data-existing-id]',list).forEach(btn=>{
+    btn.onclick=()=>{
+      existingPartSourceId=btn.dataset.existingId;
+      const source=data.items.find(x=>x.id===existingPartSourceId);
+      $('#existingPartSelectedTitle').textContent=source?.title||'—';
+      $('#existingPartModeBox').classList.remove('hidden');
+      $('#applyExistingPartBtn').disabled=!source;
+      renderExistingPartList();
+    };
+  });
+}
+
+async function applyExistingPart(){
+  const target=getSelected();
+  const source=data.items.find(x=>x.id===existingPartSourceId);
+  if(!target || target.type!=='collection' || !source || source.type!=='single')return;
+
+  const mode=document.querySelector('input[name="existingPartMode"]:checked')?.value||'move';
+  const action=mode==='move'?'Pindahkan':'Salin';
+  const ok=await confirmInternal(
+    `${action} ke Collection?`,
+    mode==='move'
+      ? `"${source.title}" akan dihapus dari daftar utama dan menjadi bagian dari "${target.title}". PDF tidak diunggah ulang.`
+      : `"${source.title}" akan tetap berada di daftar utama dan salinannya menjadi bagian dari "${target.title}".`,
+    action,
+    'Batal'
+  );
+  if(!ok)return;
+
+  createBackup(`Sebelum ${action.toLowerCase()} ${source.title} ke ${target.title}`);
+
+  const partId=mode==='move'
+    ? source.id
+    : uniquePartId(`${source.id}-bagian`);
+
+  target.parts=Array.isArray(target.parts)?target.parts:[];
+  target.parts.push({
+    id:partId,
+    title:source.title,
+    file:source.file||'',
+    pages:Math.max(1,Number(source.pages)||1)
+  });
+
+  if(mode==='move'){
+    data.items=data.items.filter(x=>x.id!==source.id);
+    selectedId=target.id;
+  }
+
+  closeExistingPartDialog();
+  refreshCategoryUI();
+  markDirty(mode==='move'?'Bacaan dipindahkan ke Collection':'Bacaan disalin ke Collection');
+  selectItem(target.id);
+  toast(`${source.title} ${mode==='move'?'dipindahkan':'disalin'} ke ${target.title}.`,'ok');
+}
+
 /* ===================== BATCH IMPORT PDF ===================== */
 function openBatchDialog(){
   batchEntries=[];
@@ -1320,6 +1529,7 @@ async function deleteItem(){
 
   createBackup(`Sebelum menghapus bacaan: ${x.title}`);
   data.items=data.items.filter(i=>i.id!==x.id);
+  trackHistoryChange();
   selectedId=null;
 
   refreshCategoryUI();
@@ -1687,6 +1897,7 @@ async function importJson(e){
 
     createBackup('Sebelum import JSON');
     data=parsed;
+    trackHistoryChange();
     selectedId=null;
     dirty=true;
 
@@ -1719,6 +1930,7 @@ async function undoAll(){
 
   createBackup('Sebelum Batalkan Semua');
   data=clone(original);
+  initHistory();
   selectedId=null;
   localStorage.removeItem(DRAFT_KEY);
   dirty=false;
@@ -1744,6 +1956,7 @@ async function reloadServer(){
     const fresh=await fetchBooks();
     original=clone(fresh);
     data=clone(fresh);
+    initHistory();
     selectedId=null;
     dirty=false;
 

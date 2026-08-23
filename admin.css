@@ -2123,3 +2123,29 @@ dialog.batch-dialog{width:min(780px,calc(100% - 28px))}
   .technical-grid{grid-template-columns:1fr}
   .technical-grid .span-2{grid-column:auto}
 }
+
+
+/* ===== V2.35 workflow: existing reading + step undo/redo ===== */
+.part-add-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.existing-part-dialog-card{max-width:760px}
+.existing-picker-toolbar{margin:4px 0 12px}
+.existing-part-list{display:grid;gap:8px;max-height:42vh;overflow:auto;padding-right:4px}
+.existing-part-row{width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line,#ded8ca);background:#fff;border-radius:12px;text-align:left;cursor:pointer;color:inherit}
+.existing-part-row:hover,.existing-part-row.selected{border-color:#0d7a62;background:#f1faf7}
+.existing-part-row .existing-icon{width:34px;height:34px;border-radius:10px;background:#075b49;color:#f1d27a;display:grid;place-items:center;flex:0 0 auto;font-weight:700}
+.existing-part-row .existing-copy{display:flex;min-width:0;flex:1;flex-direction:column;gap:2px}
+.existing-part-row .existing-copy b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.existing-part-row .existing-copy small{color:#7b817e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.existing-part-empty{padding:24px;text-align:center;border:1px dashed #d8d1c3;border-radius:12px;color:#7b817e}
+.existing-part-mode{margin-top:14px;padding:14px;border:1px solid #ded8ca;border-radius:14px;background:#fbfaf6}
+.existing-part-mode>div:first-child{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.mode-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode-choice label{display:flex;gap:9px;align-items:flex-start;border:1px solid #ded8ca;border-radius:12px;padding:10px;background:#fff;cursor:pointer}
+.mode-choice label span{display:flex;flex-direction:column;gap:2px}
+.mode-choice label small{color:#7b817e}
+.bottom-actions .actions button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:760px){.part-add-actions{width:100%;justify-content:stretch}.part-add-actions button{flex:1}.mode-choice{grid-template-columns:1fr}}
+
+.brand-mark{position:relative}
+.brand-mark .brand-fallback{position:absolute;inset:4px;z-index:0}
+.brand-mark img{position:relative;z-index:1;background:#075b49}
