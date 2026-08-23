@@ -561,3 +561,92 @@ body.has-parts-menu footer small{
     height:40px;
   }
 }
+
+
+/* =========================================================
+   V2.26.1 — Navigasi collection dua arah tanpa menutupi teks
+   ========================================================= */
+
+/* Hapus mode pill lebar "Lanjut"; fungsi tetap next-part, visual tetap
+   panah transparan kecil di posisi navigasi semula. */
+#next.next-part-mode,
+#prev.previous-part-mode{
+  width:42px !important;
+  min-width:42px !important;
+  height:42px !important;
+  padding:0 !important;
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+  background:rgba(5,68,55,.16) !important;
+  border:1px solid rgba(255,255,255,.34) !important;
+  color:rgba(255,255,255,.96) !important;
+  box-shadow:0 4px 14px rgba(0,0,0,.07) !important;
+  backdrop-filter:blur(3px) !important;
+  -webkit-backdrop-filter:blur(3px) !important;
+}
+
+#next.next-part-mode svg,
+#prev.previous-part-mode svg{
+  width:20px !important;
+  height:20px !important;
+}
+
+/* In case stale HTML still contains the label. */
+#next.next-part-mode .arrow-label{
+  display:none !important;
+}
+
+/* At first/last boundaries with no adjacent part, navigation is fully hidden. */
+#prev.hidden,
+#next.hidden{
+  display:none !important;
+}
+
+
+/* =========================================================
+   V2.27 — Footer Reader Stabilization
+   ========================================================= */
+
+/* Tombol Bagian harus benar-benar tidak mengambil slot pada single/group. */
+footer #partsBtn[hidden],
+footer #partsBtn.hidden{
+  display:none !important;
+}
+
+/* Selalu satu baris. Non-collection = 5 slot, collection = 6 slot. */
+footer{
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  grid-auto-flow:column;
+  grid-auto-rows:1fr;
+  align-items:stretch;
+  overflow:hidden;
+}
+
+body.has-parts-menu footer{
+  grid-template-columns:repeat(6,minmax(0,1fr)) !important;
+}
+
+footer > button{
+  min-width:0 !important;
+  width:100% !important;
+  overflow:hidden;
+}
+
+footer > button small{
+  max-width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Hindari aturan responsive lama membuat tombol terakhir turun baris. */
+@media(max-width:430px){
+  footer{
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  }
+  body.has-parts-menu footer{
+    grid-template-columns:repeat(6,minmax(0,1fr)) !important;
+  }
+}

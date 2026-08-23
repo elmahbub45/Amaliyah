@@ -180,7 +180,28 @@
 
   <button id="notificationPermissionBtn" class="primary notification-permission-btn" type="button" onclick="requestNotifications()">Aktifkan Izin Notifikasi</button>
   <small class="notification-note">Pengingat web berjalan saat aplikasi/PWA aktif. Notifikasi background penuh akan kita sempurnakan pada tahap APK/push.</small>
-</div><div class="settings-card"><h3>Lokasi Sholat</h3><p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p><button class="primary" type="button" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button></div></div>
+</div>
+
+<div class="settings-card">
+  <h3>Lokasi Sholat</h3>
+  <p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p>
+  <button class="primary" type="button" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button>
+</div>
+
+<div class="settings-card about-app-card">
+  <div class="about-app-mark" aria-hidden="true">ا</div>
+  <div class="about-app-copy">
+    <span class="about-app-kicker">TENTANG APLIKASI</span>
+    <h3>Amaliyah</h3>
+    <p>Aplikasi bacaan dan amaliyah harian.</p>
+    <div class="developer-line">
+      <span>Dikembangkan oleh</span>
+      <strong>elmahbub.my.id</strong>
+    </div>
+  </div>
+</div>
+
+</div>
 
 <script type="module" src="app.js"></script>
 </body>

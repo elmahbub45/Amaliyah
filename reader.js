@@ -125,8 +125,15 @@ localStorage.setItem('amaliyah:lastItem',item.id);
 localStorage.setItem('amaliyah:lastBook',part.id);
 if(item.type!=='single')localStorage.setItem(`collection:${item.id}:lastPart`,part.id);
 if(partsButton){
-  partsButton.classList.toggle('hidden',item.type!=='collection');
-  document.body.classList.toggle('has-parts-menu',item.type==='collection');
+  const isCollection=item.type==='collection';
+
+  // Bagian hanya untuk collection. Gunakan class + hidden attribute
+  // supaya tombol benar-benar keluar dari layout footer pada group/single.
+  partsButton.classList.toggle('hidden',!isCollection);
+  partsButton.hidden=!isCollection;
+  partsButton.setAttribute('aria-hidden',String(!isCollection));
+
+  document.body.classList.toggle('has-parts-menu',isCollection);
 }
 
 const pageKey=`book:${part.id}:page`;
@@ -168,18 +175,48 @@ function recordHistory(){
 }
 
 function collectionPosition(){
-  if(item.type==='single')return {index:-1,next:null,last:true};
+  if(item.type==='single')return {index:-1,prev:null,next:null,last:true};
   const index=item.parts.findIndex(p=>p.id===part.id);
-  return {index,next:item.parts[index+1]||null,last:index===item.parts.length-1};
+  return {
+    index,
+    prev:item.parts[index-1]||null,
+    next:item.parts[index+1]||null,
+    last:index===item.parts.length-1
+  };
 }
 
 function updateNavigationState(){
-  if(!pdfDoc || !nextButton)return;
+  if(!pdfDoc)return;
 
+  const atFirstPage=page<=1;
   const atLastPage=page>=pdfDoc.numPages;
   const pos=collectionPosition();
 
-  // Normal page navigation before the last page.
+  const prevButton=$('#prev');
+
+  // PREVIOUS side
+  if(prevButton){
+    if(!atFirstPage){
+      prevButton.classList.remove('hidden','previous-part-mode');
+      prevButton.setAttribute('aria-label','Halaman sebelumnya');
+      prevButton.onclick=e=>{e.stopPropagation();go(-1)};
+    }else if(item.type==='collection' && pos.prev){
+      prevButton.classList.remove('hidden');
+      prevButton.classList.add('previous-part-mode');
+      prevButton.setAttribute('aria-label',`Kembali ke ${pos.prev.title}`);
+      prevButton.onclick=e=>{
+        e.stopPropagation();
+        openPreviousPart(pos.prev);
+      };
+    }else{
+      prevButton.classList.remove('previous-part-mode');
+      prevButton.classList.add('hidden');
+    }
+  }
+
+  // NEXT side
+  if(!nextButton)return;
+
   if(!atLastPage){
     nextButton.classList.remove('hidden','next-part-mode');
     nextButton.setAttribute('aria-label','Halaman berikutnya');
@@ -187,8 +224,6 @@ function updateNavigationState(){
     return;
   }
 
-  // At the last page of a collection, the same navigation position
-  // becomes "Lanjut" only if another part exists.
   if(item.type==='collection' && pos.next){
     nextButton.classList.remove('hidden');
     nextButton.classList.add('next-part-mode');
@@ -200,8 +235,6 @@ function updateNavigationState(){
     return;
   }
 
-  // Last page of single/group, or final part of collection:
-  // no next navigation.
   nextButton.classList.remove('next-part-mode');
   nextButton.classList.add('hidden');
 }
@@ -210,6 +243,15 @@ function openNextPart(next){
   localStorage.setItem(`collection:${item.id}:lastPart`,next.id);
   localStorage.setItem(`book:${next.id}:page`,'1');
   const url=`reader.html?book=${encodeURIComponent(item.id)}&part=${encodeURIComponent(next.id)}`;
+  location.replace(url);
+}
+
+function openPreviousPart(prev){
+  if(!prev)return;
+  const targetPage=Math.max(1,Number(prev.pages||1));
+  localStorage.setItem(`collection:${item.id}:lastPart`,prev.id);
+  localStorage.setItem(`book:${prev.id}:page`,String(targetPage));
+  const url=`reader.html?book=${encodeURIComponent(item.id)}&part=${encodeURIComponent(prev.id)}`;
   location.replace(url);
 }
 
@@ -369,7 +411,6 @@ function openMore(){
 }
 
 $('#readerBack').onclick=e=>{e.stopPropagation();leaveReader()};
-$('#prev').onclick=e=>{e.stopPropagation();go(-1)};
 $('#zoomIn').onclick=e=>{e.stopPropagation();scale=Math.min(2.2,scale+.2);drawPage()};
 $('#zoomOut').onclick=e=>{e.stopPropagation();scale=Math.max(.8,scale-.2);drawPage()};
 $('#bookmarkTop').onclick=e=>{e.stopPropagation();toggleBookmark()};
@@ -400,7 +441,12 @@ stage.addEventListener('touchend',e=>{
         go(1);
       }
     }else{
-      go(-1);
+      if(pdfDoc && page<=1 && item.type==='collection'){
+        const pos=collectionPosition();
+        if(pos.prev)openPreviousPart(pos.prev);
+      }else{
+        go(-1);
+      }
     }
     setTimeout(()=>{swiped=false},300);
   }
@@ -413,7 +459,12 @@ window.addEventListener('keydown',e=>{
       if(pos.next)openNextPart(pos.next);
     }else go(1);
   }
-  if(e.key==='ArrowLeft')go(-1);
+  if(e.key==='ArrowLeft'){
+    if(pdfDoc && page<=1 && item.type==='collection'){
+      const pos=collectionPosition();
+      if(pos.prev)openPreviousPart(pos.prev);
+    }else go(-1);
+  }
 });
 window.addEventListener('resize',()=>drawPage());
 window.addEventListener('pagehide',recordHistory);

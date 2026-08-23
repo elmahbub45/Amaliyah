@@ -854,3 +854,75 @@ body{
     overscroll-behavior-y:none;
   }
 }
+
+
+/* =========================================================
+   V2.27 — Tentang Aplikasi / Developer
+   ========================================================= */
+.about-app-card{
+  display:grid;
+  grid-template-columns:48px minmax(0,1fr);
+  gap:13px;
+  align-items:center;
+  overflow:hidden;
+  position:relative;
+}
+
+.about-app-mark{
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  background:#0b5b49;
+  color:#e8c775;
+  font-family:Georgia,serif;
+  font-size:25px;
+  font-weight:700;
+  box-shadow:0 8px 20px rgba(5,68,55,.12);
+}
+
+.about-app-copy{
+  min-width:0;
+}
+
+.about-app-kicker{
+  display:block;
+  margin-bottom:3px;
+  color:#9a7b38;
+  font-size:8.5px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+
+.about-app-copy h3{
+  margin:0 0 3px;
+}
+
+.about-app-copy p{
+  margin:0 0 9px;
+  font-size:11px;
+  line-height:1.45;
+  color:#78827d;
+}
+
+.developer-line{
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:4px 7px;
+  padding-top:8px;
+  border-top:1px solid rgba(32,67,56,.09);
+  font-size:9.5px;
+}
+
+.developer-line span{
+  color:#8a948f;
+}
+
+.developer-line strong{
+  color:#075b49;
+  font-size:10.5px;
+  font-weight:800;
+  letter-spacing:.01em;
+}
