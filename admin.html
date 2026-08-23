@@ -56,12 +56,20 @@
       <div class="sidebar-head">
         <div>
           <span class="eyebrow">KATALOG BACAAN</span>
-          <b>Daftar Koleksi</b>
+          <b>Explorer Bacaan</b>
           <small id="catalogInfo">Memuat…</small>
         </div>
         <div class="sidebar-add-actions">
-          <button id="batchImportBtn" class="ghost small" type="button">Import PDF</button>
+          <button id="batchImportBtn" class="ghost small" type="button">Import</button>
           <button id="addItemBtn" class="primary small" type="button">+ Tambah</button>
+        </div>
+      </div>
+
+      <div class="explorer-nav-row">
+        <nav id="explorerBreadcrumb" class="explorer-breadcrumb" aria-label="Lokasi Explorer"></nav>
+        <div class="view-switch" aria-label="Tampilan Explorer">
+          <button id="gridViewBtn" type="button" class="view-btn active" title="Grid">▦</button>
+          <button id="listViewBtn" type="button" class="view-btn" title="List">☷</button>
         </div>
       </div>
 
@@ -83,7 +91,7 @@
 
       <div class="sidebar-foot">
         <span>☷</span>
-        <small>Drag untuk mengatur urutan. Tombol ↑ ↓ tersedia untuk HP.</small>
+        <small>Klik folder untuk membuka. Grid/List bisa diganti kapan saja. Drag tetap tersedia untuk mengatur urutan.</small>
       </div>
     </aside>
 
@@ -378,7 +386,7 @@
         <button id="closeBatchBtn" class="icon-btn dark" type="button">✕</button>
       </div>
 
-      <p class="dialog-note batch-note">Pilih banyak PDF atau satu folder. Admin menyiapkan judul, ID, urutan, path virtual, dan R2 key otomatis. File fisik tidak diunggah dari halaman ini.</p>
+      <p class="dialog-note batch-note">Pilih banyak PDF atau satu folder. Jika memilih folder, Admin dapat membaca struktur otomatis: folder yang masih bercabang menjadi Group, sedangkan folder paling bawah menjadi Collection.</p>
 
       <div class="batch-settings">
         <label class="field">
@@ -387,6 +395,7 @@
             <option value="singles">Banyak bacaan Single</option>
             <option value="collection">Satu Collection</option>
             <option value="group">Satu Group</option>
+            <option value="folder-tree">Struktur Folder Otomatis</option>
           </select>
         </label>
         <label class="field">
@@ -402,7 +411,7 @@
       <div class="batch-pick-zone">
         <div>
           <b>Pilih PDF yang ingin dimasukkan</b>
-          <small>Bisa memilih banyak file sekaligus. Di Chrome desktop juga bisa memilih satu folder.</small>
+          <small>Pilih Folder untuk membangun Group/Collection otomatis dari susunan folder. File fisik tetap tidak diunggah dari halaman ini.</small>
         </div>
         <div class="batch-pick-actions">
           <button id="batchChooseFilesBtn" class="primary-soft-btn" type="button">Pilih Banyak PDF</button>

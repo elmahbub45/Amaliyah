@@ -22,6 +22,9 @@ let undoStack=[];
 let redoStack=[];
 let historyCurrent=null;
 let historyLocked=false;
+let explorerCategory='';
+let explorerItemId=null;
+let explorerView=localStorage.getItem('amaliyah:admin:explorer:view')||'grid';
 
 async function boot(){
   original=await fetchBooks();
@@ -44,6 +47,8 @@ async function boot(){
 
   initHistory();
   refreshCategoryUI();
+  explorerCategory='';
+  explorerItemId=null;
   renderList();
   updateAllStatus(false,'books.json siap diedit');
 
@@ -67,8 +72,10 @@ function assertBooksShape(parsed){
 
 function bind(){
   $('#searchInput').addEventListener('input',renderList);
-  $('#categoryFilter').addEventListener('change',renderList);
+  $('#categoryFilter').addEventListener('change',()=>{explorerCategory=$('#categoryFilter').value;explorerItemId=null;selectedId=null;showEmptyEditor();renderList();});
   $('#typeFilter').addEventListener('change',renderList);
+  $('#gridViewBtn').onclick=()=>setExplorerView('grid');
+  $('#listViewBtn').onclick=()=>setExplorerView('list');
 
   $('#workspaceStatusBtn').onclick=()=>openValidationDialog(false);
   $('#metricErrorsBtn').onclick=()=>openValidationDialog(false);
@@ -86,7 +93,7 @@ function bind(){
   $('#batchChooseFilesBtn').onclick=()=>$('#batchFilesInput').click();
   $('#batchChooseFolderBtn').onclick=()=>$('#batchFolderInput').click();
   $('#batchFilesInput').onchange=handleBatchFiles;
-  $('#batchFolderInput').onchange=handleBatchFiles;
+  $('#batchFolderInput').onchange=handleBatchFolder;
   $('#batchModeInput').onchange=()=>{
     updateBatchModeUI();
     renderBatchReview();
@@ -406,10 +413,10 @@ function getSelected(){
 }
 
 function totalPdf(){
-  return data.items.reduce(
-    (n,x)=>n+(x.type==='single'?1:(x.parts||[]).length),
-    0
-  );
+  return data.items.reduce((n,x)=>{
+    if(x.type==='single')return n+(x.file?1:0);
+    return n+(x.parts||[]).filter(p=>!p.itemId&&p.file).length;
+  },0);
 }
 
 function syncCategoriesForExport(){
@@ -516,7 +523,7 @@ function createBackup(reason='Backup otomatis',snapshot=data){
     at:new Date().toISOString(),
     reason,
     items:snapshot.items.length,
-    pdf:snapshot.items.reduce((n,x)=>n+(x.type==='single'?1:(x.parts||[]).length),0),
+    pdf:snapshot.items.reduce((n,x)=>n+(x.type==='single'?(x.file?1:0):(x.parts||[]).filter(p=>!p.itemId&&p.file).length),0),
     data:clone(snapshot)
   });
   writeBackups(backups);
@@ -592,105 +599,163 @@ function renderBackups(){
 }
 
 /* ===================== LIST / ORDER ===================== */
-function renderList(){
-  const q=$('#searchInput').value.trim().toLowerCase();
-  const cat=$('#categoryFilter').value;
-  const type=$('#typeFilter').value;
+function setExplorerView(view){
+  explorerView=view==='list'?'list':'grid';
+  localStorage.setItem('amaliyah:admin:explorer:view',explorerView);
+  $('#gridViewBtn')?.classList.toggle('active',explorerView==='grid');
+  $('#listViewBtn')?.classList.toggle('active',explorerView==='list');
+  renderList();
+}
 
-  const indexed=data.items.map((item,index)=>({item,index}));
-  const arr=indexed.filter(({item:x})=>{
-    const haystack=[
-      x.title,x.id,x.category,x.type,
-      ...(x.parts||[]).flatMap(p=>[p.title,p.id,p.file])
-    ].join(' ').toLowerCase();
-
-    return (!cat||x.category===cat) &&
-      (!type||x.type===type) &&
-      (!q||haystack.includes(q));
+function explorerParentMap(){
+  const map=new Map();
+  data.items.forEach(parent=>{
+    if(parent.type==='group'){
+      (parent.parts||[]).forEach(part=>{
+        if(part.itemId)map.set(part.itemId,parent.id);
+      });
+    }
   });
+  return map;
+}
 
-  const list=$('#itemList');
+function explorerRoots(category){
+  const parents=explorerParentMap();
+  return data.items.filter(x=>
+    !x.hidden && !parents.has(x.id) && (!category || x.category===category)
+  );
+}
 
-  if(!arr.length){
-    list.innerHTML='<div class="list-empty">Tidak ada bacaan yang cocok dengan filter.</div>';
-    updateAllStatus(dirty);
+function findExplorerParent(itemId){
+  const pid=explorerParentMap().get(itemId);
+  return pid?data.items.find(x=>x.id===pid)||null:null;
+}
+
+function renderExplorerBreadcrumb(){
+  const host=$('#explorerBreadcrumb');
+  if(!host)return;
+  const crumbs=[{label:'Bacaan',kind:'root'}];
+  if(explorerCategory)crumbs.push({label:explorerCategory,kind:'category'});
+  if(explorerItemId){
+    const chain=[];
+    let current=data.items.find(x=>x.id===explorerItemId)||null;
+    const guard=new Set();
+    while(current && !guard.has(current.id)){
+      guard.add(current.id);chain.unshift(current);current=findExplorerParent(current.id);
+    }
+    chain.forEach(item=>crumbs.push({label:item.title||item.id,kind:'item',id:item.id}));
+  }
+  host.innerHTML=crumbs.map((c,i)=>{
+    const last=i===crumbs.length-1;
+    return `${i?'<span class="crumb-sep">›</span>':''}<button type="button" class="crumb ${last?'current':''}" data-crumb-kind="${c.kind}" ${c.id?`data-crumb-id="${esc(c.id)}"`:''}>${esc(c.label)}</button>`;
+  }).join('');
+  $$('[data-crumb-kind]',host).forEach(btn=>btn.onclick=()=>{
+    const kind=btn.dataset.crumbKind;
+    if(kind==='root'){explorerCategory='';explorerItemId=null;$('#categoryFilter').value='';}
+    else if(kind==='category'){explorerItemId=null;$('#categoryFilter').value=explorerCategory;}
+    else explorerItemId=btn.dataset.crumbId;
+    selectedId=null;showEmptyEditor();renderList();
+  });
+}
+
+function openExplorerItem(id){
+  const item=data.items.find(x=>x.id===id);
+  if(!item)return;
+  if(item.type==='single'){
+    selectItem(id);
     return;
   }
+  explorerItemId=id;
+  selectedId=id;
+  selectItem(id);
+  renderList();
+}
 
-  list.innerHTML=arr.map(({item:x,index})=>{
-    const count=x.type==='single'
-      ? `${Math.max(1,Number(x.pages)||1)} hal.`
-      : `${x.parts?.length||0} bagian`;
+function explorerCardForItem(x,index){
+  const isFolder=x.type!=='single';
+  const count=x.type==='single'?`${Math.max(1,Number(x.pages)||1)} hal.`:`${(x.parts||[]).length} isi`;
+  return `<div class="explorer-entry ${isFolder?'is-folder':'is-file'} ${x.id===selectedId?'active':''}" draggable="${!x.hidden}" data-id="${esc(x.id)}" data-main-index="${index}">
+    <button class="explorer-open" type="button" data-open-explorer="${esc(x.id)}" title="${isFolder?'Buka folder':'Edit bacaan'}">
+      <span class="explorer-icon">${isFolder?(x.type==='group'?'▰':'▣'):'▤'}</span>
+      <span class="explorer-entry-copy"><b>${esc(x.title||'(Tanpa judul)')}</b><small>${esc(x.type)} • ${esc(count)}</small></span>
+    </button>
+    <div class="explorer-entry-actions">
+      <button type="button" data-edit-explorer="${esc(x.id)}" title="Edit">✎</button>
+      ${!x.hidden?`<button type="button" data-main-up="${index}" title="Naik">↑</button><button type="button" data-main-down="${index}" title="Turun">↓</button>`:''}
+    </div>
+  </div>`;
+}
 
-    return `
-      <div class="item-card ${x.id===selectedId?'active':''}"
-           draggable="true"
-           data-id="${esc(x.id)}"
-           data-main-index="${index}">
-        <button class="main-drag-handle" type="button" title="Drag">☰</button>
+function explorerCardForPart(parent,p,i){
+  if(p.itemId){
+    const child=data.items.find(x=>x.id===p.itemId);
+    return child?explorerCardForItem(child,data.items.indexOf(child)):'';
+  }
+  return `<div class="explorer-entry is-file part-file" data-part-index="${i}">
+    <button class="explorer-open" type="button" data-edit-part-index="${i}">
+      <span class="explorer-icon">▤</span>
+      <span class="explorer-entry-copy"><b>${esc(p.title||'(Tanpa judul)')}</b><small>${Math.max(1,Number(p.pages)||1)} hal. • PDF</small></span>
+    </button>
+    <div class="explorer-entry-actions"><button type="button" data-edit-part-index="${i}" title="Edit">✎</button></div>
+  </div>`;
+}
 
-        <button class="item-select" type="button" data-select-id="${esc(x.id)}">
-          <span class="item-copy">
-            <b>${esc(x.title||'(Tanpa judul)')}</b>
-            <small>${esc(x.category||'Tanpa kategori')} <i>•</i> ${esc(x.type)}</small>
-          </span>
-          <span class="item-count">${esc(count)}</span>
-        </button>
+function renderList(){
+  const q=$('#searchInput').value.trim().toLowerCase();
+  const catFilter=$('#categoryFilter').value;
+  const type=$('#typeFilter').value;
+  const list=$('#itemList');
+  list.className=`item-list explorer-view explorer-${explorerView}`;
+  $('#gridViewBtn')?.classList.toggle('active',explorerView==='grid');
+  $('#listViewBtn')?.classList.toggle('active',explorerView==='list');
 
-        <span class="main-order-actions">
-          <button type="button" data-main-up="${index}" title="Naik">↑</button>
-          <button type="button" data-main-down="${index}" title="Turun">↓</button>
-        </span>
-      </div>
-    `;
-  }).join('');
+  if(catFilter && catFilter!==explorerCategory && !explorerItemId)explorerCategory=catFilter;
+  renderExplorerBreadcrumb();
 
-  $$('[data-select-id]',list).forEach(btn=>{
-    btn.onclick=()=>selectItem(btn.dataset.selectId);
-  });
-
-  $$('.item-card',list).forEach(row=>{
-    row.addEventListener('dragstart',e=>{
-      mainDragIndex=Number(row.dataset.mainIndex);
-      row.classList.add('dragging');
-      try{e.dataTransfer.effectAllowed='move'}catch{}
+  let html='';
+  if(!explorerCategory && !explorerItemId && !q && !type){
+    const cats=categories();
+    html=cats.map(c=>`<div class="explorer-entry is-folder category-folder"><button class="explorer-open" type="button" data-open-category="${esc(c)}"><span class="explorer-icon">▰</span><span class="explorer-entry-copy"><b>${esc(c)}</b><small>${explorerRoots(c).length} bacaan</small></span></button></div>`).join('');
+  }else if(explorerItemId){
+    const parent=data.items.find(x=>x.id===explorerItemId);
+    if(!parent){explorerItemId=null;return renderList();}
+    const entries=(parent.parts||[]).map((p,i)=>({p,i})).filter(({p})=>{
+      const child=p.itemId?data.items.find(x=>x.id===p.itemId):null;
+      const hay=[p.title,p.id,p.file,child?.title,child?.type].join(' ').toLowerCase();
+      return (!q||hay.includes(q)) && (!type||child?.type===type || (!child && type==='single'));
     });
-
-    row.addEventListener('dragend',()=>{
-      mainDragIndex=null;
-      row.classList.remove('dragging');
-      $$('.drag-over',list).forEach(el=>el.classList.remove('drag-over'));
+    html=entries.map(({p,i})=>explorerCardForPart(parent,p,i)).join('');
+    if(!html)html='<div class="list-empty">Folder ini belum memiliki isi yang cocok.</div>';
+  }else{
+    const category=explorerCategory||catFilter;
+    let roots=explorerRoots(category);
+    roots=roots.filter(x=>{
+      const hay=[x.title,x.id,x.category,x.type,...(x.parts||[]).flatMap(p=>[p.title,p.id,p.file])].join(' ').toLowerCase();
+      return (!q||hay.includes(q)) && (!type||x.type===type);
     });
+    html=roots.map(x=>explorerCardForItem(x,data.items.indexOf(x))).join('');
+    if(!html)html='<div class="list-empty">Tidak ada bacaan yang cocok.</div>';
+  }
+  list.innerHTML=html;
 
-    row.addEventListener('dragover',e=>{
-      e.preventDefault();
-      row.classList.add('drag-over');
-    });
+  $$('[data-open-category]',list).forEach(btn=>btn.onclick=()=>{explorerCategory=btn.dataset.openCategory;explorerItemId=null;$('#categoryFilter').value=explorerCategory;selectedId=null;showEmptyEditor();renderList();});
+  $$('[data-open-explorer]',list).forEach(btn=>btn.onclick=()=>openExplorerItem(btn.dataset.openExplorer));
+  $$('[data-edit-explorer]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();selectItem(btn.dataset.editExplorer);});
+  $$('[data-edit-part-index]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();const i=Number(btn.dataset.editPartIndex);const parent=data.items.find(x=>x.id===explorerItemId);if(parent){selectedId=parent.id;selectItem(parent.id);openPartDialog(i);}});
 
-    row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
-
-    row.addEventListener('drop',e=>{
-      e.preventDefault();
-      row.classList.remove('drag-over');
-      const to=Number(row.dataset.mainIndex);
-      if(mainDragIndex===null||mainDragIndex===to)return;
-      moveMainItem(mainDragIndex,to);
-    });
+  // Double click folder = open; single click = select/edit.
+  $$('.explorer-entry[data-id]',list).forEach(row=>{
+    row.ondblclick=()=>{const id=row.dataset.id;const item=data.items.find(x=>x.id===id);if(item?.type!=='single')openExplorerItem(id);};
+    if(row.getAttribute('draggable')==='true'){
+      row.addEventListener('dragstart',e=>{mainDragIndex=Number(row.dataset.mainIndex);row.classList.add('dragging');try{e.dataTransfer.effectAllowed='move'}catch{}});
+      row.addEventListener('dragend',()=>{mainDragIndex=null;row.classList.remove('dragging');});
+      row.addEventListener('dragover',e=>{e.preventDefault();row.classList.add('drag-over');});
+      row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+      row.addEventListener('drop',e=>{e.preventDefault();row.classList.remove('drag-over');const to=Number(row.dataset.mainIndex);if(mainDragIndex!==null&&mainDragIndex!==to)moveMainItem(mainDragIndex,to);});
+    }
   });
-
-  $$('[data-main-up]',list).forEach(btn=>{
-    btn.onclick=e=>{
-      e.stopPropagation();
-      moveMainItem(Number(btn.dataset.mainUp),Number(btn.dataset.mainUp)-1);
-    };
-  });
-
-  $$('[data-main-down]',list).forEach(btn=>{
-    btn.onclick=e=>{
-      e.stopPropagation();
-      moveMainItem(Number(btn.dataset.mainDown),Number(btn.dataset.mainDown)+1);
-    };
-  });
+  $$('[data-main-up]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();moveMainItem(Number(btn.dataset.mainUp),Number(btn.dataset.mainUp)-1);});
+  $$('[data-main-down]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();moveMainItem(Number(btn.dataset.mainDown),Number(btn.dataset.mainDown)+1);});
 
   updateAllStatus(dirty);
 }
@@ -880,7 +945,17 @@ function renderParts(){
     return;
   }
 
-  list.innerHTML=parts.map((p,i)=>`
+  list.innerHTML=parts.map((p,i)=>{
+    if(p.itemId){
+      const child=data.items.find(x=>x.id===p.itemId);
+      return `<div class="part-row nested-ref-row" data-part-index="${i}">
+        <span class="drag-handle">▰</span>
+        <span class="part-num">${String(i+1).padStart(2,'0')}</span>
+        <span class="part-copy"><b>${esc(child?.title||p.title||'(Folder hilang)')}</b><small>${child?`${esc(child.type)} • folder Explorer`:'Referensi tidak ditemukan'}</small></span>
+        <span class="part-actions"><button type="button" data-open-child="${esc(p.itemId)}">Buka</button><button type="button" data-delete-ref="${i}">Hapus Ref</button></span>
+      </div>`;
+    }
+    return `
     <div class="part-row" draggable="true" data-part-index="${i}">
       <button class="drag-handle" type="button" title="Drag">☰</button>
       <span class="part-num">${String(i+1).padStart(2,'0')}</span>
@@ -897,7 +972,7 @@ function renderParts(){
         <button type="button" data-delete="${i}" title="Hapus">×</button>
       </span>
     </div>
-  `).join('');
+  `;}).join('');
 
   $$('.part-row',list).forEach(row=>{
     row.addEventListener('dragstart',e=>{
@@ -932,6 +1007,15 @@ function renderParts(){
   $$('[data-down]',list).forEach(btn=>btn.onclick=()=>movePart(Number(btn.dataset.down),Number(btn.dataset.down)+1));
   $$('[data-edit]',list).forEach(btn=>btn.onclick=()=>openPartDialog(Number(btn.dataset.edit)));
   $$('[data-delete]',list).forEach(btn=>btn.onclick=()=>removePart(Number(btn.dataset.delete)));
+  $$('[data-open-child]',list).forEach(btn=>btn.onclick=()=>{explorerItemId=btn.dataset.openChild;selectedId=btn.dataset.openChild;selectItem(btn.dataset.openChild);renderList();});
+  $$('[data-delete-ref]',list).forEach(btn=>btn.onclick=async()=>{
+    const i=Number(btn.dataset.deleteRef);
+    const ref=x.parts?.[i];
+    if(!ref)return;
+    const ok=await confirmInternal('Hapus referensi folder?','Folder anak tetap ada di data, hanya tautannya dari Group ini yang dihapus.','Hapus Ref','Batal');
+    if(!ok)return;
+    x.parts.splice(i,1);markDirty('Referensi folder dihapus');renderParts();renderList();
+  });
 }
 
 function movePart(from,to){
@@ -1231,7 +1315,101 @@ function closeBatchDialog(){
 
 function updateBatchModeUI(){
   const mode=$('#batchModeInput').value;
-  $('#batchTitleField').classList.toggle('hidden',mode==='singles');
+  $('#batchTitleField').classList.toggle('hidden',mode==='singles'||mode==='folder-tree');
+  $('#batchTitleInput').disabled=mode==='folder-tree';
+}
+
+async function handleBatchFolder(e){
+  const files=[...(e.target.files||[])].filter(f=>/\.pdf$/i.test(f.name));
+  if(!files.length){toast('Folder tidak berisi PDF.','warn');return;}
+  $('#batchModeInput').value='folder-tree';
+  updateBatchModeUI();
+  batchEntries=files.map(f=>({
+    file:f,
+    filename:safePdfFilename(f.name),
+    title:titleFromFilename(f.name),
+    pages:null,
+    detecting:true,
+    detected:false,
+    relativePath:(f.webkitRelativePath||f.name).replace(/\\/g,'/')
+  })).sort((a,b)=>naturalCompare(a.relativePath,b.relativePath));
+  const root=(batchEntries[0].relativePath.split('/')[0]||'Folder');
+  $('#batchTitleInput').value=root.replace(/[_-]+/g,' ');
+  renderBatchReview();
+  e.target.value='';
+  for(const entry of batchEntries){
+    const detected=await detectPdfPages(entry.file);
+    entry.detecting=false;
+    if(detected){entry.pages=detected;entry.detected=true;}
+    renderBatchReview();
+  }
+}
+
+function folderTreePlan(){
+  const root={name:'',path:'',folders:new Map(),files:[]};
+  for(const entry of batchEntries){
+    const parts=(entry.relativePath||entry.filename).split('/').filter(Boolean);
+    const fileName=parts.pop();
+    let node=root;
+    for(const seg of parts){
+      if(!node.folders.has(seg))node.folders.set(seg,{name:seg,path:node.path?`${node.path}/${seg}`:seg,folders:new Map(),files:[]});
+      node=node.folders.get(seg);
+    }
+    node.files.push({...entry,filename:safePdfFilename(fileName)});
+  }
+  // webkitRelativePath includes selected root folder. Collapse technical root container only.
+  const top=[...root.folders.values()];
+  return top.length===1 && root.files.length===0 ? top[0] : root;
+}
+
+function treeNodeTitle(node){return String(node.name||'Bacaan').replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim()||'Bacaan';}
+
+function applyFolderTreeImport(category){
+  const tree=folderTreePlan();
+  const created=[];
+  const usedIds=new Set([...data.items.map(x=>x.id),...allPartIds()]);
+  const folderBase=categoryFolder(category);
+
+  function uniqueGlobal(base){let id=base||'folder';let n=2;while(usedIds.has(id))id=`${base}-${n++}`;usedIds.add(id);return id;}
+
+  function build(node,parentGroupId=null,isRoot=false){
+    const title=treeNodeTitle(node);
+    let folderSegments=(node.path||title).split('/').map(slugify).filter(Boolean);
+    if(folderSegments[0]===folderBase)folderSegments=folderSegments.slice(1);
+    const folderPath=folderSegments.join('/')||slugify(title);
+    const childFolders=[...node.folders.values()].sort((a,b)=>naturalCompare(a.name,b.name));
+    const leaf=childFolders.length===0;
+    const id=uniqueGlobal(slugify(node.path||title));
+    const item={id,title,category,type:leaf?'collection':'group',icon:'◈',parts:[]};
+    if(parentGroupId)item.hidden=true;
+
+    if(leaf){
+      const files=[...node.files].sort((a,b)=>naturalCompare(a.relativePath||a.filename,b.relativePath||b.filename));
+      for(const entry of files){
+        let pid=uniqueGlobal(`${id}-${slugify(entry.title)}`);
+        item.parts.push({id:pid,title:entry.title.trim(),file:`assets/pdf-v2/${folderBase}/${folderPath}/${entry.filename}`,pages:Math.max(1,Math.floor(Number(entry.pages)||1))});
+      }
+    }else{
+      // PDF langsung di folder bercabang: jadikan Single tersembunyi dan referensikan dari Group.
+      for(const entry of [...node.files].sort((a,b)=>naturalCompare(a.filename,b.filename))){
+        const sid=uniqueGlobal(`${id}-${slugify(entry.title)}`);
+        const single={id:sid,title:entry.title.trim(),category,type:'single',icon:'◈',file:`assets/pdf-v2/${folderBase}/${folderPath}/${entry.filename}`,pages:Math.max(1,Math.floor(Number(entry.pages)||1)),hidden:true};
+        data.items.push(single);created.push(single);
+        item.parts.push({id:uniqueGlobal(`${id}-ref-${sid}`),title:single.title,itemId:sid});
+      }
+      for(const child of childFolders){
+        const childItem=build(child,id,false);
+        item.parts.push({id:uniqueGlobal(`${id}-ref-${childItem.id}`),title:childItem.title,itemId:childItem.id});
+      }
+    }
+    data.items.push(item);created.push(item);
+    return item;
+  }
+
+  const rootItem=build(tree,null,true);
+  // Karena build child lebih dulu, root ditambahkan terakhir; tetap jadikan root terlihat.
+  rootItem.hidden=false;
+  return {rootItem,created};
 }
 
 async function handleBatchFiles(e){
@@ -1285,6 +1463,12 @@ function batchPathFor(entry,index){
   const folder=categoryFolder(category);
   const mode=$('#batchModeInput').value;
 
+  if(mode==='folder-tree'){
+    const rel=(entry.relativePath||entry.filename).split('/').filter(Boolean);
+    if(rel.length>1)rel.shift();
+    return `assets/pdf-v2/${folder}/${rel.map((seg,i)=>i===rel.length-1?safePdfFilename(seg):slugify(seg)).join('/')}`;
+  }
+
   if(mode==='singles'){
     return `assets/pdf-v2/${folder}/${entry.filename}`;
   }
@@ -1306,7 +1490,7 @@ function renderBatchReview(){
   const duplicateNames=new Set();
   const seen=new Set();
   batchEntries.forEach(e=>{
-    const k=e.filename.toLowerCase();
+    const k=(($('#batchModeInput').value==='folder-tree'?(e.relativePath||e.filename):e.filename)).toLowerCase();
     if(seen.has(k))duplicateNames.add(k);
     seen.add(k);
   });
@@ -1319,7 +1503,7 @@ function renderBatchReview(){
         <span class="batch-num">${String(i+1).padStart(2,'0')}</span>
         <div class="batch-row-main">
           <input class="batch-title-input" data-batch-title="${i}" value="${esc(entry.title)}" aria-label="Judul PDF ${i+1}">
-          <small>${esc(entry.filename)}${duplicate?' • Nama file duplikat':''}${entry.detecting?' • mendeteksi halaman…':entry.detected?` • ${entry.pages} hal. otomatis`:' • deteksi halaman gagal'}</small>
+          <small>${esc(entry.relativePath||entry.filename)}${duplicate?' • Nama file duplikat':''}${entry.detecting?' • mendeteksi halaman…':entry.detected?` • ${entry.pages} hal. otomatis`:' • deteksi halaman gagal'}</small>
           <code>${esc(r2Key(batchPathFor(entry,i)))}</code>
         </div>
         ${(!entry.detecting&&!entry.detected)?`<label class="batch-pages batch-pages-manual">
@@ -1400,6 +1584,20 @@ function applyBatchImport(){
   }
 
   createBackup('Sebelum Batch Import PDF');
+
+  if(mode==='folder-tree'){
+    const result=applyFolderTreeImport(category);
+    selectedId=result.rootItem?.id||null;
+    explorerCategory=category;
+    explorerItemId=null;
+    refreshCategoryUI();
+    markDirty(`${batchEntries.length} PDF diimpor sebagai struktur folder otomatis`);
+    closeBatchDialog();
+    renderList();
+    if(selectedId)selectItem(selectedId);
+    toast('Struktur folder dibuat otomatis: folder bercabang = Group, folder paling bawah = Collection.','ok');
+    return;
+  }
 
   if(mode==='singles'){
     const created=[];
@@ -1529,6 +1727,11 @@ async function deleteItem(){
 
   createBackup(`Sebelum menghapus bacaan: ${x.title}`);
   data.items=data.items.filter(i=>i.id!==x.id);
+  data.items.forEach(parent=>{
+    if(parent.type==='group'&&Array.isArray(parent.parts)){
+      parent.parts=parent.parts.filter(p=>p.itemId!==x.id);
+    }
+  });
   trackHistoryChange();
   selectedId=null;
 
@@ -1612,7 +1815,13 @@ function validateAll(){
             errors.push({...meta,scope:pLabel,message:'Judul bagian kosong.',fix:'Buka bagian ini dan isi Judul Bagian.',field:'part-title'});
           }
 
-          validateFile(pLabel,p.file,p.pages,errors,warnings,paths,meta);
+          if(p.itemId){
+            if(!data.items.some(x=>x.id===p.itemId)){
+              errors.push({...meta,scope:pLabel,message:`Referensi folder tidak ditemukan: ${p.itemId}`,fix:'Hapus referensi ini atau pulihkan item anak yang hilang.',field:'part-ref'});
+            }
+          }else{
+            validateFile(pLabel,p.file,p.pages,errors,warnings,paths,meta);
+          }
         });
       }
     }

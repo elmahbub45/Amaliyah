@@ -2149,3 +2149,82 @@ dialog.batch-dialog{width:min(780px,calc(100% - 28px))}
 .brand-mark{position:relative}
 .brand-mark .brand-fallback{position:absolute;inset:4px;z-index:0}
 .brand-mark img{position:relative;z-index:1;background:#075b49}
+
+/* =========================================================
+   V2.36 — EXPLORER BACAAN
+   ========================================================= */
+.explorer-nav-row{
+  display:flex;align-items:center;gap:10px;padding:0 0 10px;
+}
+.explorer-breadcrumb{
+  min-width:0;flex:1;display:flex;align-items:center;gap:5px;overflow:auto;
+  scrollbar-width:none;white-space:nowrap;
+}
+.explorer-breadcrumb::-webkit-scrollbar{display:none}
+.crumb{
+  border:0;background:transparent;padding:5px 7px;border-radius:8px;color:#5b6b66;
+  font:inherit;font-size:12px;font-weight:700;cursor:pointer;
+}
+.crumb:hover{background:#eef5f2;color:#075b49}
+.crumb.current{color:#163b31;background:#edf4f1}
+.crumb-sep{color:#9aa8a3;font-size:13px}
+.view-switch{display:flex;gap:3px;padding:3px;border:1px solid #dce6e2;border-radius:10px;background:#f8fbfa}
+.view-btn{width:31px;height:29px;border:0;border-radius:7px;background:transparent;color:#60706a;cursor:pointer;font-size:16px}
+.view-btn.active{background:#0a6652;color:white;box-shadow:0 2px 6px rgba(5,91,73,.18)}
+
+.item-list.explorer-view{padding:8px 2px 16px;align-content:start}
+.explorer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.explorer-list{display:flex;flex-direction:column;gap:5px}
+.explorer-entry{
+  position:relative;min-width:0;border:1px solid #e1e9e6;background:#fff;border-radius:13px;
+  transition:.15s ease;overflow:hidden;
+}
+.explorer-entry:hover{border-color:#b8d2c9;box-shadow:0 5px 14px rgba(26,65,54,.07);transform:translateY(-1px)}
+.explorer-entry.active{border-color:#79aa98;box-shadow:0 0 0 2px rgba(10,102,82,.09)}
+.explorer-entry.is-folder{background:linear-gradient(180deg,#fff 0,#f8fbfa 100%)}
+.explorer-open{
+  width:100%;min-width:0;border:0;background:transparent;cursor:pointer;text-align:left;color:inherit;
+  display:flex;align-items:center;gap:10px;padding:12px 10px 30px;
+}
+.explorer-icon{
+  width:38px;height:38px;flex:0 0 38px;border-radius:10px;display:grid;place-items:center;
+  background:#e8f2ee;color:#0b6a55;font-size:20px;font-weight:800;
+}
+.is-folder .explorer-icon{background:#e2efe9;color:#075b49}
+.explorer-entry-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
+.explorer-entry-copy b{font-size:13px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.explorer-entry-copy small{font-size:10.5px;color:#7a8984;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.explorer-entry-actions{
+  position:absolute;left:8px;right:8px;bottom:5px;display:flex;justify-content:flex-end;gap:3px;opacity:.72;
+}
+.explorer-entry-actions button{
+  border:0;background:transparent;color:#74837e;min-width:25px;height:22px;border-radius:6px;cursor:pointer;font-size:12px;
+}
+.explorer-entry-actions button:hover{background:#eaf2ef;color:#075b49}
+.explorer-list .explorer-entry{border-radius:9px}
+.explorer-list .explorer-open{padding:8px 105px 8px 9px}
+.explorer-list .explorer-icon{width:30px;height:30px;flex-basis:30px;border-radius:8px;font-size:15px}
+.explorer-list .explorer-entry-actions{left:auto;right:7px;bottom:50%;transform:translateY(50%)}
+.explorer-list .explorer-entry-copy b{font-size:12.5px}
+.explorer-list .explorer-entry-copy small{font-size:10px}
+.category-folder .explorer-icon{background:#f1ead6;color:#9c7221}
+.part-file .explorer-icon{background:#eef3f1;color:#526861}
+.nested-ref-row{background:#f6faf8;border-style:dashed}
+
+/* Explorer dibuat sedikit lebih luas, tetapi workspace tetap compact. */
+.layout{max-width:1240px;grid-template-columns:minmax(390px,500px) minmax(0,1fr)}
+.sidebar{min-width:0}
+.item-list{min-height:260px}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;max-width:760px}
+  .explorer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:520px){
+  .explorer-grid{grid-template-columns:1fr 1fr;gap:7px}
+  .explorer-open{padding:10px 8px 29px;gap:8px}
+  .explorer-icon{width:34px;height:34px;flex-basis:34px}
+  .explorer-entry-copy b{font-size:12px}
+  .explorer-entry-copy small{font-size:9.8px}
+  .explorer-nav-row{align-items:flex-start}
+}

@@ -1281,3 +1281,7 @@ body{
 .about-app-mark{position:relative;overflow:hidden}
 .about-app-fallback{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;color:#e6c66f;background:#075b49}
 .about-app-mark img{position:relative;z-index:1;background:#075b49}
+
+/* V2.36 — nested Group/Collection reference */
+.nested-item-row .part-number{font-size:17px;font-weight:800;color:#0d6654}
+.nested-item-row .part-copy small{opacity:.72}

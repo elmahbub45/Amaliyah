@@ -185,7 +185,7 @@ function allParts(){
   const arr=[];
   items.forEach(item=>{
     if(item.type==='single') arr.push({parent:item,part:item});
-    else (item.parts||[]).forEach(part=>arr.push({parent:item,part}));
+    else (item.parts||[]).forEach(part=>{ if(!part.itemId && part.file)arr.push({parent:item,part}); });
   });
   return arr;
 }
@@ -283,18 +283,37 @@ window.addEventListener('popstate',e=>{
   }
 });
 
+function firstReadablePart(item,seen=new Set()){
+  if(!item || seen.has(item.id))return null;
+  seen.add(item.id);
+  if(item.type==='single')return {item,part:item};
+  for(const p of (item.parts||[])){
+    if(p.itemId){
+      const child=getItem(p.itemId);
+      const nested=firstReadablePart(child,seen);
+      if(nested)return nested;
+    }else if(p.file){
+      return {item,part:p};
+    }
+  }
+  return null;
+}
+
+function resolveReadablePart(item,partId){
+  if(!item)return null;
+  if(item.type==='single')return {item,part:item};
+  const direct=(item.parts||[]).find(p=>p.id===partId && !p.itemId && p.file);
+  if(direct)return {item,part:direct};
+  return firstReadablePart(item);
+}
+
 function getLastState(){
   let itemId=store.getItem('amaliyah:lastItem');
   let item=getItem(itemId);
-  if(!item) item=items[0];
-  if(!item) return null;
-
-  let part=item;
-  if(item.type!=='single'){
-    const pid=store.getItem(lastPartKey(item.id));
-    part=(item.parts||[]).find(p=>p.id===pid) || item.parts?.[0];
-  }
-  return part ? {item,part} : null;
+  if(!item || item.hidden)item=items.find(x=>!x.hidden) || items[0];
+  if(!item)return null;
+  const pid=item.type==='single'?item.id:store.getItem(lastPartKey(item.id));
+  return resolveReadablePart(item,pid);
 }
 
 function partProgress(part){
@@ -306,9 +325,9 @@ function partProgress(part){
 function itemProgress(item){
   if(item.type==='single') return {...partProgress(item),part:item};
   const pid=store.getItem(lastPartKey(item.id));
-  const part=(item.parts||[]).find(p=>p.id===pid) || item.parts?.[0];
-  const pr=part ? partProgress(part) : {page:1,total:1,percent:0};
-  return {...pr,part};
+  const found=resolveReadablePart(item,pid);
+  const pr=found?.part ? partProgress(found.part) : {page:1,total:1,percent:0};
+  return {...pr,part:found?.part||null};
 }
 
 function openPart(itemId,partId,page=null){
@@ -337,8 +356,10 @@ function continueItem(id){
   const item=getItem(id);
   if(!item)return;
   if(item.type==='single') return openPart(item.id,item.id);
-  const partId=store.getItem(lastPartKey(item.id)) || item.parts?.[0]?.id;
-  openPart(item.id,partId);
+  const pid=store.getItem(lastPartKey(item.id));
+  const found=resolveReadablePart(item,pid);
+  if(!found)return showCollection(item.id);
+  openPart(found.item.id,found.part.id);
 }
 
 function itemSearchText(item){
@@ -370,7 +391,8 @@ function updateHome(){
 function updateCategoryCounts(){
   document.querySelectorAll('[data-category-card]').forEach(el=>{
     const cat=el.dataset.categoryCard;
-    const count=cat==='Semua' ? items.length : items.filter(b=>b.category===cat).length;
+    const visible=items.filter(b=>!b.hidden);
+    const count=cat==='Semua' ? visible.length : visible.filter(b=>b.category===cat).length;
     const label=el.querySelector('small');
     if(label){
       label.textContent=cat==='Semua'
@@ -393,7 +415,8 @@ function renderLibrary(category=activeLibraryCategory||'Semua'){
   renderChips(category);
   const list=$('#bookList');if(!list)return;
   const q=(librarySearchQuery||'').trim().toLocaleLowerCase('id-ID');
-  let filtered=category==='Semua'?items:items.filter(x=>x.category===category);
+  const visibleItems=items.filter(x=>!x.hidden);
+  let filtered=category==='Semua'?visibleItems:visibleItems.filter(x=>x.category===category);
   if(q) filtered=filtered.filter(item=>itemSearchText(item).includes(q));
 
   if(!filtered.length){
@@ -432,10 +455,29 @@ function renderCollection(id){
   if(!item || item.type==='single')return;
   activeCollectionId=item.id;
   $('#collectionTitle').textContent=item.title;
-  $('#collectionMeta').innerHTML=`<b>${item.type==='collection'?'Koleksi berurutan':'Kelompok bacaan'}</b><span>${item.parts.length} bagian</span>`;
+  const entries=item.parts||[];
+  $('#collectionMeta').innerHTML=`<b>${item.type==='collection'?'Koleksi berurutan':'Kelompok bacaan'}</b><span>${entries.length} isi</span>`;
   const wrap=$('#collectionList');
 
-  wrap.innerHTML=item.parts.map((part,i)=>{
+  wrap.innerHTML=entries.map((part,i)=>{
+    if(part.itemId){
+      const child=getItem(part.itemId);
+      if(!child)return '';
+      const childMeta=child.type==='single'
+        ? `${Math.max(1,Number(child.pages)||1)} halaman`
+        : `${child.parts?.length||0} isi`;
+      const fav=isFavorite(child.id);
+      return `<div class="collection-part-row nested-item-row">
+        <button class="collection-part" type="button" data-child-item="${child.id}">
+          <span class="part-number">${child.type==='single'?'▤':'▰'}</span>
+          <span class="part-copy"><b>${child.title}</b><small>${child.type==='single'?'Bacaan':child.type==='collection'?'Collection':'Group'} • ${childMeta}</small></span>
+          <span class="chevron">›</span>
+        </button>
+        <button class="favorite-btn part-favorite-btn ${fav?'active':''}" type="button" data-child-favorite="${child.id}" aria-label="${fav?'Hapus dari favorit':'Tambahkan ke favorit'}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>
+        </button>
+      </div>`;
+    }
     const pr=partProgress(part);
     const label=pr.page>1?`Terakhir hal. ${pr.page}/${pr.total}`:`${pr.total} halaman`;
     const fav=isPartFavorite(item.id,part.id);
@@ -453,9 +495,11 @@ function renderCollection(id){
 
   wrap.querySelectorAll('[data-part]').forEach(btn=>btn.onclick=()=>openPart(item.id,btn.dataset.part));
   wrap.querySelectorAll('[data-part-favorite]').forEach(btn=>btn.onclick=e=>{
-    e.stopPropagation();
-    togglePartFavorite(item.id,btn.dataset.partFavorite);
-    renderCollection(item.id);
+    e.stopPropagation();togglePartFavorite(item.id,btn.dataset.partFavorite);renderCollection(item.id);
+  });
+  wrap.querySelectorAll('[data-child-item]').forEach(btn=>btn.onclick=()=>openItem(btn.dataset.childItem));
+  wrap.querySelectorAll('[data-child-favorite]').forEach(btn=>btn.onclick=e=>{
+    e.stopPropagation();toggleFavorite(btn.dataset.childFavorite);renderCollection(item.id);
   });
 }
 
