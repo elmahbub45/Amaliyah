@@ -10,6 +10,7 @@ const categories = catalog.categories || ['Semua'];
 let prayerCountdownTimer = null;
 let prayerNotificationTimer = null;
 let latestPrayerTimes = null;
+let prayerRefreshInFlight = false;
 let activeLibraryCategory='Semua';
 let librarySearchQuery='';
 let activeCollectionId=null;
@@ -579,31 +580,110 @@ async function fetchPrayerTimes(
     );
   }
 
-  const r=await fetch(`${PUSH_API}/prayer/daily?${params.toString()}`,{
-    cache:'no-store'
-  });
+  let lastError=null;
 
-  const j=await r.json().catch(()=>null);
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      const r=await fetch(`${PUSH_API}/prayer/daily?${params.toString()}`,{
+        cache:'no-store'
+      });
 
-  if(!r.ok || !j?.timings){
-    throw new Error(j?.error||'Jadwal tidak tersedia');
+      const j=await r.json().catch(()=>null);
+
+      if(r.ok && j?.timings){
+        return j;
+      }
+
+      lastError=new Error(j?.error||`Jadwal tidak tersedia (${r.status})`);
+
+      // 4xx selain 408/429 biasanya bukan error sementara.
+      if(r.status>=400 && r.status<500 && ![408,429].includes(r.status)){
+        break;
+      }
+
+    }catch(err){
+      lastError=err;
+    }
+
+    if(attempt===0){
+      await new Promise(resolve=>setTimeout(resolve,700));
+    }
   }
 
-  return j;
+  throw lastError||new Error('Jadwal tidak tersedia');
 }
 
-function getPrayerTimes(){
+function setPrayerRefreshBusy(busy){
+  const btn=$('#locBtn');
+  if(!btn)return;
+
+  btn.disabled=!!busy;
+  btn.setAttribute('aria-busy',busy?'true':'false');
+
+  if(busy){
+    btn.dataset.oldHtml=btn.innerHTML;
+    btn.innerHTML='<span aria-hidden="true">⌖</span> Memuat…';
+    btn.style.opacity='.65';
+  }else{
+    btn.innerHTML=btn.dataset.oldHtml||'<span aria-hidden="true">⌖</span> Ubah';
+    btn.style.opacity='';
+  }
+}
+
+function getCurrentPrayerPosition(){
+  return new Promise((resolve,reject)=>{
+    navigator.geolocation.getCurrentPosition(
+      resolve,
+      reject,
+      {
+        enableHighAccuracy:false,
+        timeout:12000,
+        maximumAge:3600000
+      }
+    );
+  });
+}
+
+function compactPrayerError(message='Jadwal belum dapat diperbarui.'){
+  const times=$('#prayerTimes');
+  if(!times)return;
+
+  times.innerHTML=
+    `<div style="grid-column:1/-1;padding:14px 16px;border-radius:14px;`+
+    `background:#f7f0e4;font-size:13px;line-height:1.5;color:#58655f">`+
+    `${message}</div>`;
+
+  const next=$('#nextPrayer');
+  if(next){
+    next.innerHTML=
+      '<b>Jadwal belum tersedia</b><br><span>Coba lagi beberapa saat.</span>';
+  }
+}
+
+async function getPrayerTimes(){
+  if(prayerRefreshInFlight)return;
+
   if(!navigator.geolocation){
     $('#location').textContent='Lokasi tidak didukung perangkat';
     return;
   }
 
-  $('#location').textContent='📍 Mencari lokasi…';
+  prayerRefreshInFlight=true;
+  setPrayerRefreshBusy(true);
 
-  navigator.geolocation.getCurrentPosition(async pos=>{
+  const previousLoc=getSavedLocation();
+  const previousLocationText=$('#location')?.textContent||'';
+  const hadValidSchedule=!!latestPrayerTimes;
+
+  try{
+    $('#location').textContent='📍 Mencari lokasi…';
+
+    const pos=await getCurrentPrayerPosition();
     const {latitude,longitude}=pos.coords;
     const geo=await reverseGeocode(latitude,longitude);
 
+    // Lokasi baru belum disimpan di sini.
+    // Simpan hanya setelah jadwal untuk lokasi tersebut benar-benar berhasil.
     let loc={
       latitude,
       longitude,
@@ -615,47 +695,64 @@ function getPrayerTimes(){
       updatedAt:Date.now()
     };
 
-    saveLocation(loc);
     setLocationLabel(loc.label);
 
-    try{
-      const data=await fetchPrayerTimes(
-        latitude,
-        longitude,
-        loc.regionName,
-        loc.prayerRegionId||'',
-        loc.regionCandidates||[],
-        loc.city||'',
-        loc.province||''
-      );
+    const data=await fetchPrayerTimes(
+      latitude,
+      longitude,
+      loc.regionName,
+      '',
+      loc.regionCandidates||[],
+      loc.city||'',
+      loc.province||''
+    );
 
-      if(data?.region?.id){
-        loc={
-          ...loc,
-          prayerRegionId:data.region.id,
-          prayerRegionName:data.region.name||loc.regionName,
-          prayerSource:data.source||'kemenag',
-          updatedAt:Date.now()
-        };
-        saveLocation(loc);
-      }
-
-      store.setItem(cachePrayerKey(loc),JSON.stringify(data));
-      renderPrayerData(data);
-      queuePushSync();
-
-    }catch(e){
-      $('#prayerTimes').innerHTML=
-        '<span>Jadwal gagal dimuat. Periksa internet.</span>';
+    if(data?.region?.id){
+      loc={
+        ...loc,
+        prayerRegionId:data.region.id,
+        prayerRegionName:data.region.name||loc.regionName,
+        prayerSource:data.source||'kemenag',
+        updatedAt:Date.now()
+      };
     }
 
-  },()=>{
-    $('#location').textContent='📍 Izin lokasi belum diberikan';
-  },{
-    enableHighAccuracy:false,
-    timeout:12000,
-    maximumAge:3600000
-  });
+    // Baru sekarang lokasi dianggap valid.
+    saveLocation(loc);
+    store.setItem(cachePrayerKey(loc),JSON.stringify(data));
+
+    renderPrayerData(data);
+    queuePushSync();
+
+  }catch(e){
+    console.warn('Prayer refresh failed',e);
+
+    // Jangan rusak jadwal yang sebelumnya masih valid hanya karena
+    // satu refresh jaringan/API gagal.
+    if(previousLoc){
+      saveLocation(previousLoc);
+
+      if(hadValidSchedule){
+        $('#location').textContent=
+          previousLocationText ||
+          `📍 ${previousLoc.label||'Lokasi aktif'}`;
+      }else{
+        setLocationLabel(previousLoc.label||'Lokasi aktif');
+        compactPrayerError(
+          'Gagal memperbarui jadwal. Jadwal terakhir tetap disimpan.'
+        );
+      }
+
+    }else if(!hadValidSchedule){
+      compactPrayerError(
+        'Jadwal gagal dimuat. Periksa koneksi lalu coba lagi.'
+      );
+    }
+
+  }finally{
+    prayerRefreshInFlight=false;
+    setPrayerRefreshBusy(false);
+  }
 }
 
 function cleanTime(v=''){return String(v).split(' ')[0].slice(0,5);}
