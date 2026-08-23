@@ -965,3 +965,286 @@ body{
     grid-template-columns:1fr;
   }
 }
+
+
+/* =========================================================
+   V2.31 — Bookmark page, elegant premium layout
+   ========================================================= */
+#bookmarks{
+  background:
+    radial-gradient(circle at 50% -40px,rgba(200,155,67,.10),transparent 220px),
+    var(--cream);
+}
+
+#bookmarkList.list-wrap{
+  padding:2px 2px 18px;
+}
+
+.bookmark-overview{
+  position:relative;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  gap:14px;
+  align-items:center;
+  margin:2px 0 16px;
+  padding:17px 17px;
+  border:1px solid rgba(184,145,72,.20);
+  border-radius:22px;
+  background:
+    linear-gradient(145deg,rgba(255,253,247,.98),rgba(247,239,224,.96));
+  box-shadow:
+    0 10px 28px rgba(59,51,38,.055),
+    inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+.bookmark-overview::after{
+  content:"";
+  position:absolute;
+  width:120px;
+  height:120px;
+  right:-42px;
+  top:-52px;
+  border-radius:50%;
+  border:1px solid rgba(200,155,67,.15);
+  box-shadow:0 0 0 18px rgba(200,155,67,.035);
+}
+
+.bookmark-overview-icon{
+  width:58px;
+  height:58px;
+  display:grid;
+  place-items:center;
+  border-radius:18px;
+  background:linear-gradient(145deg,#0b634e,#064333);
+  color:#e6c06c;
+  border:1px solid rgba(218,176,87,.36);
+  box-shadow:0 8px 18px rgba(5,73,56,.16);
+}
+
+.bookmark-overview-icon svg{
+  width:27px;
+  height:27px;
+  fill:rgba(230,192,108,.16);
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linejoin:round;
+}
+
+.bookmark-overview-copy{
+  min-width:0;
+  position:relative;
+  z-index:1;
+}
+
+.bookmark-overview-copy>span{
+  display:block;
+  margin-bottom:4px;
+  color:#a17a38;
+  font-size:8.5px;
+  font-weight:800;
+  letter-spacing:.11em;
+}
+
+.bookmark-overview-copy>b{
+  display:block;
+  color:#27443a;
+  font-size:17px;
+  line-height:1.2;
+}
+
+.bookmark-overview-copy>small{
+  display:block;
+  max-width:330px;
+  margin-top:5px;
+  color:#758079;
+  font-size:10.5px;
+  line-height:1.45;
+}
+
+.bookmark-stack{
+  display:grid;
+  gap:10px;
+}
+
+.bookmark-card{
+  width:100%;
+  min-height:78px;
+  display:grid;
+  grid-template-columns:48px minmax(0,1fr) 50px 28px;
+  gap:11px;
+  align-items:center;
+  padding:11px 10px 11px 12px;
+  border:1px solid rgba(221,208,187,.92);
+  border-radius:19px;
+  background:rgba(255,253,249,.98);
+  color:var(--ink);
+  text-align:left;
+  box-shadow:0 5px 16px rgba(58,49,35,.045);
+  cursor:pointer;
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease,
+    border-color .15s ease;
+}
+
+.bookmark-card:active{
+  transform:scale(.985);
+  box-shadow:0 2px 8px rgba(58,49,35,.04);
+}
+
+.bookmark-card-icon{
+  width:48px;
+  height:48px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  background:linear-gradient(145deg,#0c654f,#074336);
+  border:1px solid rgba(217,177,91,.42);
+  color:#e8c66f;
+  font-family:Georgia,serif;
+  font-size:17px;
+  font-weight:700;
+  text-align:center;
+  box-shadow:0 6px 14px rgba(6,74,57,.12);
+}
+
+.bookmark-card-copy{
+  min-width:0;
+  display:block;
+}
+
+.bookmark-card-kicker{
+  display:block;
+  margin-bottom:3px;
+  color:#ad8642;
+  font-size:7.8px;
+  font-weight:800;
+  letter-spacing:.09em;
+}
+
+.bookmark-card-copy>b{
+  display:block;
+  overflow:hidden;
+  color:#263f37;
+  font-size:13.5px;
+  line-height:1.28;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.bookmark-card-copy>small{
+  display:block;
+  overflow:hidden;
+  margin-top:4px;
+  color:#828a85;
+  font-size:10px;
+  line-height:1.25;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  direction:initial;
+  text-align:left;
+}
+
+.bookmark-page-badge{
+  width:50px;
+  min-height:48px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  border-radius:14px;
+  border:1px solid #e9dcc8;
+  background:#f8f1e5;
+  color:#315248;
+}
+
+.bookmark-page-badge small{
+  color:#a68a59;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+
+.bookmark-page-badge b{
+  margin-top:2px;
+  font-size:14px;
+  line-height:1;
+}
+
+.bookmark-card-arrow{
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#edf3ef;
+  color:#326352;
+  font-size:22px;
+  line-height:1;
+}
+
+.bookmark-empty{
+  margin-top:10px;
+  padding:34px 24px 32px;
+  text-align:center;
+  border:1px dashed rgba(190,164,121,.48);
+  border-radius:22px;
+  background:rgba(255,253,249,.74);
+}
+
+.bookmark-empty-mark{
+  width:62px;
+  height:62px;
+  margin:0 auto 15px;
+  display:grid;
+  place-items:center;
+  border-radius:20px;
+  background:#edf4f0;
+  color:#24604e;
+}
+
+.bookmark-empty-mark svg{
+  width:28px;
+  height:28px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.65;
+  stroke-linejoin:round;
+}
+
+.bookmark-empty>b{
+  display:block;
+  color:#30483f;
+  font-size:14px;
+}
+
+.bookmark-empty>p{
+  max-width:330px;
+  margin:7px auto 0;
+  color:#7b847f;
+  font-size:10.5px;
+  line-height:1.55;
+}
+
+@media(max-width:360px){
+  .bookmark-card{
+    grid-template-columns:44px minmax(0,1fr) 46px 24px;
+    gap:8px;
+    padding-left:10px;
+  }
+  .bookmark-card-icon{
+    width:44px;
+    height:44px;
+    border-radius:13px;
+  }
+  .bookmark-page-badge{
+    width:46px;
+    min-height:44px;
+  }
+  .bookmark-card-arrow{
+    width:24px;
+    height:24px;
+  }
+}
+

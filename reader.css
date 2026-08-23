@@ -650,3 +650,35 @@ footer > button small{
     grid-template-columns:repeat(6,minmax(0,1fr)) !important;
   }
 }
+
+
+/* =========================================================
+   V2.31 — Reader adaptive center, no artificial top gap
+
+   - Jika halaman + konten muat di viewport: berada di tengah.
+   - Jika lebih tinggi dari viewport: CSS "safe center" jatuh ke
+     posisi start sehingga bagian atas tidak terpotong.
+   - Safe-area top spacing lama dihapus.
+   ========================================================= */
+#readerDocument{
+  min-height:100%;
+  padding-top:0 !important;
+  justify-content:safe center !important;
+}
+
+body.controls-off #readerDocument{
+  min-height:100%;
+  padding:0 0 18px !important;
+  justify-content:safe center !important;
+}
+
+#pdf{
+  flex:0 0 auto;
+}
+
+/* Tidak ada margin/gap buatan di atas dokumen. */
+#stage,
+body.controls-off #stage{
+  scroll-padding-top:0;
+}
+

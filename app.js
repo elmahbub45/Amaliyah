@@ -505,28 +505,99 @@ function openBookAt(partId,page){
 }
 
 function renderBookmarks(){
-  const wrap=$('#bookmarkList');if(!wrap)return;
+  const wrap=$('#bookmarkList');
+  if(!wrap)return;
+
   const entries=[];
+
   Object.keys(localStorage).forEach(k=>{
     if(!k.startsWith('amaliyah_bookmark_'))return;
+
     const partId=k.replace('amaliyah_bookmark_','');
     const page=+(localStorage.getItem(k)||0);
     const found=resolvePart(partId);
-    if(found && page>0) entries.push({...found,page});
+
+    if(found && page>0){
+      entries.push({...found,page});
+    }
   });
-  if(!entries.length){
-    wrap.innerHTML='<div class="empty-state"><b>Belum ada bookmark</b><p>Simpan halaman penting dari Reader agar muncul di sini.</p></div>';
+
+  entries.sort((a,b)=>{
+    const titleA=String(a.parent.title||'');
+    const titleB=String(b.parent.title||'');
+    return titleA.localeCompare(titleB,'id');
+  });
+
+  const count=entries.length;
+
+  const overview=`
+    <section class="bookmark-overview" aria-label="Ringkasan bookmark">
+      <div class="bookmark-overview-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/>
+        </svg>
+      </div>
+      <div class="bookmark-overview-copy">
+        <span>TERSIMPAN UNTUK DIBACA KEMBALI</span>
+        <b>${count} Bookmark</b>
+        <small>${count
+          ? 'Buka kembali bacaan tepat dari halaman yang ditandai.'
+          : 'Halaman yang ditandai dari Reader akan tersimpan di sini.'}</small>
+      </div>
+    </section>
+  `;
+
+  if(!count){
+    wrap.innerHTML=overview+`
+      <div class="bookmark-empty">
+        <div class="bookmark-empty-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/>
+          </svg>
+        </div>
+        <b>Belum ada bookmark</b>
+        <p>Tandai halaman penting saat membaca. Amaliyah akan membawamu kembali tepat ke halaman itu.</p>
+      </div>
+    `;
     return;
   }
-  wrap.innerHTML=entries.map(x=>`<button class="book-row action-row" data-bookmark="${x.part.id}">
-    <div class="book-icon">🔖</div>
-    <div><b>${x.parent.title}</b><small>${x.parent.type==='single'?'':x.part.title+' • '}Halaman ${x.page}</small></div>
-    <span>›</span>
-  </button>`).join('');
+
+  const cards=entries.map(x=>{
+    const isSingle=x.parent.type==='single';
+    const icon=String(x.parent.icon||'ا');
+    const partText=isSingle
+      ? 'Bacaan'
+      : String(x.part.title||'Bagian');
+
+    return `
+      <button class="bookmark-card" type="button" data-bookmark="${x.part.id}">
+        <span class="bookmark-card-icon" aria-hidden="true">${icon}</span>
+
+        <span class="bookmark-card-copy">
+          <span class="bookmark-card-kicker">${isSingle?'BACAAN':'KOLEKSI'}</span>
+          <b>${x.parent.title}</b>
+          <small>${partText}</small>
+        </span>
+
+        <span class="bookmark-page-badge" aria-label="Halaman ${x.page}">
+          <small>HAL.</small>
+          <b>${x.page}</b>
+        </span>
+
+        <span class="bookmark-card-arrow" aria-hidden="true">›</span>
+      </button>
+    `;
+  }).join('');
+
+  wrap.innerHTML=overview+`<div class="bookmark-stack">${cards}</div>`;
+
   wrap.querySelectorAll('[data-bookmark]').forEach(btn=>{
     const id=btn.dataset.bookmark;
     const x=entries.find(e=>e.part.id===id);
-    btn.onclick=()=>openPart(x.parent.id,x.part.id,x.page);
+
+    btn.onclick=()=>{
+      if(x)openPart(x.parent.id,x.part.id,x.page);
+    };
   });
 }
 
