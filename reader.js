@@ -7,11 +7,11 @@ const items=catalog.items||[];
 // =========================================================
 // V2.24 — MIGRASI SEMUA PDF KE R2 PRIVATE
 // Path R2 mengikuti books.json setelah "assets/pdf-v2/".
-// Selama masa migrasi, jika object belum ada di R2, Reader
-// sementara kembali ke file GitHub supaya aplikasi tidak rusak.
+// Mode final: semua PDF wajib tersedia di R2 private.
+// Reader tidak lagi fallback ke file GitHub publik.
 // =========================================================
 const PRIVATE_PDF_WORKER='https://amaliyah-pdf.elmahbub45.workers.dev';
-const R2_MIGRATION_FALLBACK=true;
+const R2_MIGRATION_FALLBACK=false;
 
 // Wirdul Latif masih memakai nama object uji lama sampai file
 // versi path final ikut di-upload ke R2.
@@ -69,7 +69,6 @@ async function requestPrivatePdf(part){
     {method:'GET',cache:'no-store',credentials:'omit'}
   );
 
-  // Selama migrasi: 404 berarti file itu belum di-upload ke R2.
   if(tokenRes.status===404 && R2_MIGRATION_FALLBACK){
     return null;
   }
