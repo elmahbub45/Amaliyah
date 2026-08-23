@@ -289,3 +289,37 @@ body.controls-off #readerDocument{
   margin-top:14px;
   margin-bottom:4px;
 }
+
+
+/* =========================================================
+   V2.23 — Private PDF loading state
+   ========================================================= */
+.private-pdf-error{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(320px,calc(100% - 38px));
+  z-index:45;
+  display:grid;
+  gap:7px;
+  padding:18px;
+  border-radius:17px;
+  background:rgba(247,242,233,.96);
+  color:#263c34;
+  text-align:center;
+  box-shadow:0 16px 44px rgba(0,0,0,.18);
+}
+.private-pdf-error b{font-size:14px}
+.private-pdf-error span{font-size:10.5px;color:#6f7d77}
+.private-pdf-error button{
+  justify-self:center;
+  margin-top:4px;
+  border:0;
+  border-radius:10px;
+  padding:9px 13px;
+  background:#075b49;
+  color:white;
+  font-size:10.5px;
+  font-weight:800;
+}

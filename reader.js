@@ -3,6 +3,56 @@ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/p
 
 const catalog=await fetch('./books.json',{cache:'no-store'}).then(r=>r.json());
 const items=catalog.items||[];
+
+// =========================================================
+// V2.23 — UJI R2 PRIVATE
+// Untuk tahap uji, hanya Wirdul Latif yang memakai R2.
+// Bacaan lain tetap memakai path GitHub seperti sebelumnya.
+// =========================================================
+const PRIVATE_PDF_WORKER='https://amaliyah-pdf.elmahbub45.workers.dev';
+const PRIVATE_PDF_KEYS={
+  'wirdul-latif':'05 Wirdul Latif.pdf'
+};
+
+async function getPrivatePdfData(part){
+  const key=PRIVATE_PDF_KEYS[part.id];
+  if(!key)return null;
+
+  // Minta URL sementara dari Worker.
+  const tokenRes=await fetch(
+    `${PRIVATE_PDF_WORKER}/token?key=${encodeURIComponent(key)}`,
+    {
+      method:'GET',
+      cache:'no-store',
+      credentials:'omit'
+    }
+  );
+
+  if(!tokenRes.ok){
+    throw new Error(`Token PDF gagal (${tokenRes.status})`);
+  }
+
+  const tokenData=await tokenRes.json();
+  if(!tokenData?.url){
+    throw new Error('URL PDF sementara tidak diterima.');
+  }
+
+  // Ambil seluruh PDF selagi token masih berlaku.
+  // Setelah sudah masuk memori Reader, token boleh kedaluwarsa
+  // tanpa mengganggu pengguna yang sedang membaca.
+  const pdfRes=await fetch(tokenData.url,{
+    method:'GET',
+    cache:'no-store',
+    credentials:'omit'
+  });
+
+  if(!pdfRes.ok){
+    throw new Error(`PDF private gagal dimuat (${pdfRes.status})`);
+  }
+
+  return new Uint8Array(await pdfRes.arrayBuffer());
+}
+
 const params=new URLSearchParams(location.search);
 const itemId=params.get('book')||items[0]?.id;
 const item=items.find(x=>x.id===itemId)||items[0];
@@ -238,8 +288,28 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',()=>drawPage());
 window.addEventListener('pagehide',recordHistory);
 
-pdfDoc=await pdfjsLib.getDocument(part.file).promise;
-page=Math.min(page,pdfDoc.numPages);
-stage.scrollTop=0;
-syncBookmarkState();
-drawPage();
+try{
+  const privateData=await getPrivatePdfData(part);
+
+  pdfDoc=privateData
+    ? await pdfjsLib.getDocument({data:privateData}).promise
+    : await pdfjsLib.getDocument(part.file).promise;
+
+  page=Math.min(page,pdfDoc.numPages);
+  stage.scrollTop=0;
+  syncBookmarkState();
+  drawPage();
+}catch(error){
+  console.error(error);
+  counter.textContent='Gagal memuat';
+  stage.classList.add('reader-error');
+
+  const box=document.createElement('div');
+  box.className='private-pdf-error';
+  box.innerHTML=`<b>PDF belum dapat dibuka</b>
+    <span>Periksa koneksi lalu coba lagi.</span>
+    <button type="button">Coba lagi</button>`;
+
+  box.querySelector('button').onclick=()=>location.reload();
+  stage.appendChild(box);
+}
