@@ -304,6 +304,14 @@ function resolveReadablePart(item,partId){
   if(item.type==='single')return {item,part:item};
   const direct=(item.parts||[]).find(p=>p.id===partId && !p.itemId && p.file);
   if(direct)return {item,part:direct};
+
+  // V2.36.4: bila sebuah part dipindahkan keluar Collection menjadi Single,
+  // pertahankan progres/lanjut membaca dengan ID part yang sama.
+  if(partId){
+    const migrated=resolvePart(partId);
+    if(migrated && migrated.parent.id!==item.id)return migrated;
+  }
+
   return firstReadablePart(item);
 }
 
@@ -523,7 +531,12 @@ function normalizeFavoriteKey(value){
     const partId=rest.slice(split+1);
     const item=getItem(itemId);
     const part=item?.type==='single'?null:item?.parts?.find(p=>p.id===partId);
-    return item&&part?favoritePartKey(itemId,partId):null;
+    if(item&&part)return favoritePartKey(itemId,partId);
+
+    // V2.36.4: favorit part lama mengikuti file jika part kini menjadi Single.
+    const migrated=resolvePart(partId);
+    if(migrated?.parent?.type==='single')return favoriteItemKey(migrated.parent.id);
+    return null;
   }
 
   // Kompatibilitas favorit versi lama: ID bacaan tetap menjadi favorit utama,
@@ -731,7 +744,11 @@ function getHistoryEntries(){
     if(h.partId){
       const parent=getItem(h.id);
       const part=parent?.type==='single'?parent:parent?.parts?.find(p=>p.id===h.partId);
-      return parent&&part?{parent,part,page:h.page||1,rawIndex,raw:h}:null;
+      if(parent&&part)return {parent,part,page:h.page||1,rawIndex,raw:h};
+
+      // V2.36.4: riwayat part lama tetap mengikuti ID bila menjadi Single.
+      const migrated=resolvePart(h.partId);
+      return migrated?{parent:migrated.parent,part:migrated.part,page:h.page||1,rawIndex,raw:h}:null;
     }
     const old=resolvePart(h.id);
     return old?{parent:old.parent,part:old.part,page:h.page||1,rawIndex,raw:h}:null;

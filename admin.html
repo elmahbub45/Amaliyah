@@ -467,11 +467,13 @@
             <option value="collection">Satu Collection</option>
             <option value="group">Satu Group</option>
             <option value="folder-tree">Struktur Folder Otomatis</option>
+            <option value="parts" hidden>Bagian Collection (otomatis)</option>
           </select>
         </label>
         <label class="field">
-          <span>Kategori</span>
-          <input id="batchCategoryInput" list="categoryOptions" autocomplete="off">
+          <span>Folder Tujuan</span>
+          <select id="batchTargetInput"></select>
+          <small id="batchTargetHint">Pilih folder di Explorer sebagai lokasi hasil import.</small>
         </label>
         <label id="batchTitleField" class="field span-2 hidden">
           <span>Judul Collection / Group</span>

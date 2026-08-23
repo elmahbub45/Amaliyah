@@ -105,7 +105,7 @@ function bind(){
     updateBatchModeUI();
     renderBatchReview();
   };
-  $('#batchCategoryInput').oninput=renderBatchReview;
+  $('#batchTargetInput').onchange=()=>{updateBatchModeUI();renderBatchReview();};
   $('#batchTitleInput').oninput=renderBatchReview;
   $('#applyBatchBtn').onclick=applyBatchImport;
 
@@ -762,6 +762,10 @@ function explorerDragEnd(){
 }
 
 function canDropOnCategory(payload){
+  return !!payload && (payload.kind==='item'||payload.kind==='part');
+}
+
+function canDropOnRoot(payload){
   return !!payload && payload.kind==='item';
 }
 
@@ -790,9 +794,11 @@ function bindExplorerDropTarget(el,descriptor){
   if(el.dataset.explorerDropBound==='1')return;
   el.dataset.explorerDropBound='1';
   const targetItem=descriptor.itemId?data.items.find(x=>x.id===descriptor.itemId):null;
-  const allowed=()=>descriptor.kind==='category'||descriptor.kind==='root'
+  const allowed=()=>descriptor.kind==='category'
     ?canDropOnCategory(explorerDragPayload)
-    :canDropOnItem(explorerDragPayload,targetItem);
+    :descriptor.kind==='root'
+      ?canDropOnRoot(explorerDragPayload)
+      :canDropOnItem(explorerDragPayload,targetItem);
 
   el.addEventListener('dragenter',e=>{
     if(!explorerDragPayload)return;
@@ -831,9 +837,54 @@ function bindExplorerDropTarget(el,descriptor){
 
 async function dropExplorerOnCategory(payload,category){
   if(!canDropOnCategory(payload)){
-    toast('Hanya bacaan/folder yang dapat dipindahkan ke kategori.','warn');
+    toast('Item tersebut tidak dapat dipindahkan ke folder ini.','warn');
     return;
   }
+
+  // File PDF/part yang dikeluarkan dari Collection/Group menjadi Single.
+  if(payload.kind==='part'){
+    const sourceParent=data.items.find(x=>x.id===payload.parentId);
+    const part=sourceParent?.parts?.[payload.partIndex];
+    if(!sourceParent||!part||part.itemId){
+      toast('Folder referensi tidak dapat diubah menjadi Single dengan cara ini.','warn');
+      return;
+    }
+    const ok=await confirmInternal(
+      'Keluarkan menjadi Single?',
+      `"${part.title}" akan dikeluarkan dari "${sourceParent.title}" dan menjadi bacaan Single di folder "${category}". PDF tidak diunggah ulang.`,
+      'Pindahkan',
+      'Batal'
+    );
+    if(!ok)return;
+    createBackup(`Sebelum mengeluarkan ${part.title} dari ${sourceParent.title}`);
+    const moved=removeDirectPart(sourceParent,payload.partIndex);
+    if(!moved)return;
+    let newId=String(moved.id||slugify(moved.title));
+    if(data.items.some(x=>x.id===newId))newId=uniqueItemId(newId);
+    const {itemId:_ignoredItemId,...partData}=moved;
+    const single={
+      ...partData,
+      id:newId,
+      title:moved.title||newId,
+      category,
+      type:'single',
+      icon:moved.icon||'◈',
+      file:moved.file||'',
+      pages:Math.max(1,Number(moved.pages)||1)
+    };
+    data.items.push(single);
+    explorerCategory=category;
+    explorerItemId=null;
+    selectedPartRef=null;
+    selectedId=single.id;
+    $('#categoryFilter').value=category;
+    markDirty(`${single.title} dikeluarkan menjadi Single di ${category}`);
+    renderList();
+    selectItem(single.id);
+    toast(`${single.title} sekarang menjadi Single di ${category}.`,'ok');
+    return;
+  }
+
   const item=data.items.find(x=>x.id===payload.itemId);
   if(!item)return;
   const oldParent=findExplorerParent(item.id);
@@ -1810,11 +1861,109 @@ async function applyExistingPart(){
   toast(`${source.title} ${mode==='move'?'dipindahkan':'disalin'} ke ${target.title}.`,'ok');
 }
 
+
+function explorerFolderSlugPath(item){
+  if(!item)return '';
+  const chain=[];
+  const guard=new Set();
+  let current=item;
+  while(current && !guard.has(current.id)){
+    guard.add(current.id);
+    chain.unshift(slugify(current.title||current.id));
+    current=findExplorerParent(current.id);
+  }
+  return chain.filter(Boolean).join('/');
+}
+
+function batchFolderDestinations(){
+  const opts=[];
+  categories().forEach(category=>{
+    opts.push({
+      value:`category::${category}`,
+      label:`Bacaan › ${category}`,
+      kind:'category',
+      category
+    });
+  });
+  data.items
+    .filter(x=>x.type==='group'||x.type==='collection')
+    .forEach(item=>{
+      opts.push({
+        value:`item::${item.id}`,
+        label:`${explorerPathForItem(item)}${item.type==='collection'?'  • Collection':'  • Group'}`,
+        kind:'item',
+        category:item.category||'',
+        item
+      });
+    });
+  return opts.sort((a,b)=>naturalCompare(a.label,b.label));
+}
+
+function batchDestination(){
+  const raw=$('#batchTargetInput')?.value||'';
+  if(raw.startsWith('item::')){
+    const item=data.items.find(x=>x.id===raw.slice('item::'.length))||null;
+    if(item)return {kind:'item',item,category:item.category||'Lainnya'};
+  }
+  if(raw.startsWith('category::')){
+    const category=raw.slice('category::'.length)||'Lainnya';
+    return {kind:'category',item:null,category};
+  }
+  const category=explorerCategory||categories()[0]||'Lainnya';
+  return {kind:'category',item:null,category};
+}
+
+function populateBatchTargetOptions(){
+  const select=$('#batchTargetInput');
+  if(!select)return;
+  const old=select.value;
+  const opts=batchFolderDestinations();
+  select.innerHTML=opts.map(o=>`<option value="${esc(o.value)}">${esc(o.label)}</option>`).join('');
+
+  let preferred='';
+  if(explorerItemId){
+    const current=data.items.find(x=>x.id===explorerItemId);
+    if(current&&(current.type==='group'||current.type==='collection'))preferred=`item::${current.id}`;
+  }
+  if(!preferred&&explorerCategory)preferred=`category::${explorerCategory}`;
+  if(!preferred&&old&&opts.some(o=>o.value===old))preferred=old;
+  if(!preferred&&opts.length)preferred=opts[0].value;
+  select.value=preferred;
+}
+
+function batchDestinationBaseFolder(dest=batchDestination()){
+  const folder=categoryFolder(dest.category||'Lainnya');
+  const categoryBase=`assets/pdf-v2/${folder}`;
+  if(!dest.item)return categoryBase;
+
+  if(dest.item.type==='collection'){
+    const direct=(dest.item.parts||[]).find(p=>!p.itemId&&p.file)?.file||'';
+    if(direct.includes('/'))return direct.slice(0,direct.lastIndexOf('/'));
+  }
+
+  const nested=explorerFolderSlugPath(dest.item);
+  return nested?`${categoryBase}/${nested}`:categoryBase;
+}
+
+function attachItemToBatchGroup(item,group){
+  if(!item||!group||group.type!=='group')return;
+  item.category=group.category||item.category;
+  item.hidden=true;
+  group.parts=Array.isArray(group.parts)?group.parts:[];
+  if(!group.parts.some(p=>p.itemId===item.id)){
+    group.parts.push({
+      id:uniquePartId(`${group.id}-ref-${item.id}`),
+      title:item.title,
+      itemId:item.id
+    });
+  }
+}
+
 /* ===================== BATCH IMPORT PDF ===================== */
 function openBatchDialog(){
   batchEntries=[];
   $('#batchModeInput').value='singles';
-  $('#batchCategoryInput').value=categories()[0]||'Doa';
+  populateBatchTargetOptions();
   $('#batchTitleInput').value='';
   $('#batchFilesInput').value='';
   $('#batchFolderInput').value='';
@@ -1829,9 +1978,28 @@ function closeBatchDialog(){
 }
 
 function updateBatchModeUI(){
-  const mode=$('#batchModeInput').value;
+  const modeInput=$('#batchModeInput');
+  const dest=batchDestination();
+  const targetCollection=dest.item?.type==='collection';
+
+  if(targetCollection){
+    if(modeInput.value!=='parts')modeInput.dataset.previousMode=modeInput.value||'singles';
+    modeInput.value='parts';
+    modeInput.disabled=true;
+    $('#batchTitleField').classList.add('hidden');
+    $('#batchTitleInput').disabled=true;
+    $('#batchTargetHint').textContent=`PDF akan langsung menjadi bagian dari Collection “${dest.item.title}”.`;
+    return;
+  }
+
+  if(modeInput.value==='parts')modeInput.value=modeInput.dataset.previousMode||'singles';
+  modeInput.disabled=false;
+  const mode=modeInput.value;
   $('#batchTitleField').classList.toggle('hidden',mode==='singles'||mode==='folder-tree');
   $('#batchTitleInput').disabled=mode==='folder-tree';
+  $('#batchTargetHint').textContent=dest.item?.type==='group'
+    ? `Hasil import akan ditempatkan di dalam Group “${dest.item.title}”.`
+    : `Hasil import akan ditempatkan di folder “${dest.category}”.`;
 }
 
 async function handleBatchFolder(e){
@@ -1879,11 +2047,12 @@ function folderTreePlan(){
 
 function treeNodeTitle(node){return String(node.name||'Bacaan').replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim()||'Bacaan';}
 
-function applyFolderTreeImport(category){
+function applyFolderTreeImport(category,baseFolder=""){
   const tree=folderTreePlan();
   const created=[];
   const usedIds=new Set([...data.items.map(x=>x.id),...allPartIds()]);
   const folderBase=categoryFolder(category);
+  const virtualBase=String(baseFolder||`assets/pdf-v2/${folderBase}`).replace(/\/$/,'');
 
   function uniqueGlobal(base){let id=base||'folder';let n=2;while(usedIds.has(id))id=`${base}-${n++}`;usedIds.add(id);return id;}
 
@@ -1902,13 +2071,13 @@ function applyFolderTreeImport(category){
       const files=[...node.files].sort((a,b)=>naturalCompare(a.relativePath||a.filename,b.relativePath||b.filename));
       for(const entry of files){
         let pid=uniqueGlobal(`${id}-${slugify(entry.title)}`);
-        item.parts.push({id:pid,title:entry.title.trim(),file:`assets/pdf-v2/${folderBase}/${folderPath}/${entry.filename}`,pages:Math.max(1,Math.floor(Number(entry.pages)||1))});
+        item.parts.push({id:pid,title:entry.title.trim(),file:`${virtualBase}/${folderPath}/${entry.filename}`,pages:Math.max(1,Math.floor(Number(entry.pages)||1))});
       }
     }else{
       // PDF langsung di folder bercabang: jadikan Single tersembunyi dan referensikan dari Group.
       for(const entry of [...node.files].sort((a,b)=>naturalCompare(a.filename,b.filename))){
         const sid=uniqueGlobal(`${id}-${slugify(entry.title)}`);
-        const single={id:sid,title:entry.title.trim(),category,type:'single',icon:'◈',file:`assets/pdf-v2/${folderBase}/${folderPath}/${entry.filename}`,pages:Math.max(1,Math.floor(Number(entry.pages)||1)),hidden:true};
+        const single={id:sid,title:entry.title.trim(),category,type:'single',icon:'◈',file:`${virtualBase}/${folderPath}/${entry.filename}`,pages:Math.max(1,Math.floor(Number(entry.pages)||1)),hidden:true};
         data.items.push(single);created.push(single);
         item.parts.push({id:uniqueGlobal(`${id}-ref-${sid}`),title:single.title,itemId:sid});
       }
@@ -1974,22 +2143,27 @@ function batchTargetId(){
 }
 
 function batchPathFor(entry,index){
-  const category=$('#batchCategoryInput').value.trim()||'Lainnya';
-  const folder=categoryFolder(category);
+  const dest=batchDestination();
   const mode=$('#batchModeInput').value;
+  const base=batchDestinationBaseFolder(dest);
+
+  // Jika folder tujuan adalah Collection, semua PDF berada di folder Collection tersebut.
+  if(dest.item?.type==='collection'){
+    return `${base}/${entry.filename}`;
+  }
 
   if(mode==='folder-tree'){
     const rel=(entry.relativePath||entry.filename).split('/').filter(Boolean);
-    if(rel.length>1)rel.shift();
-    return `assets/pdf-v2/${folder}/${rel.map((seg,i)=>i===rel.length-1?safePdfFilename(seg):slugify(seg)).join('/')}`;
+    const suffix=rel.map((seg,i)=>i===rel.length-1?safePdfFilename(seg):slugify(seg)).join('/');
+    return `${base}/${suffix}`;
   }
 
   if(mode==='singles'){
-    return `assets/pdf-v2/${folder}/${entry.filename}`;
+    return `${base}/${entry.filename}`;
   }
 
   const collectionId=batchTargetId();
-  return `assets/pdf-v2/${folder}/${collectionId}/${entry.filename}`;
+  return `${base}/${collectionId}/${entry.filename}`;
 }
 
 function renderBatchReview(){
@@ -2091,7 +2265,8 @@ function applyBatchImport(){
   if(!batchEntries.length)return;
 
   const mode=$('#batchModeInput').value;
-  const category=$('#batchCategoryInput').value.trim()||'Lainnya';
+  const dest=batchDestination();
+  const category=dest.category||'Lainnya';
   const invalid=batchEntries.find(e=>!e.title.trim()||!Number.isInteger(Number(e.pages))||Number(e.pages)<1);
   if(invalid){
     toast('Ada PDF yang belum memiliki judul atau jumlah halaman. Jika deteksi gagal, isi koreksi halaman pada baris tersebut.','error');
@@ -2100,23 +2275,61 @@ function applyBatchImport(){
 
   createBackup('Sebelum Batch Import PDF');
 
+  // Folder tujuan Collection: PDF langsung menjadi bagian Collection tersebut.
+  if(dest.item?.type==='collection'){
+    const target=dest.item;
+    target.parts=Array.isArray(target.parts)?target.parts:[];
+    const used=new Set([
+      ...data.items.map(x=>x.id),
+      ...data.items.flatMap(x=>(x.parts||[]).map(p=>p.id))
+    ]);
+    for(let i=0;i<batchEntries.length;i++){
+      const entry=batchEntries[i];
+      const title=entry.title.trim();
+      let id=`${target.id}-${slugify(title)}`;
+      let n=2;
+      while(used.has(id))id=`${target.id}-${slugify(title)}-${n++}`;
+      used.add(id);
+      target.parts.push({
+        id,
+        title,
+        file:batchPathFor(entry,i),
+        pages:Math.max(1,Math.floor(Number(entry.pages)||1))
+      });
+    }
+    explorerCategory=target.category||category;
+    explorerItemId=target.id;
+    selectedId=target.id;
+    refreshCategoryUI();
+    markDirty(`${batchEntries.length} PDF ditambahkan sebagai bagian ${target.title}`);
+    closeBatchDialog();
+    renderList();
+    selectItem(target.id);
+    toast(`${batchEntries.length} PDF ditambahkan ke Collection ${target.title}.`,'ok');
+    return;
+  }
+
   if(mode==='folder-tree'){
-    const result=applyFolderTreeImport(category);
+    const result=applyFolderTreeImport(category,batchDestinationBaseFolder(dest));
+    if(dest.item?.type==='group')attachItemToBatchGroup(result.rootItem,dest.item);
     selectedId=result.rootItem?.id||null;
     explorerCategory=category;
-    explorerItemId=null;
+    explorerItemId=dest.item?.type==='group'?dest.item.id:null;
     refreshCategoryUI();
     markDirty(`${batchEntries.length} PDF diimpor sebagai struktur folder otomatis`);
     closeBatchDialog();
     renderList();
     if(selectedId)selectItem(selectedId);
-    toast('Struktur folder dibuat otomatis: folder bercabang = Group, folder paling bawah = Collection.','ok');
+    toast(dest.item?.type==='group'
+      ? `Struktur folder ditambahkan ke Group ${dest.item.title}.`
+      : 'Struktur folder dibuat otomatis: folder bercabang = Group, folder paling bawah = Collection.','ok');
     return;
   }
 
   if(mode==='singles'){
     const created=[];
-    for(const entry of batchEntries){
+    for(let i=0;i<batchEntries.length;i++){
+      const entry=batchEntries[i];
       const title=entry.title.trim();
       const id=uniqueItemId(slugify(title));
       const item={
@@ -2125,13 +2338,15 @@ function applyBatchImport(){
         category,
         type:'single',
         icon:'◈',
-        file:batchPathFor(entry,0),
+        file:batchPathFor(entry,i),
         pages:Math.max(1,Math.floor(Number(entry.pages)||1))
       };
       data.items.push(item);
+      if(dest.item?.type==='group')attachItemToBatchGroup(item,dest.item);
       created.push(item);
     }
     selectedId=created[0]?.id||null;
+    explorerItemId=dest.item?.type==='group'?dest.item.id:null;
   }else{
     const title=$('#batchTitleInput').value.trim();
     if(!title){
@@ -2147,36 +2362,41 @@ function applyBatchImport(){
     ]);
     const parts=[];
 
-    for(const entry of batchEntries){
+    for(let i=0;i<batchEntries.length;i++){
+      const entry=batchEntries[i];
       const partTitle=entry.title.trim();
       let partId=`${id}-${slugify(partTitle)}`;
       let n=2;
       while(used.has(partId))partId=`${id}-${slugify(partTitle)}-${n++}`;
       used.add(partId);
-      const folder=categoryFolder(category);
       parts.push({
         id:partId,
         title:partTitle,
-        file:`assets/pdf-v2/${folder}/${id}/${entry.filename}`,
+        file:batchPathFor(entry,i),
         pages:Math.max(1,Math.floor(Number(entry.pages)||1))
       });
     }
 
-    data.items.push({
+    const item={
       id,
       title,
       category,
       type:mode,
       icon:'◈',
       parts
-    });
+    };
+    data.items.push(item);
+    if(dest.item?.type==='group')attachItemToBatchGroup(item,dest.item);
     selectedId=id;
+    explorerItemId=dest.item?.type==='group'?dest.item.id:null;
   }
 
+  explorerCategory=category;
   refreshCategoryUI();
   markDirty(`${batchEntries.length} PDF ditambahkan melalui Batch Import`);
   const id=selectedId;
   closeBatchDialog();
+  renderList();
   if(id)selectItem(id);
   toast('Batch Import selesai. Jangan lupa unggah PDF fisik ke R2 sesuai key yang dibuat.','ok');
 }
