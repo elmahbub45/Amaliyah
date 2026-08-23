@@ -492,18 +492,40 @@ async function reverseGeocode(latitude,longitude){
     if(!r.ok)throw new Error('reverse geocode');
 
     const j=await r.json();
+
     const admins=Array.isArray(j?.localityInfo?.administrative)
       ? j.localityInfo.administrative
       : [];
 
-    // Di Indonesia level administratif 5 biasanya kabupaten/kota.
-    // Fallback berikutnya mencari nama yang eksplisit "Kabupaten/Kota".
-    const admin5=admins.find(x=>Number(x.adminLevel)===5);
-    const namedRegion=admins.find(x=>/^(kabupaten|kota)\b/i.test(String(x?.name||'')));
-    const regionName=String(admin5?.name||namedRegion?.name||'').trim();
+    // Jangan lagi bergantung pada satu adminLevel tertentu.
+    // Kirim seluruh kandidat administratif ke Worker agar resolver Kemenag
+    // dapat memilih kabupaten/kota yang tepat secara konservatif.
+    const regionCandidates=[
+      ...admins.map(x=>String(x?.name||x?.isoName||'').trim()),
+      String(j.city||'').trim(),
+      String(j.locality||'').trim(),
+      String(j.principalSubdivision||'').trim()
+    ]
+      .filter(Boolean)
+      .filter((v,i,a)=>a.indexOf(v)===i)
+      .slice(0,20);
+
+    // Tetap simpan satu regionName untuk kompatibilitas lama,
+    // tetapi Worker V2.30.3 memprioritaskan regionCandidates.
+    const namedRegion=admins.find(x=>
+      /^(kabupaten|kota)\b/i.test(String(x?.name||'')) ||
+      /\b(regency|city|municipality)\b/i.test(String(x?.name||''))
+    );
+
+    const regionName=String(
+      namedRegion?.name ||
+      admins.find(x=>Number(x.adminLevel)===5)?.name ||
+      ''
+    ).trim();
 
     const city=j.city||j.locality||j.localityInfo?.informative?.[0]?.name||'Lokasi Anda';
     const province=j.principalSubdivision||'';
+
     const label=province && province!==city
       ? `${city}, ${province}`
       : city;
@@ -511,35 +533,62 @@ async function reverseGeocode(latitude,longitude){
     return {
       label,
       regionName,
+      regionCandidates,
       province,
       city
     };
+
   }catch{
     return {
       label:`${latitude.toFixed(3)}, ${longitude.toFixed(3)}`,
       regionName:'',
+      regionCandidates:[],
       province:'',
       city:''
     };
   }
 }
 
-async function fetchPrayerTimes(latitude,longitude,regionName='',regionId=''){
+async function fetchPrayerTimes(
+  latitude,
+  longitude,
+  regionName='',
+  regionId='',
+  regionCandidates=[],
+  city='',
+  province=''
+){
   const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Makassar';
+
   const params=new URLSearchParams({
     latitude:String(latitude),
     longitude:String(longitude),
     date:dateKey(),
     tz
   });
+
   if(regionName)params.set('region',regionName);
   if(regionId)params.set('regionId',regionId);
+  if(city)params.set('city',city);
+  if(province)params.set('province',province);
+
+  if(Array.isArray(regionCandidates) && regionCandidates.length){
+    params.set(
+      'regionCandidates',
+      JSON.stringify(regionCandidates.slice(0,20))
+    );
+  }
 
   const r=await fetch(`${PUSH_API}/prayer/daily?${params.toString()}`,{
     cache:'no-store'
   });
+
   const j=await r.json().catch(()=>null);
-  if(!r.ok || !j?.timings)throw new Error(j?.error||'Jadwal tidak tersedia');
+
+  if(!r.ok || !j?.timings){
+    throw new Error(j?.error||'Jadwal tidak tersedia');
+  }
+
   return j;
 }
 
@@ -560,6 +609,7 @@ function getPrayerTimes(){
       longitude,
       label:geo.label,
       regionName:geo.regionName,
+      regionCandidates:geo.regionCandidates||[],
       province:geo.province,
       city:geo.city,
       updatedAt:Date.now()
@@ -573,7 +623,10 @@ function getPrayerTimes(){
         latitude,
         longitude,
         loc.regionName,
-        loc.prayerRegionId||''
+        loc.prayerRegionId||'',
+        loc.regionCandidates||[],
+        loc.city||'',
+        loc.province||''
       );
 
       if(data?.region?.id){
@@ -680,6 +733,14 @@ async function loadMonthlyPrayerTimes(){
 
     if(loc.regionName)params.set('region',loc.regionName);
     if(loc.prayerRegionId)params.set('regionId',loc.prayerRegionId);
+    if(loc.city)params.set('city',loc.city);
+    if(loc.province)params.set('province',loc.province);
+    if(Array.isArray(loc.regionCandidates) && loc.regionCandidates.length){
+      params.set(
+        'regionCandidates',
+        JSON.stringify(loc.regionCandidates.slice(0,20))
+      );
+    }
 
     const r=await fetch(`${PUSH_API}/prayer/monthly?${params.toString()}`,{
       cache:'no-store'
@@ -796,7 +857,12 @@ async function syncPushSubscription({silent=true}={}){
         label:savedLocation.label||'',
         regionName:savedLocation.regionName||'',
         regionId:savedLocation.prayerRegionId||'',
-        regionLabel:savedLocation.prayerRegionName||''
+        regionLabel:savedLocation.prayerRegionName||'',
+        regionCandidates:Array.isArray(savedLocation.regionCandidates)
+          ? savedLocation.regionCandidates.slice(0,20)
+          : [],
+        city:savedLocation.city||'',
+        province:savedLocation.province||''
       } : null,
       prayers:{
         subuh:!!settings.prayers.Subuh,
@@ -1086,7 +1152,10 @@ async function bootPrayer(){
         loc.latitude,
         loc.longitude,
         loc.regionName||'',
-        loc.prayerRegionId||''
+        loc.prayerRegionId||'',
+        loc.regionCandidates||[],
+        loc.city||'',
+        loc.province||''
       ).then(data=>{
         if(data?.region?.id){
           const nextLoc={
@@ -1112,7 +1181,10 @@ async function bootPrayer(){
         loc.latitude,
         loc.longitude,
         loc.regionName||'',
-        loc.prayerRegionId||''
+        loc.prayerRegionId||'',
+        loc.regionCandidates||[],
+        loc.city||'',
+        loc.province||''
       );
 
       let nextLoc=loc;

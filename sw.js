@@ -1,4 +1,4 @@
-const C='amaliyah-v2-30';
+const C='amaliyah-v2-30-3';
 const A=['./','./index.html','./style.css','./app.js','./reader.html','./reader.css','./reader.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
 
 self.addEventListener('install',e=>{
