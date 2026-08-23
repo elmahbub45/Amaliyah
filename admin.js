@@ -24,7 +24,7 @@ let historyCurrent=null;
 let historyLocked=false;
 let explorerCategory='';
 let explorerItemId=null;
-let explorerView=localStorage.getItem('amaliyah:admin:explorer:view')||'grid';
+let explorerView=localStorage.getItem('amaliyah:admin:explorer:view:v2361')||'list';
 
 async function boot(){
   original=await fetchBooks();
@@ -73,6 +73,7 @@ function assertBooksShape(parsed){
 function bind(){
   $('#searchInput').addEventListener('input',renderList);
   $('#categoryFilter').addEventListener('change',()=>{explorerCategory=$('#categoryFilter').value;explorerItemId=null;selectedId=null;showEmptyEditor();renderList();});
+  $('#categoryRootBtn').onclick=()=>{explorerCategory='';explorerItemId=null;selectedId=null;$('#categoryFilter').value='';showEmptyEditor();renderList();};
   $('#typeFilter').addEventListener('change',renderList);
   $('#gridViewBtn').onclick=()=>setExplorerView('grid');
   $('#listViewBtn').onclick=()=>setExplorerView('list');
@@ -384,6 +385,59 @@ function refreshCategoryUI(){
     cats.map(c=>`<option value="${esc(c)}"></option>`).join('');
 }
 
+function renderCategoryTree(){
+  const host=$('#categoryTree');
+  const root=$('#categoryRootBtn');
+  if(!host || !root || !data)return;
+
+  root.classList.toggle('active',!explorerCategory && !explorerItemId);
+
+  const chain=[];
+  if(explorerItemId){
+    let current=data.items.find(x=>x.id===explorerItemId)||null;
+    const guard=new Set();
+    while(current && !guard.has(current.id)){
+      guard.add(current.id);
+      chain.unshift(current);
+      current=findExplorerParent(current.id);
+    }
+  }
+
+  host.innerHTML=categories().map(category=>{
+    const active=category===explorerCategory;
+    const roots=explorerRoots(category);
+    const nested=active && chain.length
+      ? `<div class="tree-branch">${chain.map((item,i)=>`
+          <button type="button" class="category-tree-row tree-child ${item.id===explorerItemId?'active':''}" data-tree-item="${esc(item.id)}" style="--tree-depth:${i+1}">
+            <span class="tree-folder ${item.type==='single'?'tree-file':''}" aria-hidden="true"></span>
+            <span class="tree-label"><b>${esc(item.title||item.id)}</b><small>${esc(item.type)}</small></span>
+          </button>`).join('')}</div>`
+      : '';
+    return `<div class="tree-category-wrap">
+      <button type="button" class="category-tree-row ${active&&!explorerItemId?'active':''}" data-tree-category="${esc(category)}">
+        <span class="tree-folder" aria-hidden="true"></span>
+        <span class="tree-label"><b>${esc(category)}</b><small>${roots.length} item</small></span>
+      </button>${nested}
+    </div>`;
+  }).join('');
+
+  $$('[data-tree-category]',host).forEach(btn=>btn.onclick=()=>{
+    explorerCategory=btn.dataset.treeCategory;
+    explorerItemId=null;
+    selectedId=null;
+    $('#categoryFilter').value=explorerCategory;
+    showEmptyEditor();
+    renderList();
+  });
+
+  $$('[data-tree-item]',host).forEach(btn=>btn.onclick=()=>{
+    explorerItemId=btn.dataset.treeItem;
+    selectedId=null;
+    showEmptyEditor();
+    renderList();
+  });
+}
+
 function uniqueItemId(base){
   let id=base,n=2;
   while(data.items.some(x=>x.id===id))id=`${base}-${n++}`;
@@ -601,7 +655,7 @@ function renderBackups(){
 /* ===================== LIST / ORDER ===================== */
 function setExplorerView(view){
   explorerView=view==='list'?'list':'grid';
-  localStorage.setItem('amaliyah:admin:explorer:view',explorerView);
+  localStorage.setItem('amaliyah:admin:explorer:view:v2361',explorerView);
   $('#gridViewBtn')?.classList.toggle('active',explorerView==='grid');
   $('#listViewBtn')?.classList.toggle('active',explorerView==='list');
   renderList();
@@ -656,6 +710,7 @@ function renderExplorerBreadcrumb(){
     else explorerItemId=btn.dataset.crumbId;
     selectedId=null;showEmptyEditor();renderList();
   });
+  renderCategoryTree();
 }
 
 function openExplorerItem(id){
@@ -673,14 +728,18 @@ function openExplorerItem(id){
 
 function explorerCardForItem(x,index){
   const isFolder=x.type!=='single';
-  const count=x.type==='single'?`${Math.max(1,Number(x.pages)||1)} hal.`:`${(x.parts||[]).length} isi`;
+  const countValue=x.type==='single'?Math.max(1,Number(x.pages)||1):(x.parts||[]).length;
+  const countLabel=x.type==='single'?'hal.':'isi';
+  const typeLabel=x.type==='group'?'Group':x.type==='collection'?'Collection':'Single';
   return `<div class="explorer-entry ${isFolder?'is-folder':'is-file'} ${x.id===selectedId?'active':''}" draggable="${!x.hidden}" data-id="${esc(x.id)}" data-main-index="${index}">
     <button class="explorer-open" type="button" data-open-explorer="${esc(x.id)}" title="${isFolder?'Buka folder':'Edit bacaan'}">
-      <span class="explorer-icon">${isFolder?(x.type==='group'?'▰':'▣'):'▤'}</span>
-      <span class="explorer-entry-copy"><b>${esc(x.title||'(Tanpa judul)')}</b><small>${esc(x.type)} • ${esc(count)}</small></span>
+      <span class="explorer-icon ${isFolder?'folder-icon':'file-icon'}" aria-hidden="true"></span>
+      <span class="explorer-entry-copy"><b>${esc(x.title||'(Tanpa judul)')}</b><small>${isFolder?'Folder bacaan':'Dokumen PDF'}</small></span>
     </button>
+    <span class="explorer-col explorer-col-type"><small>${esc(typeLabel)}</small></span>
+    <span class="explorer-col explorer-col-count"><b>${countValue}</b><small>${countLabel}</small></span>
     <div class="explorer-entry-actions">
-      <button type="button" data-edit-explorer="${esc(x.id)}" title="Edit">✎</button>
+      <button type="button" data-edit-explorer="${esc(x.id)}" title="Edit bacaan">✎</button>
       ${!x.hidden?`<button type="button" data-main-up="${index}" title="Naik">↑</button><button type="button" data-main-down="${index}" title="Turun">↓</button>`:''}
     </div>
   </div>`;
@@ -693,9 +752,11 @@ function explorerCardForPart(parent,p,i){
   }
   return `<div class="explorer-entry is-file part-file" data-part-index="${i}">
     <button class="explorer-open" type="button" data-edit-part-index="${i}">
-      <span class="explorer-icon">▤</span>
-      <span class="explorer-entry-copy"><b>${esc(p.title||'(Tanpa judul)')}</b><small>${Math.max(1,Number(p.pages)||1)} hal. • PDF</small></span>
+      <span class="explorer-icon file-icon" aria-hidden="true"></span>
+      <span class="explorer-entry-copy"><b>${esc(p.title||'(Tanpa judul)')}</b><small>Dokumen PDF</small></span>
     </button>
+    <span class="explorer-col explorer-col-type"><small>PDF</small></span>
+    <span class="explorer-col explorer-col-count"><b>${Math.max(1,Number(p.pages)||1)}</b><small>hal.</small></span>
     <div class="explorer-entry-actions"><button type="button" data-edit-part-index="${i}" title="Edit">✎</button></div>
   </div>`;
 }
@@ -711,11 +772,13 @@ function renderList(){
 
   if(catFilter && catFilter!==explorerCategory && !explorerItemId)explorerCategory=catFilter;
   renderExplorerBreadcrumb();
+  renderCategoryTree();
+  $('#explorerListHead')?.classList.toggle('hidden',explorerView!=='list');
 
   let html='';
   if(!explorerCategory && !explorerItemId && !q && !type){
     const cats=categories();
-    html=cats.map(c=>`<div class="explorer-entry is-folder category-folder"><button class="explorer-open" type="button" data-open-category="${esc(c)}"><span class="explorer-icon">▰</span><span class="explorer-entry-copy"><b>${esc(c)}</b><small>${explorerRoots(c).length} bacaan</small></span></button></div>`).join('');
+    html=cats.map(c=>`<div class="explorer-entry is-folder category-folder"><button class="explorer-open" type="button" data-open-category="${esc(c)}"><span class="explorer-icon folder-icon" aria-hidden="true"></span><span class="explorer-entry-copy"><b>${esc(c)}</b><small>Folder kategori</small></span></button><span class="explorer-col explorer-col-type"><small>Kategori</small></span><span class="explorer-col explorer-col-count"><b>${explorerRoots(c).length}</b><small>item</small></span><div class="explorer-entry-actions"></div></div>`).join('');
   }else if(explorerItemId){
     const parent=data.items.find(x=>x.id===explorerItemId);
     if(!parent){explorerItemId=null;return renderList();}

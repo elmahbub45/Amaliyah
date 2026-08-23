@@ -15,9 +15,15 @@
         <span class="brand-fallback">A</span>
         <img src="assets/icons/icon-192.png" alt="" onerror="this.remove()">
       </div>
-      <div>
+      <div class="brand-app">
+        <b>AMALIYAH</b>
+        <small>Sahabat Ibadah Harian</small>
+      </div>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <div class="brand-admin">
         <small>AMALIYAH • MAINTENANCE</small>
         <h1>Admin Koleksi</h1>
+        <p>Kelola katalog bacaan dan konten aplikasi</p>
       </div>
     </div>
 
@@ -52,48 +58,67 @@
   </section>
 
   <main class="layout">
-    <aside class="sidebar card">
-      <div class="sidebar-head">
-        <div>
+    <section class="sidebar explorer-workspace card">
+      <aside class="category-pane">
+        <div class="category-pane-head">
           <span class="eyebrow">KATALOG BACAAN</span>
-          <b>Explorer Bacaan</b>
+          <b>Folder Bacaan</b>
           <small id="catalogInfo">Memuat…</small>
         </div>
-        <div class="sidebar-add-actions">
-          <button id="batchImportBtn" class="ghost small" type="button">Import</button>
-          <button id="addItemBtn" class="primary small" type="button">+ Tambah</button>
+
+        <button id="categoryRootBtn" class="category-root active" type="button">
+          <span class="tree-folder root-folder" aria-hidden="true"></span>
+          <span>Bacaan</span>
+        </button>
+        <div id="categoryTree" class="category-tree" aria-label="Daftar kategori"></div>
+
+        <div class="category-pane-note">
+          <span>⌘</span>
+          <small>Folder yang memiliki subfolder tetap Group. Folder terakhir menjadi Collection.</small>
         </div>
-      </div>
+      </aside>
 
-      <div class="explorer-nav-row">
-        <nav id="explorerBreadcrumb" class="explorer-breadcrumb" aria-label="Lokasi Explorer"></nav>
-        <div class="view-switch" aria-label="Tampilan Explorer">
-          <button id="gridViewBtn" type="button" class="view-btn active" title="Grid">▦</button>
-          <button id="listViewBtn" type="button" class="view-btn" title="List">☷</button>
+      <section class="browser-pane">
+        <div class="browser-head">
+          <div>
+            <span class="eyebrow">EXPLORER BACAAN</span>
+            <nav id="explorerBreadcrumb" class="explorer-breadcrumb" aria-label="Lokasi Explorer"></nav>
+          </div>
+          <div class="sidebar-add-actions">
+            <button id="batchImportBtn" class="ghost small" type="button">⇧ Import</button>
+            <button id="addItemBtn" class="primary small" type="button">+ Tambah</button>
+          </div>
         </div>
-      </div>
 
-      <div class="toolbar">
-        <div class="search-wrap">
-          <span>⌕</span>
-          <input id="searchInput" type="search" placeholder="Cari judul, bagian, ID…">
+        <div class="toolbar explorer-toolbar">
+          <div class="search-wrap">
+            <span>⌕</span>
+            <input id="searchInput" type="search" placeholder="Cari judul, bagian, ID bacaan…">
+          </div>
+          <select id="categoryFilter" aria-label="Filter kategori"></select>
+          <select id="typeFilter" aria-label="Filter tipe">
+            <option value="">Semua tipe</option>
+            <option value="single">Single</option>
+            <option value="collection">Collection</option>
+            <option value="group">Group</option>
+          </select>
+          <div class="view-switch" aria-label="Tampilan Explorer">
+            <button id="listViewBtn" type="button" class="view-btn active" title="List">☷</button>
+            <button id="gridViewBtn" type="button" class="view-btn" title="Grid">▦</button>
+          </div>
         </div>
-        <select id="categoryFilter" aria-label="Filter kategori"></select>
-        <select id="typeFilter" aria-label="Filter tipe">
-          <option value="">Semua tipe</option>
-          <option value="single">Single</option>
-          <option value="collection">Collection</option>
-          <option value="group">Group</option>
-        </select>
-      </div>
 
-      <div id="itemList" class="item-list"></div>
+        <div id="explorerListHead" class="explorer-list-head" aria-hidden="true">
+          <span>Nama</span><span>Tipe</span><span>Isi</span><span></span>
+        </div>
+        <div id="itemList" class="item-list"></div>
 
-      <div class="sidebar-foot">
-        <span>☷</span>
-        <small>Klik folder untuk membuka. Grid/List bisa diganti kapan saja. Drag tetap tersedia untuk mengatur urutan.</small>
-      </div>
-    </aside>
+        <div class="sidebar-foot">
+          <span>⌑</span>
+          <small>Klik folder untuk membuka. Klik bacaan untuk mengedit. Drag tetap tersedia untuk mengatur urutan.</small>
+        </div>
+      </section>
+    </section>
 
     <section class="editor card">
       <div id="emptyEditor" class="empty-editor">
@@ -105,6 +130,7 @@
       <div id="editorContent" class="hidden">
         <div class="editor-title-row">
           <div class="editor-title-copy">
+            <span class="editor-kicker">EDITOR BACAAN</span>
             <div class="title-badges">
               <small id="editorTypeBadge" class="badge"></small>
               <small id="editorCategoryBadge" class="badge neutral"></small>
