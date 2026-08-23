@@ -831,3 +831,26 @@ main{
   .notification-reminder{align-items:flex-start;flex-direction:column}
   .notification-reminder select{max-width:none;width:100%}
 }
+
+
+/* =========================================================
+   V2.25.1 — Cegah pull-to-refresh mengembalikan ke Beranda
+   Tetap mengizinkan scroll normal di dalam aplikasi.
+   ========================================================= */
+html,
+body{
+  overscroll-behavior-y:contain;
+}
+
+#app,
+.screen{
+  overscroll-behavior-y:contain;
+}
+
+/* Untuk browser yang mendukung overscroll-behavior penuh. */
+@supports (overscroll-behavior:none){
+  html,
+  body{
+    overscroll-behavior-y:none;
+  }
+}

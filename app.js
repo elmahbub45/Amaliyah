@@ -19,6 +19,7 @@ const SCREEN_TO_ID={
   settings:'#settings', monthly:'#monthly', bookmarks:'#bookmarks', history:'#history'
 };
 let currentScreen='home';
+const SCREEN_STATE_KEY='amaliyah:screenState';
 
 function allParts(){
   const arr=[];
@@ -60,6 +61,24 @@ function migrateLegacyState(){
 }
 migrateLegacyState();
 
+function saveScreenState(screen,opts={}){
+  try{
+    sessionStorage.setItem(SCREEN_STATE_KEY,JSON.stringify({
+      screen,
+      category:opts.category||activeLibraryCategory||'Semua',
+      focusNotifications:!!opts.focusNotifications,
+      itemId:opts.itemId||activeCollectionId||null
+    }));
+  }catch{}
+}
+function getSavedScreenState(){
+  try{
+    const state=JSON.parse(sessionStorage.getItem(SCREEN_STATE_KEY)||'null');
+    if(!state || !SCREEN_TO_ID[state.screen])return null;
+    return state;
+  }catch{return null}
+}
+
 function paintScreen(screen='home'){
   const id=SCREEN_TO_ID[screen]||SCREEN_TO_ID.home;
   Object.values(SCREEN_TO_ID).forEach(x=>$(x)?.classList.add('hidden'));
@@ -75,6 +94,7 @@ function navigateScreen(screen='home',opts={}){
     history.replaceState({amaliyah:true,screen,category,focusNotifications,itemId},'',location.href);
   }
   paintScreen(screen);
+  saveScreenState(screen,{category,focusNotifications,itemId});
   if(screen==='home')updateHome();
   if(screen==='library')renderLibrary(category);
   if(screen==='collection')renderCollection(itemId||activeCollectionId);
@@ -108,7 +128,9 @@ window.addEventListener('popstate',e=>{
       focusNotifications:!!st.focusNotifications,itemId:st.itemId||null
     });
   }else{
-    paintScreen('home');updateHome();
+    paintScreen('home');
+    saveScreenState('home');
+    updateHome();
   }
 });
 
@@ -737,10 +759,25 @@ window.setNotificationMaster=setNotificationMaster;
 window.saveNotificationSettings=saveNotificationSettings;
 window.clearAllHistory=clearAllHistory;
 
-history.replaceState({amaliyah:true,screen:'home'},'',location.href);
-paintScreen('home');
-updateHome();
-renderLibrary('Semua');
+const savedScreen=getSavedScreenState();
+const initialState=savedScreen||{screen:'home',category:'Semua',focusNotifications:false,itemId:null};
+
+history.replaceState({
+  amaliyah:true,
+  screen:initialState.screen,
+  category:initialState.category||'Semua',
+  focusNotifications:!!initialState.focusNotifications,
+  itemId:initialState.itemId||null
+},'',location.href);
+
+navigateScreen(initialState.screen,{
+  push:false,
+  category:initialState.category||'Semua',
+  focusNotifications:!!initialState.focusNotifications,
+  itemId:initialState.itemId||null
+});
+
+renderLibrary(initialState.category||'Semua');
 syncSettingsLocation();
 syncNotificationUI();
 bootPrayer();
