@@ -463,7 +463,10 @@ $('#notifBtn')?.addEventListener('click',()=>showSettings(true));
 function dateKey(d=new Date()){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-function cachePrayerKey(){return `prayer:${dateKey()}`;}
+function cachePrayerKey(loc=getSavedLocation()){
+  const region=loc?.prayerRegionId||loc?.regionName||'gps';
+  return `prayer:kemenag:${dateKey()}:${String(region).replace(/\s+/g,'_')}`;
+}
 function getSavedLocation(){
   try{return JSON.parse(store.getItem('amaliyah:location')||'null');}catch{return null;}
 }
@@ -480,45 +483,145 @@ function setLocationLabel(label){
 
 async function reverseGeocode(latitude,longitude){
   try{
-    const r=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=id`);
-    if(!r.ok) throw new Error('reverse geocode');
+    const r=await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client`+
+      `?latitude=${encodeURIComponent(latitude)}`+
+      `&longitude=${encodeURIComponent(longitude)}`+
+      `&localityLanguage=id`
+    );
+    if(!r.ok)throw new Error('reverse geocode');
+
     const j=await r.json();
-    const city=j.city||j.locality||j.principalSubdivision||'Lokasi Anda';
-    const region=j.principalSubdivision && j.principalSubdivision!==city ? `, ${j.principalSubdivision}` : '';
-    return `${city}${region}`;
-  }catch{return `${latitude.toFixed(3)}, ${longitude.toFixed(3)}`;}
+    const admins=Array.isArray(j?.localityInfo?.administrative)
+      ? j.localityInfo.administrative
+      : [];
+
+    // Di Indonesia level administratif 5 biasanya kabupaten/kota.
+    // Fallback berikutnya mencari nama yang eksplisit "Kabupaten/Kota".
+    const admin5=admins.find(x=>Number(x.adminLevel)===5);
+    const namedRegion=admins.find(x=>/^(kabupaten|kota)\b/i.test(String(x?.name||'')));
+    const regionName=String(admin5?.name||namedRegion?.name||'').trim();
+
+    const city=j.city||j.locality||j.localityInfo?.informative?.[0]?.name||'Lokasi Anda';
+    const province=j.principalSubdivision||'';
+    const label=province && province!==city
+      ? `${city}, ${province}`
+      : city;
+
+    return {
+      label,
+      regionName,
+      province,
+      city
+    };
+  }catch{
+    return {
+      label:`${latitude.toFixed(3)}, ${longitude.toFixed(3)}`,
+      regionName:'',
+      province:'',
+      city:''
+    };
+  }
 }
 
-async function fetchPrayerTimes(latitude,longitude){
-  const d=new Date(),date=`${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
-  const r=await fetch(`https://api.aladhan.com/v1/timings/${date}?latitude=${latitude}&longitude=${longitude}&method=20&school=0`);
-  const j=await r.json();
-  if(!j?.data?.timings) throw new Error('Jadwal tidak tersedia');
-  return j.data;
+async function fetchPrayerTimes(latitude,longitude,regionName='',regionId=''){
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Makassar';
+  const params=new URLSearchParams({
+    latitude:String(latitude),
+    longitude:String(longitude),
+    date:dateKey(),
+    tz
+  });
+  if(regionName)params.set('region',regionName);
+  if(regionId)params.set('regionId',regionId);
+
+  const r=await fetch(`${PUSH_API}/prayer/daily?${params.toString()}`,{
+    cache:'no-store'
+  });
+  const j=await r.json().catch(()=>null);
+  if(!r.ok || !j?.timings)throw new Error(j?.error||'Jadwal tidak tersedia');
+  return j;
 }
 
 function getPrayerTimes(){
-  if(!navigator.geolocation){$('#location').textContent='Lokasi tidak didukung perangkat';return;}
+  if(!navigator.geolocation){
+    $('#location').textContent='Lokasi tidak didukung perangkat';
+    return;
+  }
+
   $('#location').textContent='📍 Mencari lokasi…';
+
   navigator.geolocation.getCurrentPosition(async pos=>{
     const {latitude,longitude}=pos.coords;
-    const label=await reverseGeocode(latitude,longitude);
-    const loc={latitude,longitude,label,updatedAt:Date.now()};
-    saveLocation(loc); setLocationLabel(label);
+    const geo=await reverseGeocode(latitude,longitude);
+
+    let loc={
+      latitude,
+      longitude,
+      label:geo.label,
+      regionName:geo.regionName,
+      province:geo.province,
+      city:geo.city,
+      updatedAt:Date.now()
+    };
+
+    saveLocation(loc);
+    setLocationLabel(loc.label);
+
     try{
-      const data=await fetchPrayerTimes(latitude,longitude);
-      store.setItem(cachePrayerKey(),JSON.stringify(data));
+      const data=await fetchPrayerTimes(
+        latitude,
+        longitude,
+        loc.regionName,
+        loc.prayerRegionId||''
+      );
+
+      if(data?.region?.id){
+        loc={
+          ...loc,
+          prayerRegionId:data.region.id,
+          prayerRegionName:data.region.name||loc.regionName,
+          prayerSource:data.source||'kemenag',
+          updatedAt:Date.now()
+        };
+        saveLocation(loc);
+      }
+
+      store.setItem(cachePrayerKey(loc),JSON.stringify(data));
       renderPrayerData(data);
+      queuePushSync();
+
     }catch(e){
-      $('#prayerTimes').innerHTML='<span>Jadwal gagal dimuat. Periksa internet.</span>';
+      $('#prayerTimes').innerHTML=
+        '<span>Jadwal gagal dimuat. Periksa internet.</span>';
     }
-  },()=>{$('#location').textContent='📍 Izin lokasi belum diberikan';},{enableHighAccuracy:false,timeout:12000,maximumAge:3600000});
+
+  },()=>{
+    $('#location').textContent='📍 Izin lokasi belum diberikan';
+  },{
+    enableHighAccuracy:false,
+    timeout:12000,
+    maximumAge:3600000
+  });
 }
 
 function cleanTime(v=''){return String(v).split(' ')[0].slice(0,5);}
 function renderPrayerData(data){
   latestPrayerTimes=data.timings||null;
   renderPrayers(data.timings);
+
+  const loc=getSavedLocation();
+  if(loc?.label){
+    const source=data?.source==='kemenag'
+      ? ' • Kemenag'
+      : data?.source==='aladhan-fallback'
+        ? ' • Cadangan'
+        : '';
+    $('#location').textContent=`📍 ${loc.label}${source}`;
+    $('#settingsLocation').textContent=
+      `Lokasi aktif: ${loc.label}${data?.region?.name?` • ${data.region.name}`:''}`;
+  }
+
   queuePushSync();
   startPrayerNotificationScheduler();
   const hijri=data.date?.hijri;
@@ -549,20 +652,65 @@ function renderMonthlyHeader(){
 }
 async function loadMonthlyPrayerTimes(){
   const loc=getSavedLocation();
-  if(!loc){$('#monthlyTable').innerHTML='<div class="empty-state">Aktifkan lokasi terlebih dahulu dari Beranda atau Pengaturan.</div>';return;}
-  const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()+monthlyOffset);
-  const month=d.getMonth()+1,year=d.getFullYear();
-  $('#monthlyTable').innerHTML='<div class="empty-state">Memuat jadwal bulanan…</div>';
+
+  if(!loc){
+    $('#monthlyTable').innerHTML=
+      '<div class="empty-state">Aktifkan lokasi terlebih dahulu dari Beranda atau Pengaturan.</div>';
+    return;
+  }
+
+  const d=new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth()+monthlyOffset);
+
+  const monthKey=
+    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+
+  $('#monthlyTable').innerHTML=
+    '<div class="empty-state">Memuat jadwal bulanan Kemenag…</div>';
+
   try{
-    const r=await fetch(`https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${loc.latitude}&longitude=${loc.longitude}&method=20&school=0`);
-    const j=await r.json(); const rows=j?.data||[];
+    const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Makassar';
+    const params=new URLSearchParams({
+      latitude:String(loc.latitude),
+      longitude:String(loc.longitude),
+      month:monthKey,
+      tz
+    });
+
+    if(loc.regionName)params.set('region',loc.regionName);
+    if(loc.prayerRegionId)params.set('regionId',loc.prayerRegionId);
+
+    const r=await fetch(`${PUSH_API}/prayer/monthly?${params.toString()}`,{
+      cache:'no-store'
+    });
+
+    const j=await r.json().catch(()=>null);
+    if(!r.ok || !Array.isArray(j?.rows))throw new Error('monthly');
+
     const today=dateKey();
-    $('#monthlyTable').innerHTML=`<div class="monthly-grid monthly-head"><b>Tgl</b><b>Subuh</b><b>Dzuhur</b><b>Ashar</b><b>Maghrib</b><b>Isya</b></div>`+rows.map(item=>{
-      const g=item.date.gregorian; const key=`${g.year}-${String(g.month.number).padStart(2,'0')}-${String(g.day).padStart(2,'0')}`;
-      const t=item.timings;
-      return `<div class="monthly-grid ${key===today?'today':''}"><span>${Number(g.day)}</span><span>${cleanTime(t.Fajr)}</span><span>${cleanTime(t.Dhuhr)}</span><span>${cleanTime(t.Asr)}</span><span>${cleanTime(t.Maghrib)}</span><span>${cleanTime(t.Isha)}</span></div>`;
-    }).join('');
-  }catch{$('#monthlyTable').innerHTML='<div class="empty-state">Jadwal bulanan gagal dimuat.</div>';}
+
+    $('#monthlyTable').innerHTML=
+      `<div class="monthly-grid monthly-head">`+
+      `<b>Tgl</b><b>Subuh</b><b>Dzuhur</b><b>Ashar</b><b>Maghrib</b><b>Isya</b>`+
+      `</div>`+
+      j.rows.map(row=>{
+        const day=Number(String(row.date||'').slice(-2));
+        const t=row.timings||{};
+        return `<div class="monthly-grid ${row.date===today?'today':''}">`+
+          `<span>${day||''}</span>`+
+          `<span>${cleanTime(t.Fajr)}</span>`+
+          `<span>${cleanTime(t.Dhuhr)}</span>`+
+          `<span>${cleanTime(t.Asr)}</span>`+
+          `<span>${cleanTime(t.Maghrib)}</span>`+
+          `<span>${cleanTime(t.Isha)}</span>`+
+          `</div>`;
+      }).join('');
+
+  }catch{
+    $('#monthlyTable').innerHTML=
+      '<div class="empty-state">Jadwal bulanan gagal dimuat.</div>';
+  }
 }
 function changeMonth(step){monthlyOffset+=step;renderMonthlyHeader();loadMonthlyPrayerTimes();}
 
@@ -645,7 +793,10 @@ async function syncPushSubscription({silent=true}={}){
       location:savedLocation ? {
         latitude:Number(savedLocation.latitude),
         longitude:Number(savedLocation.longitude),
-        label:savedLocation.label||''
+        label:savedLocation.label||'',
+        regionName:savedLocation.regionName||'',
+        regionId:savedLocation.prayerRegionId||'',
+        regionLabel:savedLocation.prayerRegionName||''
       } : null,
       prayers:{
         subuh:!!settings.prayers.Subuh,
@@ -918,13 +1069,73 @@ function checkPrayerNotifications(){
 
 async function bootPrayer(){
   const loc=getSavedLocation();
+
   if(loc)setLocationLabel(loc.label);
-  const cached=store.getItem(cachePrayerKey());
-  if(cached){try{renderPrayerData(JSON.parse(cached));return;}catch{}}
-  if(loc){
-    try{const data=await fetchPrayerTimes(loc.latitude,loc.longitude);store.setItem(cachePrayerKey(),JSON.stringify(data));renderPrayerData(data);return;}catch{}
+
+  const cached=loc
+    ? store.getItem(cachePrayerKey(loc))
+    : null;
+
+  if(cached){
+    try{
+      const data=JSON.parse(cached);
+      renderPrayerData(data);
+
+      // Tetap refresh di background agar sumber Kemenag/tanggal terbaru terpakai.
+      fetchPrayerTimes(
+        loc.latitude,
+        loc.longitude,
+        loc.regionName||'',
+        loc.prayerRegionId||''
+      ).then(data=>{
+        if(data?.region?.id){
+          const nextLoc={
+            ...getSavedLocation(),
+            prayerRegionId:data.region.id,
+            prayerRegionName:data.region.name||loc.regionName,
+            prayerSource:data.source||'kemenag'
+          };
+          saveLocation(nextLoc);
+          store.setItem(cachePrayerKey(nextLoc),JSON.stringify(data));
+        }
+        renderPrayerData(data);
+        queuePushSync();
+      }).catch(()=>{});
+
+      return;
+    }catch{}
   }
-  $('#prayerTimes').innerHTML='<span>Izinkan lokasi untuk menampilkan jadwal sholat.</span>';
+
+  if(loc){
+    try{
+      const data=await fetchPrayerTimes(
+        loc.latitude,
+        loc.longitude,
+        loc.regionName||'',
+        loc.prayerRegionId||''
+      );
+
+      let nextLoc=loc;
+      if(data?.region?.id){
+        nextLoc={
+          ...loc,
+          prayerRegionId:data.region.id,
+          prayerRegionName:data.region.name||loc.regionName,
+          prayerSource:data.source||'kemenag'
+        };
+        saveLocation(nextLoc);
+      }
+
+      store.setItem(cachePrayerKey(nextLoc),JSON.stringify(data));
+      renderPrayerData(data);
+      queuePushSync();
+      return;
+
+    }catch{}
+  }
+
+  $('#prayerTimes').innerHTML=
+    '<span>Izinkan lokasi untuk menampilkan jadwal sholat.</span>';
 }
 
 
