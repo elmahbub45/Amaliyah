@@ -5,41 +5,81 @@ const catalog=await fetch('./books.json',{cache:'no-store'}).then(r=>r.json());
 const items=catalog.items||[];
 
 // =========================================================
-// V2.23 — UJI R2 PRIVATE
-// Untuk tahap uji, hanya Wirdul Latif yang memakai R2.
-// Bacaan lain tetap memakai path GitHub seperti sebelumnya.
+// V2.24 — MIGRASI SEMUA PDF KE R2 PRIVATE
+// Path R2 mengikuti books.json setelah "assets/pdf-v2/".
+// Selama masa migrasi, jika object belum ada di R2, Reader
+// sementara kembali ke file GitHub supaya aplikasi tidak rusak.
 // =========================================================
 const PRIVATE_PDF_WORKER='https://amaliyah-pdf.elmahbub45.workers.dev';
-const PRIVATE_PDF_KEYS={
+const R2_MIGRATION_FALLBACK=true;
+
+// Wirdul Latif masih memakai nama object uji lama sampai file
+// versi path final ikut di-upload ke R2.
+const R2_LEGACY_KEYS={
   'wirdul-latif':'05 Wirdul Latif.pdf'
 };
 
-async function getPrivatePdfData(part){
-  const key=PRIVATE_PDF_KEYS[part.id];
+function r2KeyForPart(part){
+  if(R2_LEGACY_KEYS[part.id])return R2_LEGACY_KEYS[part.id];
+  const file=String(part.file||'').replace(/^\.?\//,'');
+  return file.replace(/^assets\/pdf-v2\//,'');
+}
+
+function ensureLoadingOverlay(){
+  let box=document.querySelector('#readerLoading');
+  if(box)return box;
+
+  box=document.createElement('div');
+  box.id='readerLoading';
+  box.className='reader-loading';
+  box.innerHTML=`
+    <div class="reader-loading-mark">ا</div>
+    <b id="readerLoadingTitle">Menyiapkan bacaan…</b>
+    <span id="readerLoadingText">Mohon tunggu sebentar</span>
+    <i class="reader-loading-line"></i>
+  `;
+  stage.appendChild(box);
+  return box;
+}
+
+function showReaderLoading(title='Menyiapkan bacaan…',text='Mohon tunggu sebentar'){
+  const box=ensureLoadingOverlay();
+  const t=box.querySelector('#readerLoadingTitle');
+  const s=box.querySelector('#readerLoadingText');
+  if(t)t.textContent=title;
+  if(s)s.textContent=text;
+  box.classList.remove('hidden','fade-out');
+}
+
+function hideReaderLoading(){
+  const box=document.querySelector('#readerLoading');
+  if(!box)return;
+  box.classList.add('fade-out');
+  setTimeout(()=>box.classList.add('hidden'),220);
+}
+
+async function requestPrivatePdf(part){
+  const key=r2KeyForPart(part);
   if(!key)return null;
 
-  // Minta URL sementara dari Worker.
+  showReaderLoading('Mengambil bacaan aman…','Menyiapkan PDF dari penyimpanan privat');
+
   const tokenRes=await fetch(
     `${PRIVATE_PDF_WORKER}/token?key=${encodeURIComponent(key)}`,
-    {
-      method:'GET',
-      cache:'no-store',
-      credentials:'omit'
-    }
+    {method:'GET',cache:'no-store',credentials:'omit'}
   );
 
+  // Selama migrasi: 404 berarti file itu belum di-upload ke R2.
+  if(tokenRes.status===404 && R2_MIGRATION_FALLBACK){
+    return null;
+  }
   if(!tokenRes.ok){
     throw new Error(`Token PDF gagal (${tokenRes.status})`);
   }
 
   const tokenData=await tokenRes.json();
-  if(!tokenData?.url){
-    throw new Error('URL PDF sementara tidak diterima.');
-  }
+  if(!tokenData?.url)throw new Error('URL PDF sementara tidak diterima.');
 
-  // Ambil seluruh PDF selagi token masih berlaku.
-  // Setelah sudah masuk memori Reader, token boleh kedaluwarsa
-  // tanpa mengganggu pengguna yang sedang membaca.
   const pdfRes=await fetch(tokenData.url,{
     method:'GET',
     cache:'no-store',
@@ -289,7 +329,8 @@ window.addEventListener('resize',()=>drawPage());
 window.addEventListener('pagehide',recordHistory);
 
 try{
-  const privateData=await getPrivatePdfData(part);
+  showReaderLoading();
+  const privateData=await requestPrivatePdf(part);
 
   pdfDoc=privateData
     ? await pdfjsLib.getDocument({data:privateData}).promise
@@ -298,9 +339,11 @@ try{
   page=Math.min(page,pdfDoc.numPages);
   stage.scrollTop=0;
   syncBookmarkState();
-  drawPage();
+  await drawPage();
+  hideReaderLoading();
 }catch(error){
   console.error(error);
+  hideReaderLoading();
   counter.textContent='Gagal memuat';
   stage.classList.add('reader-error');
 
