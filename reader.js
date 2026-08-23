@@ -200,9 +200,7 @@ function openMore(){
     const full=document.createElement('button');full.type='button';full.className='sheet-action';
     full.textContent=document.body.classList.contains('controls-off')?'Tampilkan kontrol':'Layar penuh';
     full.onclick=toggleFullscreen;
-    const share=document.createElement('button');share.type='button';share.className='sheet-action';
-    share.textContent='Bagikan bacaan';share.onclick=shareReading;
-    container.append(full,share);
+    container.append(full);
   });
 }
 
