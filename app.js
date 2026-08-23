@@ -639,8 +639,14 @@ async function syncPushSubscription({silent=true}={}){
 
   try{
     const sub=await ensurePushSubscription();
+    const savedLocation=getSavedLocation();
     const payload={
       subscription:sub.toJSON(),
+      location:savedLocation ? {
+        latitude:Number(savedLocation.latitude),
+        longitude:Number(savedLocation.longitude),
+        label:savedLocation.label||''
+      } : null,
       prayers:{
         subuh:!!settings.prayers.Subuh,
         dzuhur:!!settings.prayers.Dzuhur,
