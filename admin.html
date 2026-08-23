@@ -68,7 +68,8 @@
 
         <button id="categoryRootBtn" class="category-root active" type="button">
           <span class="tree-folder root-folder" aria-hidden="true"></span>
-          <span>Bacaan</span>
+          <span class="root-label">Bacaan</span>
+          <span id="categoryRootCount" class="tree-count" aria-label="Jumlah bacaan">0</span>
         </button>
         <div id="categoryTree" class="category-tree" aria-label="Daftar kategori"></div>
 
@@ -113,9 +114,9 @@
         </div>
         <div id="itemList" class="item-list"></div>
 
-        <div class="sidebar-foot">
-          <span class="ui-icon i-move" aria-hidden="true"></span>
-          <small>Drag bacaan ke folder/kategori untuk memindahkan. Drop target akan menyala seperti File Explorer.</small>
+        <div class="sidebar-foot explorer-statusbar">
+          <span class="explorer-status-left"><span class="ui-icon i-folder" aria-hidden="true"></span><small id="explorerItemCount">0 item</small></span>
+          <span class="explorer-status-right"><span class="ui-icon i-move" aria-hidden="true"></span><small>Drag & drop aktif</small></span>
         </div>
       </section>
     </section>

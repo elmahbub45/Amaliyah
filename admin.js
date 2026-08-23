@@ -425,6 +425,8 @@ function renderCategoryTree(){
   if(!host || !root || !data)return;
 
   root.classList.toggle('active',!explorerCategory && !explorerItemId);
+  const rootCount=$('#categoryRootCount');
+  if(rootCount)rootCount.textContent=String((data.items||[]).filter(x=>!x.hidden).length);
 
   const chain=[];
   if(explorerItemId){
@@ -450,7 +452,8 @@ function renderCategoryTree(){
     return `<div class="tree-category-wrap">
       <button type="button" class="category-tree-row ${active&&!explorerItemId?'active':''}" data-tree-category="${esc(category)}" data-drop-category="${esc(category)}">
         <span class="tree-folder" aria-hidden="true"></span>
-        <span class="tree-label"><b>${esc(category)}</b><small>${roots.length} item</small></span>
+        <span class="tree-label"><b>${esc(category)}</b></span>
+        <span class="tree-count" aria-label="${roots.length} item">${roots.length}</span>
       </button>${nested}
     </div>`;
   }).join('');
@@ -1116,7 +1119,7 @@ function explorerCardForItem(x,index){
     <span class="explorer-col explorer-col-type"><small>${esc(typeLabel)}</small></span>
     <span class="explorer-col explorer-col-count"><b>${countValue}</b><small>${countLabel}</small></span>
     <div class="explorer-entry-actions">
-      <button type="button" data-edit-explorer="${esc(x.id)}" title="Edit bacaan">✎</button>
+      <button type="button" class="icon-action edit-action" data-edit-explorer="${esc(x.id)}" title="Edit bacaan" aria-label="Edit bacaan"></button>
       ${!x.hidden?`<button type="button" data-main-up="${index}" title="Naik">↑</button><button type="button" data-main-down="${index}" title="Turun">↓</button>`:''}
     </div>
   </div>`;
@@ -1135,7 +1138,7 @@ function explorerCardForPart(parent,p,i){
     </button>
     <span class="explorer-col explorer-col-type"><small>PDF</small></span>
     <span class="explorer-col explorer-col-count"><b>${Math.max(1,Number(p.pages)||1)}</b><small>hal.</small></span>
-    <div class="explorer-entry-actions"><button type="button" class="icon-action edit-action" data-edit-part-index="${i}" title="Edit Bagian"><span class="ui-icon i-edit" aria-hidden="true"></span></button></div>
+    <div class="explorer-entry-actions"><button type="button" class="icon-action edit-action" data-edit-part-index="${i}" title="Edit Bagian" aria-label="Edit Bagian"></button></div>
   </div>`;
 }
 
@@ -1178,6 +1181,9 @@ function renderList(){
     if(!html)html='<div class="list-empty">Tidak ada bacaan yang cocok.</div>';
   }
   list.innerHTML=html;
+  const visibleCount=list.querySelectorAll('.explorer-entry').length;
+  const countNode=$('#explorerItemCount');
+  if(countNode)countNode.textContent=`${visibleCount} item`;
 
   $$('[data-open-category]',list).forEach(btn=>btn.onclick=()=>{explorerCategory=btn.dataset.openCategory;explorerItemId=null;$('#categoryFilter').value=explorerCategory;selectedId=null;showEmptyEditor();renderList();});
   $$('[data-drop-category-entry]',list).forEach(row=>bindExplorerDropTarget(row,{kind:'category',category:row.dataset.dropCategoryEntry}));
