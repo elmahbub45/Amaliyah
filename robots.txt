@@ -1,0 +1,11 @@
+# Halaman HTML sengaja tetap boleh dirayapi agar crawler dapat membaca noindex.
+# File pendukung tidak perlu dirayapi atau ditampilkan pada hasil pencarian.
+User-agent: *
+Disallow: /assets/
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /*.json$
+Disallow: /*.webmanifest$
+
+User-agent: Googlebot-Image
+Disallow: /

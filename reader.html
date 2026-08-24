@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
   <meta name="theme-color" content="#04392e">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
   <link rel="stylesheet" href="reader.css">
   <title>Amaliyah Reader</title>
 </head>
@@ -19,10 +22,7 @@
   </header>
 
   <main id="stage">
-    <div id="readerDocument">
-      <canvas id="pdf"></canvas>
-    </div>
-
+    <canvas id="pdf"></canvas>
     <button id="prev" class="arrow" type="button" aria-label="Halaman sebelumnya">
       <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
     </button>
@@ -32,15 +32,15 @@
     <div id="counter">1 / 1</div>
   </main>
 
+  <div id="nextPartBar" class="next-part-bar hidden">
+    <span id="nextPartText">Bagian berikutnya</span>
+    <button id="nextPartBtn" type="button">Lanjut →</button>
+  </div>
 
   <footer id="tools">
     <button id="tocBtn" type="button">
       <svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
       <small>Halaman</small>
-    </button>
-    <button id="partsBtn" class="hidden" type="button" hidden aria-hidden="true">
-      <svg viewBox="0 0 24 24"><path d="M7 5h12M7 12h12M7 19h12"/><path d="M3.5 5h.01M3.5 12h.01M3.5 19h.01"/></svg>
-      <small>Bagian</small>
     </button>
     <button id="bookmarkBottom" class="bookmark-control" type="button" aria-label="Bookmark halaman" aria-pressed="false">
       <svg viewBox="0 0 24 24"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/></svg>

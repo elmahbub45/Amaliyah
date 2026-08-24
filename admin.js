@@ -2816,7 +2816,7 @@ function buildRebuildPlan(entries,rootName){
     });
 
   const books={...clone(data)};
-  books.version='2.38.3-collection-identity';
+  books.version='2.38.4-no-search';
   books.categories=['Semua',...categories];
   books.items=items;
 
@@ -3547,7 +3547,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.38.3-collection-identity';
+  data.version='2.38.4-no-search';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);
