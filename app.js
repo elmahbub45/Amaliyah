@@ -166,6 +166,9 @@ const catalog = await fetch('./books.json', {cache:'no-store'}).then(r=>{
 });
 const items = catalog.items || [];
 const categories = catalog.categories || ['Semua'];
+const categoryIcons = catalog.categoryIcons && typeof catalog.categoryIcons==='object'
+  ? catalog.categoryIcons
+  : {};
 let prayerCountdownTimer = null;
 let prayerNotificationTimer = null;
 let latestPrayerTimes = null;
@@ -379,7 +382,9 @@ function updateCategoryCounts(){
         ? (count?`${count} Bacaan`:'Semua Bacaan')
         : (count?`${count} Bacaan`:'Segera');
     }
-    el.onclick=()=>showCategories();
+    const icon=el.querySelector('.category-icon');
+    if(icon)icon.innerHTML=categoryVisualSvg(cat);
+    el.onclick=()=>cat==='Semua'?showCategories():showLibrary(cat);
   });
 }
 
@@ -395,6 +400,13 @@ function categoryVisualKey(value){
   return 'other';
 }
 
+function configuredCategoryIcon(value){
+  const configured=String(categoryIcons[value]||'').toLocaleLowerCase('id-ID');
+  return ['quran','wirid','doa','maulid','dalail','syair','khutbah','other'].includes(configured)
+    ? configured
+    : categoryVisualKey(value);
+}
+
 function categoryVisualSvg(category){
   const icons={
     quran:'<path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H12v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M19 4.5A2.5 2.5 0 0 0 16.5 2H12v18h4.5A2.5 2.5 0 0 1 19 22z"/>',
@@ -406,7 +418,7 @@ function categoryVisualSvg(category){
     khutbah:'<path d="M8 21h8M12 17v4M9 4h6v7a3 3 0 0 1-6 0z"/><path d="M6 10v1a6 6 0 0 0 12 0v-1"/>',
     other:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'
   };
-  return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[categoryVisualKey(category)]}</svg>`;
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[configuredCategoryIcon(category)]}</svg>`;
 }
 
 function categoryDisplayName(category){

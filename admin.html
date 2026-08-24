@@ -146,7 +146,7 @@
         </div>
 
         <div class="category-inspector-card">
-          <span class="category-inspector-icon"><span class="ui-icon i-folder" aria-hidden="true"></span></span>
+          <span id="categoryIconPreview" class="category-inspector-icon" aria-hidden="true"></span>
           <span>
             <b id="categoryInspectorCount">0 item</b>
             <small id="categoryInspectorHelp">Kategori adalah folder paling atas di dalam Bacaan.</small>
@@ -158,6 +158,12 @@
           <input id="categoryNameInput" type="text" autocomplete="off">
           <small>Rename kategori akan memperbarui semua bacaan di dalamnya.</small>
         </label>
+
+        <fieldset class="category-icon-field">
+          <legend>Ikon Kategori</legend>
+          <div id="categoryIconPicker" class="category-icon-picker" aria-label="Pilih ikon kategori"></div>
+          <small>Ikon dipakai pada Beranda, halaman Semua Kategori, Bacaan Terakhir, dan Favorit.</small>
+        </fieldset>
 
         <div id="categoryInspectorError" class="form-error hidden" role="alert"></div>
 

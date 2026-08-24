@@ -247,8 +247,11 @@
     other:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'
   };
   let items=[];
+  let categoryIcons={};
 
   function categoryKey(value){
+    const configured=String(categoryIcons[value]||'').toLocaleLowerCase('id-ID');
+    if(Object.prototype.hasOwnProperty.call(icons,configured))return configured;
     const text=String(value||'').toLocaleLowerCase('id-ID');
     if(text.includes('qur'))return 'quran';
     if(text.includes('wirid'))return 'wirid';
@@ -290,7 +293,11 @@
   });
   fetch('./books.json',{cache:'no-store'})
     .then(response=>response.json())
-    .then(catalog=>{items=Array.isArray(catalog.items)?catalog.items:[];refreshCategoryIcons();})
+    .then(catalog=>{
+      items=Array.isArray(catalog.items)?catalog.items:[];
+      categoryIcons=catalog.categoryIcons&&typeof catalog.categoryIcons==='object'?catalog.categoryIcons:{};
+      refreshCategoryIcons();
+    })
     .catch(()=>{});
 })();
 </script>
