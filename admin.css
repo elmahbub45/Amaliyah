@@ -3046,3 +3046,323 @@ body.explorer-dragging{cursor:grabbing}
   .explorer-grid .explorer-icon.file-icon{width:40px!important;height:50px!important;flex-basis:50px!important}
   .explorer-status-right{display:none}
 }
+
+/* =========================================================
+   V2.37 — EXPLORER WORKSPACE REFINEMENT
+   Visual-only update. Data model and system behavior remain
+   exactly the same as V2.36.5 / V2.36.4.
+   ========================================================= */
+:root{
+  --v237-bg:#f3f0e9;
+  --v237-panel:#fffefa;
+  --v237-panel-2:#fbfaf6;
+  --v237-line:#e7e1d7;
+  --v237-line-soft:#f0ece5;
+  --v237-green:#075d4a;
+  --v237-green-2:#0a6f58;
+  --v237-green-soft:#eaf3ef;
+  --v237-folder:#f1b82f;
+  --v237-text:#18382f;
+  --v237-muted:#7d8984;
+  --v237-shadow:0 10px 28px rgba(52,45,35,.05);
+}
+
+html,body{background:var(--v237-bg)}
+
+/* Header lebih ringan, tetapi identitas Amaliyah tetap kuat. */
+.topbar{
+  min-height:88px;
+  padding-top:12px;
+  padding-bottom:12px;
+  background:linear-gradient(108deg,#064438 0%,#075b49 56%,#08745c 100%);
+}
+.brand-mark{width:46px;height:46px;border-radius:12px}
+.brand-app>b{font-size:18px}
+.brand-admin h1{font-size:23px}
+.brand-admin p{font-size:10px}
+.top-btn{min-height:41px;border-radius:9px}
+
+.workspace-inner{
+  width:min(1640px,calc(100% - 44px));
+  min-height:68px;
+}
+.workspace-metrics>span,.workspace-metrics>button{
+  min-width:94px;
+  min-height:39px;
+  border-radius:9px;
+  box-shadow:none;
+}
+.workspace-metrics b{font-size:14px}
+
+/* Tiga area terasa seperti Explorer: tree + browser + properties. */
+.layout{
+  width:min(1640px,calc(100% - 44px));
+  grid-template-columns:minmax(720px,1.18fr) minmax(500px,.82fr);
+  gap:12px;
+  margin-top:14px;
+}
+.card{
+  border-radius:12px;
+  border-color:var(--v237-line);
+  box-shadow:var(--v237-shadow);
+}
+.sidebar.explorer-workspace{
+  grid-template-columns:218px minmax(0,1fr);
+  background:var(--v237-panel);
+}
+.category-pane{
+  padding:16px 10px 10px;
+  background:#faf9f5;
+  border-right:1px solid var(--v237-line);
+}
+.category-pane-head{padding:0 8px 12px}
+.category-pane-head>b{font-size:14px}
+.category-pane-head>small{font-size:9px}
+.category-root,.category-tree-row{
+  min-height:39px;
+  padding:6px 8px;
+  border-radius:7px;
+}
+.category-root:hover,.category-tree-row:hover{background:#f0f3ee}
+.category-root.active,.category-tree-row.active{
+  background:#e8f1ed;
+  box-shadow:inset 3px 0 0 var(--v237-green-2);
+}
+.category-tree{gap:0}
+.tree-label b{font-size:11.4px}
+.tree-label small{font-size:8.4px}
+.tree-count{
+  min-width:25px;
+  height:22px;
+  padding:0 6px;
+  border-radius:7px;
+  background:#fff;
+}
+.category-pane-note{
+  padding:10px 8px 2px;
+  background:transparent;
+}
+.category-pane-note small{font-size:8.2px}
+
+.browser-pane{background:var(--v237-panel)}
+.browser-head{
+  min-height:64px;
+  padding:15px 16px 8px;
+  align-items:center;
+}
+.browser-head .eyebrow{font-size:8px}
+.explorer-breadcrumb{min-height:28px;gap:2px}
+.crumb{font-size:11.5px;padding:4px 6px}
+.crumb.current{font-weight:800;color:var(--v237-green)}
+.sidebar-add-actions{gap:6px}
+.sidebar-add-actions .small{min-height:34px;border-radius:8px}
+
+/* Toolbar satu garis: pencarian, tipe, Grid/List. Category sudah ada di tree. */
+.toolbar.explorer-toolbar{
+  display:grid;
+  grid-template-columns:minmax(230px,1fr) 122px auto;
+  gap:7px;
+  padding:8px 16px 11px;
+  border-bottom:1px solid var(--v237-line);
+  background:var(--v237-panel);
+}
+.explorer-toolbar #categoryFilter{display:none!important}
+.explorer-toolbar input,.explorer-toolbar select{min-height:36px;border-radius:8px}
+.explorer-toolbar .search-wrap>span{left:11px}
+.explorer-toolbar .view-switch{
+  height:36px;
+  padding:3px;
+  border-radius:8px;
+  background:#f7f8f5;
+}
+.view-btn{width:31px;height:28px}
+.view-btn.active{background:var(--v237-green);box-shadow:none}
+
+/* List view seperti Details view di File Explorer. */
+.explorer-list-head{
+  grid-template-columns:minmax(0,1fr) 96px 70px 74px;
+  min-height:34px;
+  padding:0 10px 0 17px;
+  border-bottom:1px solid var(--v237-line);
+  background:#fcfbf8;
+  color:#69756f;
+  font-size:8.8px;
+  text-transform:none;
+}
+.item-list.explorer-view{background:#fff;scrollbar-gutter:stable}
+.explorer-list .explorer-entry{
+  grid-template-columns:minmax(0,1fr) 96px 70px 74px;
+  min-height:48px;
+  border-bottom:1px solid var(--v237-line-soft);
+  background:#fff;
+}
+.explorer-list .explorer-entry:hover{background:#f6f9f7}
+.explorer-list .explorer-entry.active{
+  background:#eaf3ef;
+  box-shadow:inset 3px 0 0 var(--v237-green-2);
+}
+.explorer-list .explorer-open{
+  min-height:47px;
+  padding:6px 8px 6px 17px;
+  gap:10px;
+}
+.explorer-list .explorer-entry-copy b{font-size:11.7px;font-weight:720}
+.explorer-list .explorer-entry-copy small{font-size:8.5px;color:#8d9792}
+.explorer-list .explorer-col small{font-size:8.8px}
+.explorer-list .explorer-col b{font-size:9.6px}
+.explorer-list .explorer-entry-actions{padding-right:7px;opacity:.28}
+.explorer-list .explorer-entry:hover .explorer-entry-actions,
+.explorer-list .explorer-entry.active .explorer-entry-actions{opacity:1}
+
+/* Ikon list dibuat kecil seperti file manager, bukan kartu aplikasi. */
+.explorer-list .explorer-icon.folder-icon{
+  width:19px!important;height:19px!important;flex-basis:19px!important;margin-left:1px!important;
+  background:#e2a520!important;
+}
+.explorer-list .explorer-icon.file-icon{
+  width:18px!important;height:21px!important;flex-basis:18px!important;margin-left:1px!important;
+  background:#669d8b!important;
+}
+
+/* Grid = icon view Explorer: compact, rapi, banyak item terlihat sekaligus. */
+.explorer-grid{
+  grid-template-columns:repeat(auto-fill,minmax(132px,1fr));
+  gap:8px;
+  padding:12px 12px 18px!important;
+}
+.explorer-grid .explorer-entry{
+  min-height:136px;
+  border:1px solid transparent;
+  border-radius:8px;
+  background:transparent;
+  box-shadow:none;
+}
+.explorer-grid .explorer-entry:hover{
+  border-color:#dce7e2;
+  background:#f4f8f6;
+  box-shadow:none;
+  transform:none;
+}
+.explorer-grid .explorer-entry.active{
+  border-color:#9fc5b7;
+  background:#eaf3ef;
+  box-shadow:inset 0 0 0 1px rgba(7,93,74,.06);
+}
+.explorer-grid .explorer-open{
+  min-height:134px;
+  padding:15px 8px 27px;
+  gap:9px;
+}
+.explorer-grid .explorer-entry-copy{gap:3px}
+.explorer-grid .explorer-entry-copy b{
+  min-height:30px;
+  font-size:10.9px;
+  line-height:1.33;
+  font-weight:720;
+}
+.explorer-grid .explorer-entry-copy small{font-size:8.2px;color:#8d9792}
+.explorer-grid .explorer-icon.folder-icon{
+  width:48px!important;height:40px!important;flex-basis:40px!important;margin:7px 0 1px!important;
+  background:#e5aa22!important;
+}
+.explorer-grid .explorer-icon.file-icon{
+  width:42px!important;height:52px!important;flex-basis:52px!important;
+  background:#8ebead!important;
+}
+.explorer-grid .explorer-entry-actions{top:4px;right:4px;opacity:.18}
+.explorer-grid .explorer-entry:hover .explorer-entry-actions,
+.explorer-grid .explorer-entry.active .explorer-entry-actions{opacity:.88}
+.explorer-grid .explorer-entry-actions button[data-edit-explorer],
+.explorer-grid .explorer-entry-actions button[data-edit-part-index]{
+  width:27px!important;min-width:27px!important;height:27px!important;
+}
+
+/* Statusbar Explorer terasa seperti bagian jendela, bukan bantuan panjang. */
+.explorer-statusbar{
+  min-height:34px;
+  padding:7px 13px;
+  border-top:1px solid var(--v237-line);
+  background:#fcfbf8;
+}
+.explorer-statusbar small{font-size:8.4px}
+
+/* Editor = properties pane. Tidak ada kartu preview yang mengganggu. */
+.editor{background:var(--v237-panel)}
+#editorContent{padding:17px 19px 28px}
+.preview-inline{display:none!important}
+.editor-title-row{padding-bottom:13px}
+.editor-title-copy h2{font-size:21px}
+.editor-kicker{font-size:8.6px}
+.editor-actions button{min-height:33px;border-radius:8px}
+.form-grid{gap:11px 12px;margin-top:15px}
+.field>span,.field-title{font-size:9.3px}
+.field>small{font-size:8.1px}
+input,select,textarea{min-height:38px;border-radius:8px;font-size:10.3px}
+.section-box,.validation-panel{border-radius:11px}
+.empty-editor{padding:24px}
+.empty-editor .empty-ornament{
+  width:68px;height:68px;border-radius:16px;
+  background:#f7f4ec;color:var(--v237-green);
+  box-shadow:none;
+}
+.empty-editor h2{font-size:19px}
+.empty-editor p{font-size:9.3px}
+
+/* Command bar dibuat seperti command strip aplikasi desktop. */
+.bottom-actions{
+  min-height:64px;
+  padding-top:8px;
+  padding-bottom:8px;
+  border-top:1px solid var(--v237-line);
+  background:rgba(255,254,250,.97);
+  box-shadow:0 -6px 18px rgba(45,39,31,.04);
+}
+.bottom-actions .actions{gap:7px}
+.bottom-actions .actions button{min-height:39px;border-radius:8px;padding-left:13px;padding-right:13px}
+
+/* Desktop: ruang kerja penuh dengan scroll internal layaknya Explorer. */
+@media(min-width:1041px){
+  .layout{height:var(--admin-workspace-height,calc(100dvh - 255px));min-height:470px}
+  .sidebar.explorer-workspace,.editor{height:100%!important}
+  .category-pane,.browser-pane{height:100%}
+}
+
+@media(max-width:1320px) and (min-width:1041px){
+  .layout{grid-template-columns:minmax(650px,1.08fr) minmax(470px,.92fr)}
+  .sidebar.explorer-workspace{grid-template-columns:192px minmax(0,1fr)}
+  .explorer-grid{grid-template-columns:repeat(auto-fill,minmax(122px,1fr))}
+}
+
+@media(max-width:1040px){
+  html,body{overflow:auto;height:auto}
+  .layout{width:min(920px,calc(100% - 24px));grid-template-columns:1fr}
+  .sidebar.explorer-workspace{grid-template-columns:190px minmax(0,1fr);min-height:610px}
+  .editor{min-height:560px}
+}
+
+@media(max-width:720px){
+  .topbar{min-height:72px;padding:9px 13px}
+  .brand-app,.brand-divider,.brand-admin p{display:none}
+  .brand-admin h1{font-size:18px}
+  .workspace-inner{width:calc(100% - 20px)}
+  .workspace-metrics{overflow:auto;max-width:62vw}
+  .layout{width:calc(100% - 16px)}
+  .sidebar.explorer-workspace{display:block;min-height:0}
+  .category-pane{border-right:0;border-bottom:1px solid var(--v237-line)}
+  .toolbar.explorer-toolbar{grid-template-columns:minmax(0,1fr) auto!important}
+  .explorer-toolbar #typeFilter{display:none}
+  .explorer-list-head{grid-template-columns:minmax(0,1fr) 52px 44px}
+  .explorer-list-head span:nth-child(2){display:none}
+  .explorer-list .explorer-entry{grid-template-columns:minmax(0,1fr) 52px 44px}
+  .explorer-list .explorer-col-type{display:none}
+  .explorer-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:8px!important}
+  .explorer-grid .explorer-entry{min-height:122px}
+  .explorer-grid .explorer-open{min-height:120px;padding:13px 5px 23px}
+  .explorer-grid .explorer-entry-copy b{font-size:9.7px}
+}
+
+@media(max-width:480px){
+  .explorer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sidebar-add-actions .icon-label span:last-child{display:none}
+  .sidebar-add-actions button{width:35px;padding:0;justify-content:center}
+}
