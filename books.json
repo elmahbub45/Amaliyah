@@ -1,68 +1,21 @@
 {
-  "version": "2.18",
+  "version": "2.38.8-admin-multiselect-drag",
   "categories": [
     "Semua",
-    "Al-Qur'an",
     "Wirid",
-    "Doa",
-    "Maulid",
     "Dalail",
+    "Maulid",
+    "Doa",
+    "Khutbah",
     "Syair",
-    "Khutbah"
+    "Al-Qur'an"
   ],
   "items": [
-    {
-      "id": "surah-pilihan",
-      "title": "Surah Pilihan",
-      "category": "Al-Qur'an",
-      "type": "group",
-      "icon": "ق",
-      "coverText": "Surah Pilihan",
-      "parts": [
-        {
-          "id": "surah-al-kahfi-236d7f",
-          "title": "Surah Al Kahfi",
-          "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-kahfi.pdf",
-          "pages": 24
-        },
-        {
-          "id": "surah-al-fath-00632d",
-          "title": "Surah Al Fath",
-          "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-fath.pdf",
-          "pages": 10
-        },
-        {
-          "id": "surah-yasin-a18b09",
-          "title": "Surah Yasin",
-          "file": "assets/pdf-v2/quran/surah-pilihan/surah-yasin.pdf",
-          "pages": 12
-        },
-        {
-          "id": "surah-al-waqiah-2b58bd",
-          "title": "Surah Al Waqiah",
-          "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-waqiah.pdf",
-          "pages": 8
-        },
-        {
-          "id": "surah-al-mulk-tabarak-d7b01e",
-          "title": "Surah Al Mulk (Tabarak)",
-          "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-mulk-tabarak.pdf",
-          "pages": 6
-        },
-        {
-          "id": "surah-ar-rahman-28126a",
-          "title": "Surah Ar-Rahman",
-          "file": "assets/pdf-v2/quran/surah-pilihan/surah-ar-rahman.pdf",
-          "pages": 6
-        }
-      ]
-    },
     {
       "id": "wirid-sesudah-sholat",
       "title": "Wirid Sesudah Sholat",
       "category": "Wirid",
       "type": "group",
-      "icon": "و",
       "coverText": "Wirid Sesudah Sholat",
       "parts": [
         {
@@ -102,7 +55,6 @@
       "title": "Dalail",
       "category": "Dalail",
       "type": "collection",
-      "icon": "ص",
       "coverText": "Dalail",
       "parts": [
         {
@@ -172,7 +124,6 @@
       "title": "Istighfar Harian",
       "category": "Dalail",
       "type": "group",
-      "icon": "ص",
       "coverText": "Istighfar Harian",
       "parts": [
         {
@@ -224,7 +175,6 @@
       "title": "Qashidah Burdah",
       "category": "Maulid",
       "type": "collection",
-      "icon": "م",
       "coverText": "Qashidah Burdah",
       "parts": [
         {
@@ -248,7 +198,6 @@
       "type": "single",
       "file": "assets/pdf-v2/wirid/wirdul-latif.pdf",
       "pages": 16,
-      "icon": "و",
       "coverText": "وِرْدُ\nاللَّطِيف"
     },
     {
@@ -258,7 +207,6 @@
       "type": "single",
       "file": "assets/pdf-v2/wirid/ratib-al-haddad.pdf",
       "pages": 14,
-      "icon": "و",
       "coverText": "Ratib Al-Haddad"
     },
     {
@@ -268,7 +216,6 @@
       "type": "single",
       "file": "assets/pdf-v2/wirid/ratib-al-attas.pdf",
       "pages": 14,
-      "icon": "و",
       "coverText": "Ratib Al-Attas"
     },
     {
@@ -278,7 +225,6 @@
       "type": "single",
       "file": "assets/pdf-v2/wirid/wirid-sakran.pdf",
       "pages": 5,
-      "icon": "و",
       "coverText": "Wirid Sakran"
     },
     {
@@ -288,7 +234,6 @@
       "type": "single",
       "file": "assets/pdf-v2/wirid/hizib-an-nawawi.pdf",
       "pages": 9,
-      "icon": "و",
       "coverText": "Hizib An-Nawawi"
     },
     {
@@ -298,7 +243,6 @@
       "type": "single",
       "file": "assets/pdf-v2/wirid/khawatim.pdf",
       "pages": 13,
-      "icon": "و",
       "coverText": "Khawatim"
     },
     {
@@ -306,7 +250,6 @@
       "title": "Doa Akhir & Awal Tahun",
       "category": "Doa",
       "type": "group",
-      "icon": "د",
       "coverText": "Doa Akhir & Awal Tahun",
       "parts": [
         {
@@ -330,7 +273,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-hari-asyura.pdf",
       "pages": 2,
-      "icon": "د",
       "coverText": "Doa Hari Asyura"
     },
     {
@@ -338,7 +280,6 @@
       "title": "Amaliyah Bulan Shafar",
       "category": "Doa",
       "type": "group",
-      "icon": "د",
       "coverText": "Amaliyah Bulan Shafar",
       "parts": [
         {
@@ -368,7 +309,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/amaliyah-malam-nishfu-sya-ban.pdf",
       "pages": 10,
-      "icon": "د",
       "coverText": "Amaliyah Malam Nishfu Sya'ban"
     },
     {
@@ -376,7 +316,6 @@
       "title": "Sholat Tasbih",
       "category": "Doa",
       "type": "collection",
-      "icon": "د",
       "coverText": "Sholat Tasbih",
       "parts": [
         {
@@ -398,7 +337,6 @@
       "title": "Amaliyah Ramadhan",
       "category": "Doa",
       "type": "collection",
-      "icon": "د",
       "coverText": "Amaliyah Ramadhan",
       "parts": [
         {
@@ -432,7 +370,6 @@
       "title": "Sholat Witir",
       "category": "Doa",
       "type": "collection",
-      "icon": "د",
       "coverText": "Sholat Witir",
       "parts": [
         {
@@ -456,7 +393,6 @@
       "type": "single",
       "file": "assets/pdf-v2/wirid/takbir-hari-raya.pdf",
       "pages": 1,
-      "icon": "و",
       "coverText": "Takbir Hari Raya"
     },
     {
@@ -464,7 +400,6 @@
       "title": "Khutbah Idul Fitri",
       "category": "Khutbah",
       "type": "group",
-      "icon": "خ",
       "coverText": "Khutbah Idul Fitri",
       "parts": [
         {
@@ -486,7 +421,6 @@
       "title": "Khutbah Idul Adha",
       "category": "Khutbah",
       "type": "group",
-      "icon": "خ",
       "coverText": "Khutbah Idul Adha",
       "parts": [
         {
@@ -508,7 +442,6 @@
       "title": "Ma'asyir Sholat",
       "category": "Khutbah",
       "type": "group",
-      "icon": "خ",
       "coverText": "Ma'asyir Sholat",
       "parts": [
         {
@@ -542,7 +475,6 @@
       "title": "Aqiqah & Qurban",
       "category": "Doa",
       "type": "group",
-      "icon": "د",
       "coverText": "Aqiqah & Qurban",
       "parts": [
         {
@@ -572,7 +504,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-sholat-dhuha.pdf",
       "pages": 1,
-      "icon": "د",
       "coverText": "Doa Sholat Dhuha"
     },
     {
@@ -582,7 +513,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-mempermudah-persalinan.pdf",
       "pages": 4,
-      "icon": "د",
       "coverText": "Doa Mempermudah Persalinan"
     },
     {
@@ -592,7 +522,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-betajak-rumah.pdf",
       "pages": 1,
-      "icon": "د",
       "coverText": "Doa Betajak Rumah"
     },
     {
@@ -602,7 +531,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-selamat-rumah-atau-toko.pdf",
       "pages": 5,
-      "icon": "د",
       "coverText": "Doa Selamat Rumah atau Toko"
     },
     {
@@ -612,7 +540,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-selamat-haji-dan-umroh.pdf",
       "pages": 5,
-      "icon": "د",
       "coverText": "Doa Selamat Haji Dan Umroh"
     },
     {
@@ -622,7 +549,6 @@
       "type": "single",
       "file": "assets/pdf-v2/wirid/sholawat-kamilah.pdf",
       "pages": 1,
-      "icon": "و",
       "coverText": "Sholawat Kamilah"
     },
     {
@@ -630,7 +556,6 @@
       "title": "Jamak Qashar Takhir",
       "category": "Doa",
       "type": "collection",
-      "icon": "د",
       "coverText": "Jamak Qashar Takhir",
       "parts": [
         {
@@ -664,7 +589,6 @@
       "title": "Jamak Qashar Taqdim",
       "category": "Doa",
       "type": "collection",
-      "icon": "د",
       "coverText": "Jamak Qashar Taqdim",
       "parts": [
         {
@@ -698,7 +622,6 @@
       "title": "Sholat Hajat",
       "category": "Doa",
       "type": "collection",
-      "icon": "د",
       "coverText": "Sholat Hajat",
       "parts": [
         {
@@ -720,7 +643,6 @@
       "title": "Sholat Hadiah",
       "category": "Doa",
       "type": "collection",
-      "icon": "د",
       "coverText": "Sholat Hadiah",
       "parts": [
         {
@@ -742,7 +664,6 @@
       "title": "Nikah",
       "category": "Doa",
       "type": "collection",
-      "icon": "د",
       "coverText": "Nikah",
       "parts": [
         {
@@ -770,7 +691,6 @@
       "title": "Tasmiyah",
       "category": "Doa",
       "type": "collection",
-      "icon": "د",
       "coverText": "Tasmiyah",
       "parts": [
         {
@@ -792,7 +712,6 @@
       "title": "Sholat Jenazah",
       "category": "Doa",
       "type": "group",
-      "icon": "د",
       "coverText": "Sholat Jenazah",
       "parts": [
         {
@@ -832,7 +751,6 @@
       "title": "Tahlil",
       "category": "Doa",
       "type": "collection",
-      "icon": "د",
       "coverText": "Tahlil",
       "parts": [
         {
@@ -860,7 +778,6 @@
       "title": "Adh-Dhiya' al-Lami'",
       "category": "Maulid",
       "type": "collection",
-      "icon": "م",
       "coverText": "Adh-Dhiya' al-Lami'",
       "parts": [
         {
@@ -936,7 +853,6 @@
       "title": "Maulid Al-'Azab",
       "category": "Maulid",
       "type": "collection",
-      "icon": "م",
       "coverText": "Maulid Al-'Azab",
       "parts": [
         {
@@ -1008,7 +924,6 @@
       "type": "single",
       "file": "assets/pdf-v2/maulid/maulid-al-barzanji.pdf",
       "pages": 58,
-      "icon": "م",
       "coverText": "Maulid Al-Barzanji"
     },
     {
@@ -1018,7 +933,6 @@
       "type": "single",
       "file": "assets/pdf-v2/maulid/maulid-diba.pdf",
       "pages": 53,
-      "icon": "م",
       "coverText": "Maulid Diba'"
     },
     {
@@ -1028,7 +942,6 @@
       "type": "single",
       "file": "assets/pdf-v2/maulid/maulid-syaraful-anam.pdf",
       "pages": 99,
-      "icon": "م",
       "coverText": "Maulid Syaraful Anam"
     },
     {
@@ -1038,7 +951,6 @@
       "type": "single",
       "file": "assets/pdf-v2/maulid/simthud-durar.pdf",
       "pages": 65,
-      "icon": "م",
       "coverText": "Simthud Durar"
     },
     {
@@ -1046,7 +958,6 @@
       "title": "Khutbah Sholat Gerhana",
       "category": "Khutbah",
       "type": "group",
-      "icon": "خ",
       "coverText": "Khutbah Sholat Gerhana",
       "parts": [
         {
@@ -1068,7 +979,6 @@
       "title": "Khutbah Istisqa",
       "category": "Khutbah",
       "type": "group",
-      "icon": "خ",
       "coverText": "Khutbah Istisqa",
       "parts": [
         {
@@ -1090,7 +1000,6 @@
       "title": "Khutbah Hari Tasyrik",
       "category": "Khutbah",
       "type": "group",
-      "icon": "خ",
       "coverText": "Khutbah Hari Tasyrik",
       "parts": [
         {
@@ -1114,7 +1023,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-fajar.pdf",
       "pages": 5,
-      "icon": "د",
       "coverText": "Doa Fajar"
     },
     {
@@ -1124,7 +1032,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-khatamil-qur-an.pdf",
       "pages": 4,
-      "icon": "د",
       "coverText": "Doa Khatamil Qur'an"
     },
     {
@@ -1134,7 +1041,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-musafir.pdf",
       "pages": 1,
-      "icon": "د",
       "coverText": "Doa Musafir"
     },
     {
@@ -1144,7 +1050,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-setelah-membaca-surah-yasin.pdf",
       "pages": 2,
-      "icon": "د",
       "coverText": "Doa Setelah Membaca Surah Yasin"
     },
     {
@@ -1154,7 +1059,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-surah-al-waqi-ah.pdf",
       "pages": 2,
-      "icon": "د",
       "coverText": "Doa Surah Al Waqi'ah"
     },
     {
@@ -1164,7 +1068,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-surah-al-waqi-ah-panjang.pdf",
       "pages": 3,
-      "icon": "د",
       "coverText": "Doa Surah Al Waqi'ah - Panjang"
     },
     {
@@ -1174,7 +1077,6 @@
       "type": "single",
       "file": "assets/pdf-v2/wirid/hizb-al-bahr.pdf",
       "pages": 9,
-      "icon": "و",
       "coverText": "Hizb Al-Bahr"
     },
     {
@@ -1184,7 +1086,6 @@
       "type": "single",
       "file": "assets/pdf-v2/wirid/hizb-nashr.pdf",
       "pages": 6,
-      "icon": "و",
       "coverText": "Hizb Nashr"
     },
     {
@@ -1194,7 +1095,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/shalat-sunnat-taubat.pdf",
       "pages": 3,
-      "icon": "د",
       "coverText": "Shalat Sunnat Taubat"
     },
     {
@@ -1204,7 +1104,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/talqin-mayyit-laki-laki.pdf",
       "pages": 6,
-      "icon": "د",
       "coverText": "Talqin Mayyit Laki-Laki"
     },
     {
@@ -1214,7 +1113,6 @@
       "type": "single",
       "file": "assets/pdf-v2/doa/talqin-mayyit-perempuan.pdf",
       "pages": 6,
-      "icon": "د",
       "coverText": "Talqin Mayyit Perempuan"
     },
     {
@@ -1222,7 +1120,6 @@
       "title": "Kumpulan Khutbah Jum'at",
       "category": "Khutbah",
       "type": "group",
-      "icon": "خ",
       "coverText": "Kumpulan Khutbah Jum'at",
       "parts": [
         {
@@ -1292,7 +1189,6 @@
       "title": "Kumpulan Syair",
       "category": "Syair",
       "type": "group",
-      "icon": "♪",
       "coverText": "Kumpulan Syair",
       "parts": [
         {
@@ -1692,6 +1588,54 @@
           "pages": 2
         }
       ]
+    },
+    {
+      "id": "surah-al-fath-00632d",
+      "title": "Surah Al Fath",
+      "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-fath.pdf",
+      "pages": 10,
+      "category": "Al-Qur'an",
+      "type": "single"
+    },
+    {
+      "id": "surah-yasin-a18b09",
+      "title": "Surah Yasin",
+      "file": "assets/pdf-v2/quran/surah-pilihan/surah-yasin.pdf",
+      "pages": 12,
+      "category": "Al-Qur'an",
+      "type": "single"
+    },
+    {
+      "id": "surah-al-waqiah-2b58bd",
+      "title": "Surah Al Waqiah",
+      "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-waqiah.pdf",
+      "pages": 8,
+      "category": "Al-Qur'an",
+      "type": "single"
+    },
+    {
+      "id": "surah-al-mulk-tabarak-d7b01e",
+      "title": "Surah Al Mulk (Tabarak)",
+      "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-mulk-tabarak.pdf",
+      "pages": 6,
+      "category": "Al-Qur'an",
+      "type": "single"
+    },
+    {
+      "id": "surah-ar-rahman-28126a",
+      "title": "Surah Ar-Rahman",
+      "file": "assets/pdf-v2/quran/surah-pilihan/surah-ar-rahman.pdf",
+      "pages": 6,
+      "category": "Al-Qur'an",
+      "type": "single"
+    },
+    {
+      "id": "surah-al-kahfi-236d7f-bagian-1",
+      "title": "Surah Al Kahfi",
+      "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-kahfi.pdf",
+      "pages": 24,
+      "category": "Al-Qur'an",
+      "type": "single"
     }
   ]
 }
