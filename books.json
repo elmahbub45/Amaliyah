@@ -1,5 +1,5 @@
 {
-  "version": "2.38.8-admin-multiselect-drag",
+  "version": "2.40.1-svg-icon-library",
   "categories": [
     "Semua",
     "Wirid",
@@ -1773,5 +1773,8 @@
       "category": "Syair",
       "type": "single"
     }
-  ]
+  ],
+  "categoryIcons": {
+    "Sholat": "kaaba"
+  }
 }
