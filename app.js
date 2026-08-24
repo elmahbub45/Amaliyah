@@ -419,7 +419,7 @@ function renderCategoryIndex(){
   const available=[...new Set([
     ...categories.filter(category=>String(category).toLocaleLowerCase('id-ID')!=='semua'),
     ...items.map(item=>item.category).filter(Boolean)
-  ])];
+  ])].sort((a,b)=>String(a).localeCompare(String(b),'id',{sensitivity:'base',numeric:true}));
   directory.replaceChildren();
   available.forEach(category=>{
     const count=items.filter(item=>item.category===category).length;
@@ -440,7 +440,12 @@ function renderCategoryIndex(){
 function renderChips(active='Semua'){
   activeLibraryCategory=active;
   const wrap=$('#categoryChips');if(!wrap)return;
-  wrap.innerHTML=categories.map(cat=>`<button class="chip ${cat===active?'active':''}" data-cat="${cat}">${cat}</button>`).join('');
+  const orderedCategories=[
+    'Semua',
+    ...[...new Set(categories.filter(cat=>String(cat).toLocaleLowerCase('id-ID')!=='semua'))]
+      .sort((a,b)=>String(a).localeCompare(String(b),'id',{sensitivity:'base',numeric:true}))
+  ];
+  wrap.innerHTML=orderedCategories.map(cat=>`<button class="chip ${cat===active?'active':''}" data-cat="${cat}">${cat}</button>`).join('');
   wrap.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>renderLibrary(btn.dataset.cat));
 }
 
