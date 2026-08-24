@@ -107,6 +107,9 @@ function bind(){
   $('#cancelNewFolderBtn').onclick=closeNewFolderDialog;
   $('#createNewFolderBtn').onclick=createNewFolder;
   $('#newFolderForm').onsubmit=e=>{e.preventDefault();createNewFolder();};
+  $('#renameCategoryBtn').onclick=renameSelectedCategory;
+  $('#deleteCategoryBtn').onclick=deleteSelectedCategory;
+  $('#categoryNameInput').oninput=()=>showFormError($('#categoryInspectorError'),'');
 
   $('#batchImportBtn').onclick=openBatchDialog;
   $('#closeBatchBtn').onclick=closeBatchDialog;
@@ -428,8 +431,27 @@ function r2Key(file=''){
 
 function categories(){
   const declared=(data.categories||[]).filter(x=>x && x!=='Semua');
+  const drafts=(data.draftCategories||[]).map(x=>String(x||'').trim()).filter(Boolean);
   const used=(data.items||[]).map(x=>String(x.category||'').trim()).filter(Boolean);
-  return [...new Set([...declared,...used])].sort((a,b)=>a.localeCompare(b,'id'));
+  return [...new Set([...declared,...drafts,...used])].sort((a,b)=>a.localeCompare(b,'id'));
+}
+
+function draftCategoryNames(){
+  return [...new Set((data.draftCategories||[]).map(x=>String(x||'').trim()).filter(Boolean))];
+}
+
+function isDraftCategory(category){
+  const needle=String(category||'').trim().toLocaleLowerCase('id');
+  return draftCategoryNames().some(name=>name.toLocaleLowerCase('id')===needle);
+}
+
+function refreshDraftCategoryStates(){
+  const used=new Set((data.items||[])
+    .map(item=>String(item.category||'').trim().toLocaleLowerCase('id'))
+    .filter(Boolean));
+  const remaining=draftCategoryNames().filter(name=>!used.has(name.toLocaleLowerCase('id')));
+  if(remaining.length)data.draftCategories=remaining;
+  else delete data.draftCategories;
 }
 
 function refreshCategoryUI(){
@@ -472,10 +494,11 @@ function renderCategoryTree(){
             <span class="tree-label"><b>${esc(item.title||item.id)}</b><small>${esc(item.type)}</small></span>
           </button>`).join('')}</div>`
       : '';
+    const draft=isDraftCategory(category);
     return `<div class="tree-category-wrap">
-      <button type="button" class="category-tree-row ${active&&!explorerItemId?'active':''}" data-tree-category="${esc(category)}" data-drop-category="${esc(category)}">
+      <button type="button" class="category-tree-row ${draft?'is-draft-category':''} ${active&&!explorerItemId?'active':''}" data-tree-category="${esc(category)}" data-drop-category="${esc(category)}">
         <span class="tree-folder" aria-hidden="true"></span>
-        <span class="tree-label"><b>${esc(category)}</b></span>
+        <span class="tree-label"><b>${esc(category)}</b>${draft?'<small>Draft kosong</small>':''}</span>
         <span class="tree-count" aria-label="${roots.length} item">${roots.length}</span>
       </button>${nested}
     </div>`;
@@ -564,6 +587,7 @@ function refreshDraftFolderTypes(){
 function normalizeExport(){
   refreshDraftFolderTypes();
   data.items.forEach(item=>delete item.draftFolder);
+  delete data.draftCategories;
   syncCategoriesForExport();
   return data;
 }
@@ -609,6 +633,7 @@ function updateAllStatus(isDirty=dirty,msg=''){
 
 function markDirty(msg='Perubahan disimpan di editor'){
   refreshDraftFolderTypes();
+  refreshDraftCategoryStates();
   trackHistoryChange();
   dirty=true;
   scheduleAutosave();
@@ -763,6 +788,7 @@ function showExplorerSelectionSummary(){
   selectedPartRef=null;
   $('#editorContent').classList.add('hidden');
   $('#partInspector')?.classList.add('hidden');
+  $('#categoryInspector')?.classList.add('hidden');
   const empty=$('#emptyEditor');
   empty.classList.remove('hidden');
   const count=explorerSelection.size;
@@ -805,6 +831,10 @@ function applyExplorerSelection(){
       showPartInspector(parent,ref.index,{preserveExplorerSelection:true,skipListRender:true});
       return;
     }
+  }
+  if(ref.kind==='category'){
+    showCategoryInspector(ref.category);
+    return;
   }
   showExplorerSelectionSummary();
 }
@@ -1328,7 +1358,7 @@ function renderList(){
   let html='';
   if(!explorerCategory && !explorerItemId && !q && !type){
     const cats=categories();
-    html=cats.map(c=>{const key=categorySelectionKey(c);return `<div class="explorer-entry is-folder category-folder ${explorerSelection.has(key)?'active':''}" data-selection-key="${esc(key)}" data-drop-category-entry="${esc(c)}"><button class="explorer-open" type="button" data-open-category="${esc(c)}" title="Klik dua kali untuk membuka folder"><span class="explorer-icon folder-icon" aria-hidden="true"></span><span class="explorer-entry-copy"><b>${esc(c)}</b><small>Folder kategori</small></span></button><span class="explorer-col explorer-col-type"><small>Kategori</small></span><span class="explorer-col explorer-col-count"><b>${explorerRoots(c).length}</b><small>item</small></span><div class="explorer-entry-actions"></div></div>`}).join('');
+    html=cats.map(c=>{const key=categorySelectionKey(c);const draft=isDraftCategory(c);return `<div class="explorer-entry is-folder category-folder ${draft?'is-draft-category':''} ${explorerSelection.has(key)?'active':''}" data-selection-key="${esc(key)}" data-drop-category-entry="${esc(c)}"><button class="explorer-open" type="button" data-open-category="${esc(c)}" title="Klik dua kali untuk membuka folder"><span class="explorer-icon folder-icon" aria-hidden="true"></span><span class="explorer-entry-copy"><b>${esc(c)}</b><small>${draft?'Kategori Draft • kosong':'Folder kategori'}</small></span></button><span class="explorer-col explorer-col-type"><small>${draft?'Draft':'Kategori'}</small></span><span class="explorer-col explorer-col-count"><b>${explorerRoots(c).length}</b><small>item</small></span><div class="explorer-entry-actions"></div></div>`}).join('');
   }else if(explorerItemId){
     const parent=data.items.find(x=>x.id===explorerItemId);
     if(!parent){explorerItemId=null;return renderList();}
@@ -1508,6 +1538,7 @@ function showPartInspector(parent,index,{preserveExplorerSelection=false,skipLis
   selectedId=parent.id;
   $('#emptyEditor').classList.add('hidden');
   $('#editorContent').classList.add('hidden');
+  $('#categoryInspector')?.classList.add('hidden');
   $('#partInspector').classList.remove('hidden');
   $('#partInspectorTitle').textContent=part.title||'(Tanpa judul)';
   $('#partInspectorPath').textContent=`${explorerPathForItem(parent)} › ${part.title||part.id||'Bagian'}`;
@@ -1552,6 +1583,7 @@ function selectItem(id,{preserveExplorerSelection=false,skipListRender=false}={}
 
   $('#emptyEditor').classList.add('hidden');
   $('#partInspector')?.classList.add('hidden');
+  $('#categoryInspector')?.classList.add('hidden');
   $('#editorContent').classList.remove('hidden');
 
   $('#editorHeading').textContent=x.title||'Edit Bacaan';
@@ -1594,11 +1626,131 @@ function showEmptyEditor(){
   selectedPartRef=null;
   $('#editorContent').classList.add('hidden');
   $('#partInspector')?.classList.add('hidden');
+  $('#categoryInspector')?.classList.add('hidden');
   const empty=$('#emptyEditor');
   empty.classList.remove('hidden');
   $('.empty-ornament',empty).textContent='✦';
   $('h2',empty).textContent='Pilih file atau folder';
   $('p',empty).textContent='Klik sekali untuk memilih. Klik dua kali untuk membuka folder atau mengedit PDF.';
+}
+
+function selectedExplorerCategory(){
+  if(explorerSelection.size!==1)return '';
+  const ref=parseExplorerSelectionKey([...explorerSelection][0]);
+  return ref.kind==='category'?ref.category:'';
+}
+
+function categoryNameError(name,current=''){
+  const value=String(name||'').trim();
+  if(!value)return 'Nama kategori wajib diisi.';
+  if(value==='.'||value==='..'||/[\\/\u0000-\u001f]/.test(value))return 'Nama kategori tidak boleh memakai /, \\, atau karakter kontrol.';
+  if(['semua','bacaan'].includes(value.toLocaleLowerCase('id')))return `Nama “${value}” dipakai oleh sistem dan tidak dapat digunakan.`;
+  const currentKey=String(current||'').trim().toLocaleLowerCase('id');
+  const duplicate=categories().some(category=>{
+    const key=category.toLocaleLowerCase('id');
+    return key===value.toLocaleLowerCase('id')&&key!==currentKey;
+  });
+  return duplicate?'Nama kategori tersebut sudah ada. Gunakan nama lain.':'';
+}
+
+function showCategoryInspector(category){
+  if(!category||!categories().includes(category)){
+    showEmptyEditor();
+    return;
+  }
+  selectedId=null;
+  selectedPartRef=null;
+  $('#emptyEditor').classList.add('hidden');
+  $('#editorContent').classList.add('hidden');
+  $('#partInspector')?.classList.add('hidden');
+  const panel=$('#categoryInspector');
+  panel.classList.remove('hidden');
+  const items=(data.items||[]).filter(item=>item.category===category);
+  const draft=isDraftCategory(category);
+  $('#categoryInspectorTitle').textContent=category;
+  $('#categoryInspectorMeta').textContent=`Bacaan › ${category}`;
+  $('#categoryInspectorBadge').textContent=draft?'Kategori Draft':'Kategori';
+  $('#categoryInspectorBadge').classList.toggle('draft',draft);
+  $('#categoryInspectorCount').textContent=`${items.length} bacaan • ${explorerRoots(category).length} item utama`;
+  $('#categoryInspectorHelp').textContent=draft
+    ?'Kategori masih kosong dan belum akan dimasukkan ke books.json.'
+    :'Kategori sudah aktif karena memiliki isi.';
+  $('#categoryNameInput').value=category;
+  $('#deleteCategoryBtn').disabled=items.length>0;
+  $('#deleteCategoryBtn').title=items.length?'Pindahkan atau hapus seluruh isi sebelum menghapus kategori.':'Hapus kategori kosong';
+  showFormError($('#categoryInspectorError'),'');
+}
+
+async function renameSelectedCategory(){
+  const current=selectedExplorerCategory();
+  if(!current)return;
+  const next=$('#categoryNameInput').value.trim().replace(/\s+/g,' ');
+  const error=categoryNameError(next,current);
+  if(error){
+    showFormError($('#categoryInspectorError'),error);
+    $('#categoryNameInput').focus();
+    return;
+  }
+  if(next===current){
+    toast('Nama kategori tidak berubah.','warn');
+    return;
+  }
+
+  const affected=(data.items||[]).filter(item=>item.category===current).length;
+  if(affected){
+    const ok=await confirmInternal(
+      'Rename kategori?',
+      `${affected} bacaan akan dipindahkan dari kategori “${current}” ke “${next}”. Path PDF dan object R2 tidak diubah otomatis; buat ulang manifest jika struktur folder lokal juga diganti.`,
+      'Rename Kategori',
+      'Batal'
+    );
+    if(!ok)return;
+  }
+
+  createBackup(`Sebelum rename kategori ${current}`);
+  data.categories=(data.categories||[]).map(category=>category===current?next:category);
+  data.draftCategories=(data.draftCategories||[]).map(category=>category===current?next:category);
+  data.items.forEach(item=>{if(item.category===current)item.category=next;});
+  if(explorerCategory===current)explorerCategory=next;
+  explorerSelection.clear();
+  explorerSelection.add(categorySelectionKey(next));
+  explorerSelectionAnchor=categorySelectionKey(next);
+  refreshCategoryUI();
+  $('#categoryFilter').value=explorerCategory||'';
+  markDirty(`Kategori “${current}” diubah menjadi “${next}”`);
+  renderList();
+  showCategoryInspector(next);
+  toast(`Kategori berhasil diubah menjadi “${next}”.`,'ok');
+}
+
+async function deleteSelectedCategory(){
+  const category=selectedExplorerCategory();
+  if(!category)return;
+  const count=(data.items||[]).filter(item=>item.category===category).length;
+  if(count){
+    showFormError($('#categoryInspectorError'),`Kategori masih memiliki ${count} bacaan. Pindahkan atau hapus seluruh isinya terlebih dahulu.`);
+    return;
+  }
+  const ok=await confirmInternal(
+    'Hapus kategori kosong?',
+    `Kategori “${category}” akan dihapus dari draft. Tidak ada PDF atau object R2 yang dihapus.`,
+    'Hapus Kategori',
+    'Batal'
+  );
+  if(!ok)return;
+
+  createBackup(`Sebelum menghapus kategori ${category}`);
+  data.categories=(data.categories||[]).filter(name=>name!==category);
+  data.draftCategories=(data.draftCategories||[]).filter(name=>name!==category);
+  resetExplorerSelection();
+  explorerCategory='';
+  explorerItemId=null;
+  selectedId=null;
+  refreshCategoryUI();
+  $('#categoryFilter').value='';
+  markDirty(`Kategori kosong “${category}” dihapus`);
+  showEmptyEditor();
+  toast(`Kategori “${category}” dihapus.`,'ok');
 }
 
 function patchSelected(key,value){
@@ -2816,7 +2968,7 @@ function buildRebuildPlan(entries,rootName){
     });
 
   const books={...clone(data)};
-  books.version='2.38.4-no-search';
+  books.version='2.38.5-root-category-draft';
   books.categories=['Semua',...categories];
   books.items=items;
 
@@ -3023,6 +3175,13 @@ async function applyRebuildCatalog(){
 
 /* ===================== CREATE / DELETE ITEM ===================== */
 function newFolderDestinations(){
+  const rootDestination={
+    value:'root::',
+    label:'Bacaan  •  Kategori Baru',
+    category:'',
+    item:null,
+    root:true
+  };
   const destinations=categories().map(category=>({
     value:`category::${category}`,
     label:`Bacaan › ${category}`,
@@ -3042,7 +3201,7 @@ function newFolderDestinations(){
     });
   });
 
-  return destinations.sort((a,b)=>naturalCompare(a.label,b.label));
+  return [rootDestination,...destinations.sort((a,b)=>naturalCompare(a.label,b.label))];
 }
 
 function populateNewFolderLocations(){
@@ -3057,6 +3216,8 @@ function populateNewFolderLocations(){
     preferred=`item::${explorerItemId}`;
   }else if(explorerCategory && destinations.some(x=>x.value===`category::${explorerCategory}`)){
     preferred=`category::${explorerCategory}`;
+  }else{
+    preferred='root::';
   }
   select.value=preferred||destinations[0]?.value||'';
   return destinations;
@@ -3079,7 +3240,7 @@ function closeNewFolderDialog(){
 }
 
 function createNewFolder(){
-  const title=$('#newFolderNameInput').value.trim();
+  const title=$('#newFolderNameInput').value.trim().replace(/\s+/g,' ');
   if(!title){
     showFormError($('#newFolderFormError'),'Nama folder wajib diisi.');
     $('#newFolderNameInput').focus();
@@ -3087,6 +3248,33 @@ function createNewFolder(){
   }
 
   const raw=$('#newFolderLocationInput').value;
+  if(raw==='root::'){
+    const error=categoryNameError(title);
+    if(error){
+      showFormError($('#newFolderFormError'),error);
+      $('#newFolderNameInput').focus();
+      return;
+    }
+    data.categories=Array.isArray(data.categories)?data.categories:[];
+    if(!data.categories.includes('Semua'))data.categories.unshift('Semua');
+    data.categories.push(title);
+    data.draftCategories=Array.isArray(data.draftCategories)?data.draftCategories:[];
+    data.draftCategories.push(title);
+    closeNewFolderDialog();
+    resetExplorerSelection();
+    explorerCategory='';
+    explorerItemId=null;
+    selectedId=null;
+    explorerSelection.add(categorySelectionKey(title));
+    explorerSelectionAnchor=categorySelectionKey(title);
+    refreshCategoryUI();
+    $('#categoryFilter').value='';
+    markDirty(`Kategori Draft “${title}” dibuat di root Bacaan`);
+    renderList();
+    showCategoryInspector(title);
+    toast(`Kategori Draft “${title}” berhasil dibuat. Isi dapat ditambahkan nanti.`,'ok');
+    return;
+  }
   let parent=null;
   let category='Lainnya';
   if(raw.startsWith('item::')){
@@ -3238,6 +3426,19 @@ function validateAll(){
   const topIds=new Map();
   const partIds=new Map();
   const paths=new Map();
+
+  draftCategoryNames().forEach(category=>{
+    const hasContent=(data.items||[]).some(item=>item.category===category);
+    if(!hasContent){
+      errors.push({
+        scope:`Kategori: ${category}`,
+        category,
+        message:'Kategori Draft masih kosong.',
+        fix:'Buka kategori lalu buat folder atau tambahkan bacaan. Kategori kosong tetap aman di Simpan Draft, tetapi tidak dapat diekspor ke books.json.',
+        field:'draft-category'
+      });
+    }
+  });
 
   data.items.forEach((item,index)=>{
     const label=item.title||`Item #${index+1}`;
@@ -3448,6 +3649,20 @@ function focusIssue(issue,closeValidation=false){
   if(!issue)return;
   if(closeValidation && $('#validationDialog').open)$('#validationDialog').close();
 
+  if(issue.category && issue.field==='draft-category'){
+    explorerCategory='';
+    explorerItemId=null;
+    selectedId=null;
+    resetExplorerSelection();
+    explorerSelection.add(categorySelectionKey(issue.category));
+    explorerSelectionAnchor=categorySelectionKey(issue.category);
+    $('#categoryFilter').value='';
+    renderList();
+    showCategoryInspector(issue.category);
+    if(issue.fix)showFormError($('#categoryInspectorError'),issue.fix);
+    return;
+  }
+
   const item=issue.itemId
     ? data.items.find(x=>x.id===issue.itemId)
     : Number.isInteger(issue.itemIndex)
@@ -3547,7 +3762,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.38.4-no-search';
+  data.version='2.38.5-root-category-draft';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);

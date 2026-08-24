@@ -135,6 +135,38 @@
         <p>Klik item di Explorer untuk melihat detail dan mengedit. PDF private di R2 tidak akan terhapus otomatis.</p>
       </div>
 
+      <div id="categoryInspector" class="category-inspector hidden">
+        <div class="category-inspector-head">
+          <div>
+            <span class="eyebrow">FOLDER KATEGORI</span>
+            <h2 id="categoryInspectorTitle">Kategori</h2>
+            <p id="categoryInspectorMeta">Bacaan › Kategori</p>
+          </div>
+          <span id="categoryInspectorBadge" class="badge neutral">Kategori</span>
+        </div>
+
+        <div class="category-inspector-card">
+          <span class="category-inspector-icon"><span class="ui-icon i-folder" aria-hidden="true"></span></span>
+          <span>
+            <b id="categoryInspectorCount">0 item</b>
+            <small id="categoryInspectorHelp">Kategori adalah folder paling atas di dalam Bacaan.</small>
+          </span>
+        </div>
+
+        <label class="field">
+          <span>Nama Kategori</span>
+          <input id="categoryNameInput" type="text" autocomplete="off">
+          <small>Rename kategori akan memperbarui semua bacaan di dalamnya.</small>
+        </label>
+
+        <div id="categoryInspectorError" class="form-error hidden" role="alert"></div>
+
+        <div class="category-inspector-actions">
+          <button id="deleteCategoryBtn" class="danger ghost" type="button">Hapus Kategori</button>
+          <button id="renameCategoryBtn" class="primary" type="button">Simpan Nama</button>
+        </div>
+      </div>
+
       <div id="partInspector" class="part-inspector hidden">
         <div class="part-inspector-head">
           <div>

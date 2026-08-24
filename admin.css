@@ -3699,3 +3699,57 @@ dialog.rebuild-dialog{width:min(1120px,calc(100% - 28px))}
   background:rgba(255,255,255,.82);
   box-shadow:0 6px 0 rgba(255,255,255,.58);
 }
+
+/* =========================================================
+   V2.38.5 — ROOT CATEGORY DRAFT
+   ========================================================= */
+.category-folder.is-draft-category{
+  background:linear-gradient(135deg,rgba(239,249,246,.94),rgba(255,251,239,.96));
+  border-color:#b8d9cf!important;
+}
+.category-folder.is-draft-category .explorer-icon.folder-icon,
+.category-tree-row.is-draft-category .tree-folder{
+  filter:saturate(.65);
+  opacity:.82;
+  outline:1px dashed #0d8a70;
+  outline-offset:3px;
+}
+.category-folder.is-draft-category .explorer-entry-copy small,
+.category-tree-row.is-draft-category .tree-label small{color:#08705a;font-weight:700}
+
+.category-inspector{
+  min-height:100%;
+  padding:30px;
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+}
+.category-inspector.hidden{display:none}
+.category-inspector-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.category-inspector-head h2{margin:5px 0 5px;font-size:24px;color:var(--ui-text)}
+.category-inspector-head p{margin:0;color:var(--ui-muted);font-size:11px}
+.category-inspector-card{
+  display:flex;
+  align-items:center;
+  gap:15px;
+  padding:18px;
+  border:1px solid #e1ddd2;
+  border-radius:15px;
+  background:#faf8f2;
+}
+.category-inspector-card>span:last-child{display:grid;gap:4px}
+.category-inspector-card b{font-size:14px;color:var(--ui-text)}
+.category-inspector-card small{font-size:10px;color:var(--ui-muted)}
+.category-inspector-icon{
+  width:46px;height:46px;border-radius:13px;display:grid;place-items:center;
+  color:#08705a;background:#e4f2ed;border:1px solid #c7e0d7;
+}
+.category-inspector-icon .ui-icon{width:22px;height:22px}
+.category-inspector-actions{margin-top:auto;display:flex;justify-content:flex-end;gap:10px;padding-top:18px;border-top:1px solid #ebe6db}
+.badge.draft{background:#e5f4ef;color:#08705a;border-color:#bcded3}
+
+@media(max-width:720px){
+  .category-inspector{padding:22px 18px}
+  .category-inspector-actions{flex-direction:column-reverse}
+  .category-inspector-actions button{width:100%}
+}
