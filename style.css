@@ -1532,6 +1532,20 @@ body{
   background:rgba(255,255,255,.09);color:#fff8e8;font:inherit;font-size:10px;font-weight:800
 }
 .quran-home-button span{color:#e8c36d;font-size:18px;line-height:1}
+.quran-home-actions{
+  position:relative;z-index:1;grid-column:1/-1;display:grid;grid-template-columns:1fr 1.15fr;
+  gap:9px;width:100%;margin-top:2px
+}
+.quran-home-actions .quran-home-button{grid-column:auto;width:100%;min-height:43px;padding:0 12px}
+.quran-home-directory{background:rgba(255,255,255,.055);border-color:rgba(239,206,130,.34);color:#f5e9ce}
+.quran-home-continue{background:#e0b55b;border-color:#e0b55b;color:#173f34;box-shadow:0 7px 17px rgba(0,0,0,.12)}
+.quran-home-continue span{color:#173f34}
+@media(max-width:350px){
+  .quran-home-card{padding:16px;gap:11px}
+  .quran-home-actions{grid-template-columns:1fr 1fr;gap:7px}
+  .quran-home-actions .quran-home-button{padding:0 8px;font-size:9.5px}
+}
+
 .bookmark-kind-tabs{
   position:sticky;top:58px;z-index:5;display:grid;grid-template-columns:1fr 1fr;gap:5px;
   margin:12px 16px 0;padding:4px;border:1px solid #e9dfce;border-radius:14px;background:#f5efe5
@@ -1542,6 +1556,6 @@ body{
 .quran-bookmark-card .bookmark-card-icon{font-family:serif;font-size:24px}
 .quran-empty-button{min-height:40px;margin-top:12px;padding:0 18px;border:0;border-radius:13px;background:#0b5b49;color:#fff;font:inherit;font-weight:750}
 @media(min-width:430px){
-  .quran-home-card{grid-template-columns:68px minmax(0,1fr) auto}
-  .quran-home-button{grid-column:auto;min-width:92px;padding:0 12px}
+  .quran-home-card{grid-template-columns:68px minmax(0,1fr)}
+  .quran-home-actions{grid-column:1/-1;max-width:100%}
 }

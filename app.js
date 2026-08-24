@@ -400,11 +400,15 @@ function updateQuranHomeCard(){
   const metaEl=$('#quranHomeMeta');
   const progressEl=$('#quranHomeProgress');
   const button=$('#quranHomeButton');
+  const directoryButton=$('#quranDirectoryButton');
   if(metaEl)metaEl.textContent=text;
   if(progressEl)progressEl.style.width=(hasProgress?(page/604)*100:0)+'%';
+  if(directoryButton){
+    directoryButton.onclick=()=>location.href='quran.html';
+  }
   if(button){
-    button.firstChild.textContent=hasProgress?'Lanjutkan ':'Buka Mushaf ';
-    button.onclick=()=>location.href=`quran.html${hasProgress?`?page=${page}`:''}`;
+    button.firstChild.textContent=hasProgress?'Lanjutkan ':'Mulai Membaca ';
+    button.onclick=()=>location.href=`quran.html${hasProgress?`?page=${page}`:'?page=1'}`;
   }
 }
 
