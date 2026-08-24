@@ -102,6 +102,12 @@ function bind(){
   $('#closeItemDialogBtn').onclick=()=>$('#itemDialog').close();
   $('#cancelItemBtn').onclick=()=>$('#itemDialog').close();
 
+  $('#newFolderBtn').onclick=openNewFolderDialog;
+  $('#closeNewFolderBtn').onclick=closeNewFolderDialog;
+  $('#cancelNewFolderBtn').onclick=closeNewFolderDialog;
+  $('#createNewFolderBtn').onclick=createNewFolder;
+  $('#newFolderForm').onsubmit=e=>{e.preventDefault();createNewFolder();};
+
   $('#batchImportBtn').onclick=openBatchDialog;
   $('#closeBatchBtn').onclick=closeBatchDialog;
   $('#cancelBatchBtn').onclick=closeBatchDialog;
@@ -462,7 +468,7 @@ function renderCategoryTree(){
     const nested=active && chain.length
       ? `<div class="tree-branch">${chain.map((item,i)=>`
           <button type="button" class="category-tree-row tree-child ${item.id===explorerItemId?'active':''}" data-tree-item="${esc(item.id)}" data-drop-item="${esc(item.id)}" style="--tree-depth:${i+1}">
-            <span class="tree-folder ${item.type==='single'?'tree-file':''}" aria-hidden="true"></span>
+            <span class="tree-folder ${item.type==='single'?'tree-file':item.type==='collection'?'tree-collection':''}" aria-hidden="true"></span>
             <span class="tree-label"><b>${esc(item.title||item.id)}</b><small>${esc(item.type)}</small></span>
           </button>`).join('')}</div>`
       : '';
@@ -540,7 +546,24 @@ function syncCategoriesForExport(){
   data.categories=['Semua',...used];
 }
 
+function refreshDraftFolderType(item){
+  if(!item?.draftFolder)return;
+  const parts=Array.isArray(item.parts)?item.parts:[];
+  if(!parts.length){
+    item.type='group';
+    return;
+  }
+  item.type=parts.some(part=>part.itemId)?'group':'collection';
+  delete item.draftFolder;
+}
+
+function refreshDraftFolderTypes(){
+  (data?.items||[]).forEach(refreshDraftFolderType);
+}
+
 function normalizeExport(){
+  refreshDraftFolderTypes();
+  data.items.forEach(item=>delete item.draftFolder);
   syncCategoriesForExport();
   return data;
 }
@@ -585,6 +608,7 @@ function updateAllStatus(isDirty=dirty,msg=''){
 }
 
 function markDirty(msg='Perubahan disimpan di editor'){
+  refreshDraftFolderTypes();
   trackHistoryChange();
   dirty=true;
   scheduleAutosave();
@@ -1061,7 +1085,12 @@ async function dropExplorerOnItem(payload,targetId){
     const source=data.items.find(x=>x.id===payload.itemId);
     if(!source)return;
 
-    if(target.type==='collection'){
+    // Folder kosong mengikuti isi pertamanya: PDF -> Collection, folder -> Group.
+    const targetType=target.draftFolder && !(target.parts||[]).length
+      ? (source.type==='single'?'collection':'group')
+      : target.type;
+
+    if(targetType==='collection'){
       const ok=await confirmInternal(
         'Pindahkan menjadi Bagian?',
         `"${source.title}" akan menjadi bagian dari Collection "${target.title}". PDF tidak diunggah ulang dan ID bagian tetap dipertahankan.`,
@@ -1070,6 +1099,8 @@ async function dropExplorerOnItem(payload,targetId){
       );
       if(!ok)return;
       createBackup(`Sebelum drag ${source.title} ke ${target.title}`);
+      target.type='collection';
+      delete target.draftFolder;
       detachItemFromGroups(source.id);
       target.parts=Array.isArray(target.parts)?target.parts:[];
       target.parts.push({id:source.id,title:source.title,file:source.file||'',pages:Math.max(1,Number(source.pages)||1)});
@@ -1084,7 +1115,7 @@ async function dropExplorerOnItem(payload,targetId){
       return;
     }
 
-    if(target.type==='group'){
+    if(targetType==='group'){
       const oldParent=findExplorerParent(source.id);
       if(oldParent?.id===target.id)return;
       const ok=await confirmInternal(
@@ -1095,6 +1126,8 @@ async function dropExplorerOnItem(payload,targetId){
       );
       if(!ok)return;
       createBackup(`Sebelum drag ${source.title} ke Group ${target.title}`);
+      target.type='group';
+      delete target.draftFolder;
       detachItemFromGroups(source.id);
       source.hidden=true;
       source.category=target.category||source.category;
@@ -1136,6 +1169,10 @@ async function dropExplorerOnItem(payload,targetId){
     );
     if(!ok)return;
     createBackup(`Sebelum drag bagian ${part.title}`);
+    if(target.draftFolder && !(target.parts||[]).length){
+      target.type='collection';
+      delete target.draftFolder;
+    }
     const moved=removeDirectPart(sourceParent,payload.partIndex);
     if(!moved)return;
     target.parts=Array.isArray(target.parts)?target.parts:[];
@@ -1234,15 +1271,16 @@ function openExplorerItem(id){
 
 function explorerCardForItem(x,index){
   const isFolder=x.type!=='single';
+  const iconClass=x.type==='collection'?'collection-icon':isFolder?'folder-icon':'file-icon';
   const selectionKey=itemSelectionKey(x.id);
   const active=explorerSelection.size?explorerSelection.has(selectionKey):x.id===selectedId;
   const countValue=x.type==='single'?Math.max(1,Number(x.pages)||1):(x.parts||[]).length;
   const countLabel=x.type==='single'?'hal.':'isi';
-  const typeLabel=x.type==='group'?'Group':x.type==='collection'?'Collection':'Single';
-  return `<div class="explorer-entry ${isFolder?'is-folder':'is-file'} ${active?'active':''}" draggable="true" data-id="${esc(x.id)}" data-selection-key="${esc(selectionKey)}" data-main-index="${index}">
+  const typeLabel=x.draftFolder?'Folder':x.type==='group'?'Group':x.type==='collection'?'Collection':'Single';
+  return `<div class="explorer-entry ${isFolder?'is-folder':'is-file'} ${x.type==='collection'?'is-collection':''} ${active?'active':''}" draggable="true" data-id="${esc(x.id)}" data-selection-key="${esc(selectionKey)}" data-main-index="${index}">
     <button class="explorer-open" type="button" data-open-explorer="${esc(x.id)}" title="${isFolder?'Klik dua kali untuk membuka folder':'Klik dua kali untuk mengedit PDF'}">
-      <span class="explorer-icon ${isFolder?'folder-icon':'file-icon'}" aria-hidden="true"></span>
-      <span class="explorer-entry-copy"><b>${esc(x.title||'(Tanpa judul)')}</b><small>${isFolder?'Folder bacaan':'Dokumen PDF'}</small></span>
+      <span class="explorer-icon ${iconClass}" aria-hidden="true"></span>
+      <span class="explorer-entry-copy"><b>${esc(x.title||'(Tanpa judul)')}</b><small>${x.type==='collection'?'Koleksi PDF':isFolder?'Folder bacaan':'Dokumen PDF'}</small></span>
     </button>
     <span class="explorer-col explorer-col-type"><small>${esc(typeLabel)}</small></span>
     <span class="explorer-col explorer-col-count"><b>${countValue}</b><small>${countLabel}</small></span>
@@ -1517,7 +1555,7 @@ function selectItem(id,{preserveExplorerSelection=false,skipListRender=false}={}
   $('#editorContent').classList.remove('hidden');
 
   $('#editorHeading').textContent=x.title||'Edit Bacaan';
-  $('#editorTypeBadge').textContent=x.type||'';
+  $('#editorTypeBadge').textContent=x.draftFolder?'folder':(x.type||'');
   $('#editorCategoryBadge').textContent=x.category||'Tanpa kategori';
   $('#editorMeta').textContent=`ID: ${x.id}`;
 
@@ -2168,7 +2206,8 @@ function closeBatchDialog(){
 function updateBatchModeUI(){
   const modeInput=$('#batchModeInput');
   const dest=batchDestination();
-  const targetCollection=dest.item?.type==='collection';
+  const targetCollection=dest.item?.type==='collection'||
+    (dest.item?.draftFolder && modeInput.value!=='folder-tree');
 
   if(targetCollection){
     if(modeInput.value!=='parts')modeInput.dataset.previousMode=modeInput.value||'singles';
@@ -2464,8 +2503,10 @@ function applyBatchImport(){
   createBackup('Sebelum Batch Import PDF');
 
   // Folder tujuan Collection: PDF langsung menjadi bagian Collection tersebut.
-  if(dest.item?.type==='collection'){
+  if(dest.item?.type==='collection'||(dest.item?.draftFolder&&mode!=='folder-tree')){
     const target=dest.item;
+    target.type='collection';
+    delete target.draftFolder;
     target.parts=Array.isArray(target.parts)?target.parts:[];
     const used=new Set([
       ...data.items.map(x=>x.id),
@@ -2775,7 +2816,7 @@ function buildRebuildPlan(entries,rootName){
     });
 
   const books={...clone(data)};
-  books.version='2.38.1-explorer-multiselect';
+  books.version='2.38.3-collection-identity';
   books.categories=['Semua',...categories];
   books.items=items;
 
@@ -2796,7 +2837,7 @@ function rebuildTreeMarkup(node,depth=0){
   const rows=[];
   if(node.name){
     rows.push(`<div class="rebuild-tree-row folder-row" style="--depth:${depth}">
-      <span class="rebuild-folder-icon" aria-hidden="true"></span>
+      <span class="${leaf?'rebuild-collection-icon':'rebuild-folder-icon'}" aria-hidden="true"></span>
       <span><b>${esc(displayFolderTitle(node.name))}</b><small>${esc(node.path)}</small></span>
       <em class="${leaf?'collection-badge':'group-badge'}">${leaf?'Collection':'Group'}</em>
     </div>`);
@@ -2981,6 +3022,133 @@ async function applyRebuildCatalog(){
 }
 
 /* ===================== CREATE / DELETE ITEM ===================== */
+function newFolderDestinations(){
+  const destinations=categories().map(category=>({
+    value:`category::${category}`,
+    label:`Bacaan › ${category}`,
+    category,
+    item:null
+  }));
+
+  data.items.forEach(item=>{
+    const parts=Array.isArray(item.parts)?item.parts:[];
+    const canContainFolder=item.type==='group'||parts.length===0;
+    if(!canContainFolder)return;
+    destinations.push({
+      value:`item::${item.id}`,
+      label:explorerPathForItem(item),
+      category:item.category||'Lainnya',
+      item
+    });
+  });
+
+  return destinations.sort((a,b)=>naturalCompare(a.label,b.label));
+}
+
+function populateNewFolderLocations(){
+  const select=$('#newFolderLocationInput');
+  const destinations=newFolderDestinations();
+  select.innerHTML=destinations.map(destination=>
+    `<option value="${esc(destination.value)}">${esc(destination.label)}</option>`
+  ).join('');
+
+  let preferred='';
+  if(explorerItemId && destinations.some(x=>x.value===`item::${explorerItemId}`)){
+    preferred=`item::${explorerItemId}`;
+  }else if(explorerCategory && destinations.some(x=>x.value===`category::${explorerCategory}`)){
+    preferred=`category::${explorerCategory}`;
+  }
+  select.value=preferred||destinations[0]?.value||'';
+  return destinations;
+}
+
+function openNewFolderDialog(){
+  const destinations=populateNewFolderLocations();
+  if(!destinations.length){
+    toast('Belum ada kategori yang dapat menjadi lokasi Folder Baru.','warn');
+    return;
+  }
+  $('#newFolderNameInput').value='Folder Baru';
+  showFormError($('#newFolderFormError'),'');
+  $('#newFolderDialog').showModal();
+  setTimeout(()=>{$('#newFolderNameInput').focus();$('#newFolderNameInput').select();},30);
+}
+
+function closeNewFolderDialog(){
+  $('#newFolderDialog').close();
+}
+
+function createNewFolder(){
+  const title=$('#newFolderNameInput').value.trim();
+  if(!title){
+    showFormError($('#newFolderFormError'),'Nama folder wajib diisi.');
+    $('#newFolderNameInput').focus();
+    return;
+  }
+
+  const raw=$('#newFolderLocationInput').value;
+  let parent=null;
+  let category='Lainnya';
+  if(raw.startsWith('item::')){
+    parent=data.items.find(item=>item.id===raw.slice(6))||null;
+    if(!parent){
+      showFormError($('#newFolderFormError'),'Lokasi folder tidak ditemukan. Pilih lokasi lain.');
+      return;
+    }
+    const parentParts=Array.isArray(parent.parts)?parent.parts:[];
+    if(parent.type==='collection'&&parentParts.length){
+      showFormError($('#newFolderFormError'),'Collection yang sudah berisi PDF tidak dapat memiliki subfolder.');
+      return;
+    }
+    category=parent.category||'Lainnya';
+  }else if(raw.startsWith('category::')){
+    category=raw.slice(10)||'Lainnya';
+  }
+
+  const id=uniqueItemId(slugify(title));
+  const folder={
+    id,
+    title,
+    category,
+    type:'group',
+    icon:'◈',
+    parts:[],
+    draftFolder:true
+  };
+
+  if(parent){
+    if(parent.type==='collection')parent.type='group';
+    delete parent.draftFolder;
+    parent.parts=Array.isArray(parent.parts)?parent.parts:[];
+    folder.hidden=true;
+    data.items.push(folder);
+    parent.parts.push({
+      id:uniquePartId(`${parent.id}-ref-${folder.id}`),
+      title:folder.title,
+      itemId:folder.id
+    });
+    explorerCategory=category;
+    explorerItemId=parent.id;
+  }else{
+    data.items.push(folder);
+    explorerCategory=category;
+    explorerItemId=null;
+    $('#categoryFilter').value=category;
+  }
+
+  closeNewFolderDialog();
+  resetExplorerSelection();
+  explorerSelection.add(itemSelectionKey(folder.id));
+  explorerSelectionAnchor=itemSelectionKey(folder.id);
+  selectedId=folder.id;
+  refreshCategoryUI();
+  $('#categoryFilter').value=category;
+  markDirty(`Folder “${title}” dibuat tanpa PDF`);
+  renderList();
+  selectItem(folder.id);
+  toast(`Folder “${title}” berhasil dibuat. PDF dapat ditambahkan nanti.`,'ok');
+}
+
 function openItemDialog(){
   $('#newTitleInput').value='';
   $('#newIconInput').value='';
@@ -3107,7 +3275,12 @@ function validateAll(){
       if(!Array.isArray(item.parts)){
         errors.push({...base,scope:label,message:'parts[] tidak ditemukan.',fix:'Ubah tipe lalu kembalikan, atau buat ulang struktur bagian.',field:'parts'});
       }else if(!item.parts.length){
-        errors.push({...base,scope:label,message:'Belum memiliki bagian/PDF.',fix:'Klik “+ Tambah Bagian” atau gunakan Batch Import PDF.',field:'parts'});
+        errors.push({...base,scope:label,
+          message:item.draftFolder?'Folder baru masih kosong.':'Belum memiliki bagian/PDF.',
+          fix:item.draftFolder
+            ?'Isi folder dengan PDF atau subfolder sebelum mengekspor books.json. Folder kosong tetap aman sebagai draft lokal.'
+            :'Klik “+ Tambah Bagian” atau gunakan Batch Import PDF.',
+          field:'parts'});
       }else{
         item.parts.forEach((p,i)=>{
           const pLabel=`${label} → Bagian ${i+1}${p.title?` (${p.title})`:''}`;
@@ -3374,7 +3547,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.38.1-explorer-multiselect';
+  data.version='2.38.3-collection-identity';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);

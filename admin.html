@@ -89,6 +89,7 @@
             <nav id="explorerBreadcrumb" class="explorer-breadcrumb" aria-label="Lokasi Explorer"></nav>
           </div>
           <div class="sidebar-add-actions">
+            <button id="newFolderBtn" class="ghost small icon-label" type="button" title="Buat folder kosong"><span class="ui-icon i-folder" aria-hidden="true"></span><span>Folder Baru</span></button>
             <button id="batchImportBtn" class="ghost small icon-label" type="button"><span class="ui-icon i-import" aria-hidden="true"></span><span>Import</span></button>
             <button id="addItemBtn" class="primary small icon-label" type="button"><span class="ui-icon i-plus" aria-hidden="true"></span><span>Tambah</span></button>
           </div>
@@ -402,6 +403,42 @@
       <div class="dialog-actions sticky-dialog-actions">
         <button id="cancelPartBtn" class="ghost" type="button">Batal</button>
         <button id="savePartBtn" class="primary" type="button">Simpan Bagian</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Dialog folder kosong baru -->
+  <dialog id="newFolderDialog">
+    <form class="dialog-card new-folder-dialog-card" id="newFolderForm" novalidate>
+      <div class="dialog-head">
+        <div>
+          <small>EXPLORER BACAAN</small>
+          <h3>Folder Baru</h3>
+        </div>
+        <button id="closeNewFolderBtn" class="icon-btn dark" type="button" aria-label="Tutup">✕</button>
+      </div>
+
+      <div class="new-folder-note">
+        <span class="new-folder-mark"><span class="ui-icon i-folder" aria-hidden="true"></span></span>
+        <span><b>Tidak memerlukan PDF.</b><small>Folder boleh dibuat kosong dan diisi nanti dengan drag atau melalui Import.</small></span>
+      </div>
+
+      <label class="field">
+        <span>Nama Folder</span>
+        <input id="newFolderNameInput" autocomplete="off" placeholder="Contoh: Amaliyah Bulan Ramadhan">
+      </label>
+
+      <label class="field">
+        <span>Lokasi Folder</span>
+        <select id="newFolderLocationInput"></select>
+        <small>Folder dibuat di lokasi yang sedang dibuka. Lokasi dapat diganti sebelum dibuat.</small>
+      </label>
+
+      <div id="newFolderFormError" class="form-error hidden" role="alert"></div>
+
+      <div class="dialog-actions">
+        <button id="cancelNewFolderBtn" class="ghost" type="button">Batal</button>
+        <button id="createNewFolderBtn" class="primary" type="button">Buat Folder</button>
       </div>
     </form>
   </dialog>
