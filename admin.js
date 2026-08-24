@@ -5,16 +5,7 @@ const DRAFT_KEY='amaliyah:admin:draft:v32';
 const BACKUP_KEY='amaliyah:admin:backups:v32';
 const MAX_BACKUPS=10;
 const VALID_TYPES=new Set(['single','collection','group']);
-const CATEGORY_ICON_OPTIONS=[
-  {key:'quran',label:"Al-Qur'an",svg:'<path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H12v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M19 4.5A2.5 2.5 0 0 0 16.5 2H12v18h4.5A2.5 2.5 0 0 1 19 22z"/>'},
-  {key:'wirid',label:'Wirid',svg:'<path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><circle cx="18.5" cy="5.5" r="1.5"/>'},
-  {key:'doa',label:'Doa',svg:'<path d="M8 12.5V8a2 2 0 0 1 4 0v3"/><path d="M12 11V7a2 2 0 0 1 4 0v5"/><path d="M16 12V9a2 2 0 0 1 4 0v5c0 4.5-3.2 7-7.5 7C8 21 5 18.5 5 14.5V12a2 2 0 0 1 3 0z"/>'},
-  {key:'maulid',label:'Maulid',svg:'<path d="M16.7 4.2A7.5 7.5 0 1 0 19.8 15 6.2 6.2 0 1 1 16.7 4.2z"/><path d="m17.8 7 .7 1.5 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2z"/>'},
-  {key:'dalail',label:'Kitab',svg:'<path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z"/><path d="M8 4v16M12 8h3M12 12h3"/><path d="m19 5 .6 1.3 1.4.2-1 .9.2 1.4-1.2-.7-1.2.7.2-1.4-1-.9 1.4-.2z"/>'},
-  {key:'syair',label:'Syair',svg:'<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/><path d="M9 9l10-2"/>'},
-  {key:'khutbah',label:'Khutbah',svg:'<path d="M8 21h8M12 17v4M9 4h6v7a3 3 0 0 1-6 0z"/><path d="M6 10v1a6 6 0 0 0 12 0v-1"/>'},
-  {key:'other',label:'Umum',svg:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'}
-];
+const CATEGORY_ICON_OPTIONS=window.AMALIYAH_CATEGORY_ICON_OPTIONS||[];
 const VALID_CATEGORY_ICONS=new Set(CATEGORY_ICON_OPTIONS.map(option=>option.key));
 
 let original=null;
@@ -125,6 +116,7 @@ function bind(){
     const button=event.target.closest('[data-category-icon]');
     if(button)setSelectedCategoryIcon(button.dataset.categoryIcon);
   };
+  $('#categoryIconSearch').oninput=()=>renderCategoryIconPicker(selectedExplorerCategory());
 
   $('#batchImportBtn').onclick=openBatchDialog;
   $('#closeBatchBtn').onclick=closeBatchDialog;
@@ -477,11 +469,17 @@ function renderCategoryIconPicker(category=''){
   const preview=$('#categoryIconPreview');
   if(!picker)return;
   const active=selectedCategoryIcon(category);
-  picker.innerHTML=CATEGORY_ICON_OPTIONS.map(option=>`
+  const query=String($('#categoryIconSearch')?.value||'').trim().toLocaleLowerCase('id-ID');
+  const visible=CATEGORY_ICON_OPTIONS.filter(option=>{
+    const haystack=`${option.label} ${option.key} ${option.keywords||''}`.toLocaleLowerCase('id-ID');
+    return !query||haystack.includes(query);
+  });
+  picker.innerHTML=visible.map(option=>`
     <button class="category-icon-choice ${option.key===active?'active':''}" type="button" data-category-icon="${option.key}" aria-pressed="${option.key===active}" title="${esc(option.label)}">
       <span>${categoryIconSvg(option.key)}</span><small>${esc(option.label)}</small>
     </button>`).join('');
   if(preview)preview.innerHTML=categoryIconSvg(active);
+  $('#categoryIconEmpty')?.classList.toggle('hidden',visible.length>0);
 }
 
 function setSelectedCategoryIcon(key){
@@ -3167,7 +3165,7 @@ function buildRebuildPlan(entries,rootName){
     });
 
   const books={...clone(data)};
-  books.version='2.38.5-root-category-draft';
+  books.version='2.40.1-svg-icon-library';
   books.categories=['Semua',...categories];
   books.items=items;
 
@@ -3951,7 +3949,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.40.0-category-icons';
+  data.version='2.40.1-svg-icon-library';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);

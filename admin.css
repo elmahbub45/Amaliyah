@@ -3732,8 +3732,23 @@ dialog.rebuild-dialog{width:min(1120px,calc(100% - 28px))}
 .category-icon-field>small{
   display:block;margin-top:10px;color:var(--ui-muted);font-size:9px;line-height:1.45;
 }
+.category-icon-search{
+  height:38px;margin:0 0 10px;padding:0 11px;display:flex;align-items:center;gap:8px;
+  border:1px solid #e3dfd5;border-radius:11px;background:#faf8f2;color:#8a948f;
+}
+.category-icon-search:focus-within{
+  border-color:#8ebcaf;background:#fff;box-shadow:0 0 0 3px rgba(10,107,85,.08);
+}
+.category-icon-search>span{font-size:19px;line-height:1;transform:rotate(-15deg)}
+.category-icon-search input{
+  min-width:0;width:100%;border:0;outline:0;background:transparent;color:var(--ui-text);
+  font:inherit;font-size:10px;font-weight:650;
+}
+.category-icon-search input::placeholder{color:#929c97}
 .category-icon-picker{
+  max-height:288px;padding-right:3px;overflow:auto;overscroll-behavior:contain;
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;
+  scrollbar-width:thin;scrollbar-color:#b9c9c3 transparent;
 }
 .category-icon-choice{
   min-width:0;min-height:70px;display:flex;flex-direction:column;align-items:center;
@@ -3758,6 +3773,7 @@ dialog.rebuild-dialog{width:min(1120px,calc(100% - 28px))}
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   font-size:8.5px;font-weight:750;
 }
+.category-icon-empty{margin:18px 0 8px;text-align:center;color:var(--ui-muted);font-size:10px}
 .category-inspector-actions{margin-top:auto;display:flex;justify-content:flex-end;gap:10px;padding-top:18px;border-top:1px solid #ebe6db}
 .badge.draft{background:#e5f4ef;color:#08705a;border-color:#bcded3}
 

@@ -161,7 +161,12 @@
 
         <fieldset class="category-icon-field">
           <legend>Ikon Kategori</legend>
+          <label class="category-icon-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="categoryIconSearch" type="search" placeholder="Cari ikon, misalnya masjid…" autocomplete="off">
+          </label>
           <div id="categoryIconPicker" class="category-icon-picker" aria-label="Pilih ikon kategori"></div>
+          <p id="categoryIconEmpty" class="category-icon-empty hidden">Ikon tidak ditemukan.</p>
           <small>Ikon dipakai pada Beranda, halaman Semua Kategori, Bacaan Terakhir, dan Favorit.</small>
         </fieldset>
 
@@ -757,6 +762,7 @@
   <!-- Notifikasi internal -->
   <div id="toastHost" class="toast-host" aria-live="polite"></div>
 
+  <script src="icon-library.js"></script>
   <script type="module" src="admin.js"></script>
 </body>
 </html>
