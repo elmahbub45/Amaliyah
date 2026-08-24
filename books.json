@@ -3,12 +3,13 @@
   "categories": [
     "Semua",
     "Wirid",
-    "Dalail",
+    "Dalail & Istigfar",
     "Maulid",
     "Doa",
+    "Sholat",
     "Khutbah",
-    "Syair",
-    "Al-Qur'an"
+    "Al-Qur'an",
+    "Syair"
   ],
   "items": [
     {
@@ -53,7 +54,7 @@
     {
       "id": "dalail",
       "title": "Dalail",
-      "category": "Dalail",
+      "category": "Dalail & Istigfar",
       "type": "collection",
       "coverText": "Dalail",
       "parts": [
@@ -122,8 +123,8 @@
     {
       "id": "istighfar-harian",
       "title": "Istighfar Harian",
-      "category": "Dalail",
-      "type": "group",
+      "category": "Dalail & Istigfar",
+      "type": "collection",
       "coverText": "Istighfar Harian",
       "parts": [
         {
@@ -201,6 +202,15 @@
       "coverText": "وِرْدُ\nاللَّطِيف"
     },
     {
+      "id": "wirid-sakran-9265b6",
+      "title": "Wirid Sakran",
+      "category": "Wirid",
+      "type": "single",
+      "file": "assets/pdf-v2/wirid/wirid-sakran.pdf",
+      "pages": 5,
+      "coverText": "Wirid Sakran"
+    },
+    {
       "id": "ratib-al-haddad-ee328d",
       "title": "Ratib Al-Haddad",
       "category": "Wirid",
@@ -217,15 +227,6 @@
       "file": "assets/pdf-v2/wirid/ratib-al-attas.pdf",
       "pages": 14,
       "coverText": "Ratib Al-Attas"
-    },
-    {
-      "id": "wirid-sakran-9265b6",
-      "title": "Wirid Sakran",
-      "category": "Wirid",
-      "type": "single",
-      "file": "assets/pdf-v2/wirid/wirid-sakran.pdf",
-      "pages": 5,
-      "coverText": "Wirid Sakran"
     },
     {
       "id": "hizib-nawawi-66c917",
@@ -314,7 +315,7 @@
     {
       "id": "sholat-tasbih",
       "title": "Sholat Tasbih",
-      "category": "Doa",
+      "category": "Sholat",
       "type": "collection",
       "coverText": "Sholat Tasbih",
       "parts": [
@@ -330,7 +331,8 @@
           "file": "assets/pdf-v2/doa/sholat-tasbih/doa-sholat-tasbih.pdf",
           "pages": 3
         }
-      ]
+      ],
+      "hidden": false
     },
     {
       "id": "amaliyah-ramadhan",
@@ -368,7 +370,7 @@
     {
       "id": "sholat-witir",
       "title": "Sholat Witir",
-      "category": "Doa",
+      "category": "Sholat",
       "type": "collection",
       "coverText": "Sholat Witir",
       "parts": [
@@ -384,16 +386,87 @@
           "file": "assets/pdf-v2/doa/sholat-witir/doa-sholat-witir.pdf",
           "pages": 10
         }
-      ]
+      ],
+      "hidden": false
     },
     {
       "id": "takbir-hari-raya-7a8d86",
       "title": "Takbir Hari Raya",
-      "category": "Wirid",
+      "category": "Doa",
       "type": "single",
       "file": "assets/pdf-v2/wirid/takbir-hari-raya.pdf",
       "pages": 1,
-      "coverText": "Takbir Hari Raya"
+      "coverText": "Takbir Hari Raya",
+      "hidden": false
+    },
+    {
+      "id": "khutbah-jumat",
+      "title": "Kumpulan Khutbah Jum'at",
+      "category": "Khutbah",
+      "type": "group",
+      "coverText": "Kumpulan Khutbah Jum'at",
+      "parts": [
+        {
+          "id": "amar-ma-ruf-nahi-mungkar-cd9e39",
+          "title": "Amar Ma'ruf Nahi Mungkar",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/amar-ma-ruf-nahi-mungkar.pdf",
+          "pages": 9
+        },
+        {
+          "id": "beramal-untuk-akhirat-866b7d",
+          "title": "Beramal Untuk Akhirat",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/beramal-untuk-akhirat.pdf",
+          "pages": 6
+        },
+        {
+          "id": "kematian-95c7b6",
+          "title": "Kematian",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/kematian.pdf",
+          "pages": 8
+        },
+        {
+          "id": "masjid-adalah-sarana-ibadah-3f0ee4",
+          "title": "Masjid Adalah Sarana Ibadah",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/masjid-adalah-sarana-ibadah.pdf",
+          "pages": 7
+        },
+        {
+          "id": "membina-kekuatan-ummat-3ddf39",
+          "title": "Membina Kekuatan Ummat",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/membina-kekuatan-ummat.pdf",
+          "pages": 8
+        },
+        {
+          "id": "menjauhi-hasad-tamak-dan-takabbur-1cfc4f",
+          "title": "Menjauhi Hasad Tamak Dan Takabbur",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/menjauhi-hasad-tamak-dan-takabbur.pdf",
+          "pages": 9
+        },
+        {
+          "id": "mensyukuri-nikmat-1f194d",
+          "title": "Mensyukuri Nikmat",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/mensyukuri-nikmat.pdf",
+          "pages": 7
+        },
+        {
+          "id": "nabi-muhammad-sebagai-teladan-bb02fe",
+          "title": "Nabi Muhammad Sebagai Teladan",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/nabi-muhammad-sebagai-teladan.pdf",
+          "pages": 10
+        },
+        {
+          "id": "tafakkur-mempertebal-iman-72ecc3",
+          "title": "Tafakkur Mempertebal Iman",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/tafakkur-mempertebal-iman.pdf",
+          "pages": 7
+        },
+        {
+          "id": "bacaan-09f873",
+          "title": "بچأن بلال صلاة جمعة",
+          "file": "assets/pdf-v2/khutbah/khutbah-jumat/bacaan.pdf",
+          "pages": 2
+        }
+      ]
     },
     {
       "id": "khutbah-idul-fitri",
@@ -500,11 +573,12 @@
     {
       "id": "do-a-sholat-dhuha-15d3e7",
       "title": "Doa Sholat Dhuha",
-      "category": "Doa",
+      "category": "Sholat",
       "type": "single",
       "file": "assets/pdf-v2/doa/doa-sholat-dhuha.pdf",
       "pages": 1,
-      "coverText": "Doa Sholat Dhuha"
+      "coverText": "Doa Sholat Dhuha",
+      "hidden": false
     },
     {
       "id": "doa-mempermudah-persalinan-8922be",
@@ -554,7 +628,7 @@
     {
       "id": "jamak-qashar-takhir",
       "title": "Jamak Qashar Takhir",
-      "category": "Doa",
+      "category": "Sholat",
       "type": "collection",
       "coverText": "Jamak Qashar Takhir",
       "parts": [
@@ -582,12 +656,13 @@
           "file": "assets/pdf-v2/doa/jamak-qashar-takhir/isya.pdf",
           "pages": 1
         }
-      ]
+      ],
+      "hidden": false
     },
     {
       "id": "jamak-qashar-taqdim",
       "title": "Jamak Qashar Taqdim",
-      "category": "Doa",
+      "category": "Sholat",
       "type": "collection",
       "coverText": "Jamak Qashar Taqdim",
       "parts": [
@@ -615,12 +690,13 @@
           "file": "assets/pdf-v2/doa/jamak-qashar-taqdim/isya.pdf",
           "pages": 1
         }
-      ]
+      ],
+      "hidden": false
     },
     {
       "id": "sholat-hajat",
       "title": "Sholat Hajat",
-      "category": "Doa",
+      "category": "Sholat",
       "type": "collection",
       "coverText": "Sholat Hajat",
       "parts": [
@@ -636,12 +712,13 @@
           "file": "assets/pdf-v2/doa/sholat-hajat/doa-sholat-hajat.pdf",
           "pages": 2
         }
-      ]
+      ],
+      "hidden": false
     },
     {
       "id": "sholat-hadiah",
       "title": "Sholat Hadiah",
-      "category": "Doa",
+      "category": "Sholat",
       "type": "collection",
       "coverText": "Sholat Hadiah",
       "parts": [
@@ -657,7 +734,8 @@
           "file": "assets/pdf-v2/doa/sholat-hadiah/doa-sholat-hadiah.pdf",
           "pages": 1
         }
-      ]
+      ],
+      "hidden": false
     },
     {
       "id": "nikah",
@@ -710,8 +788,8 @@
     {
       "id": "sholat-jenazah",
       "title": "Sholat Jenazah",
-      "category": "Doa",
-      "type": "group",
+      "category": "Sholat",
+      "type": "collection",
       "coverText": "Sholat Jenazah",
       "parts": [
         {
@@ -744,7 +822,8 @@
           "file": "assets/pdf-v2/doa/sholat-jenazah/sholat-ghaib.pdf",
           "pages": 1
         }
-      ]
+      ],
+      "hidden": false
     },
     {
       "id": "tahlil",
@@ -954,6 +1033,27 @@
       "coverText": "Simthud Durar"
     },
     {
+      "id": "khutbah-hari-tasyrik",
+      "title": "Khutbah Hari Tasyrik",
+      "category": "Khutbah",
+      "type": "group",
+      "coverText": "Khutbah Hari Tasyrik",
+      "parts": [
+        {
+          "id": "khutbah-hari-tasyrik-melayu-2ae3f1",
+          "title": "Khutbah - Hari Tasyrik (Melayu)",
+          "file": "assets/pdf-v2/khutbah/khutbah-hari-tasyrik/khutbah-hari-tasyrik-melayu.pdf",
+          "pages": 13
+        },
+        {
+          "id": "khutbah-hari-tasyrik-latin-9b5a9d",
+          "title": "Khutbah - Hari Tasyrik (Latin)",
+          "file": "assets/pdf-v2/khutbah/khutbah-hari-tasyrik/khutbah-hari-tasyrik-latin.pdf",
+          "pages": 12
+        }
+      ]
+    },
+    {
       "id": "khutbah-gerhana",
       "title": "Khutbah Sholat Gerhana",
       "category": "Khutbah",
@@ -996,27 +1096,6 @@
       ]
     },
     {
-      "id": "khutbah-hari-tasyrik",
-      "title": "Khutbah Hari Tasyrik",
-      "category": "Khutbah",
-      "type": "group",
-      "coverText": "Khutbah Hari Tasyrik",
-      "parts": [
-        {
-          "id": "khutbah-hari-tasyrik-melayu-2ae3f1",
-          "title": "Khutbah - Hari Tasyrik (Melayu)",
-          "file": "assets/pdf-v2/khutbah/khutbah-hari-tasyrik/khutbah-hari-tasyrik-melayu.pdf",
-          "pages": 13
-        },
-        {
-          "id": "khutbah-hari-tasyrik-latin-9b5a9d",
-          "title": "Khutbah - Hari Tasyrik (Latin)",
-          "file": "assets/pdf-v2/khutbah/khutbah-hari-tasyrik/khutbah-hari-tasyrik-latin.pdf",
-          "pages": 12
-        }
-      ]
-    },
-    {
       "id": "doa-fajar-9b7c6f",
       "title": "Doa Fajar",
       "category": "Doa",
@@ -1042,33 +1121,6 @@
       "file": "assets/pdf-v2/doa/doa-musafir.pdf",
       "pages": 1,
       "coverText": "Doa Musafir"
-    },
-    {
-      "id": "doa-setelah-membaca-surah-yasin-e8eada",
-      "title": "Doa Setelah Membaca Surah Yasin",
-      "category": "Doa",
-      "type": "single",
-      "file": "assets/pdf-v2/doa/doa-setelah-membaca-surah-yasin.pdf",
-      "pages": 2,
-      "coverText": "Doa Setelah Membaca Surah Yasin"
-    },
-    {
-      "id": "doa-surah-al-waqi-ah-c7badd",
-      "title": "Doa Surah Al Waqi'ah",
-      "category": "Doa",
-      "type": "single",
-      "file": "assets/pdf-v2/doa/doa-surah-al-waqi-ah.pdf",
-      "pages": 2,
-      "coverText": "Doa Surah Al Waqi'ah"
-    },
-    {
-      "id": "doa-surah-al-waqi-ah-panjang-87e0d5",
-      "title": "Doa Surah Al Waqi'ah - Panjang",
-      "category": "Doa",
-      "type": "single",
-      "file": "assets/pdf-v2/doa/doa-surah-al-waqi-ah-panjang.pdf",
-      "pages": 3,
-      "coverText": "Doa Surah Al Waqi'ah - Panjang"
     },
     {
       "id": "hizb-al-bahr-5928ea",
@@ -1116,476 +1168,56 @@
       "coverText": "Talqin Mayyit Perempuan"
     },
     {
-      "id": "khutbah-jumat",
-      "title": "Kumpulan Khutbah Jum'at",
-      "category": "Khutbah",
-      "type": "group",
-      "coverText": "Kumpulan Khutbah Jum'at",
+      "id": "surah-yasin-a18b09",
+      "title": "Surah Yasin",
+      "category": "Al-Qur'an",
+      "type": "collection",
       "parts": [
         {
-          "id": "amar-ma-ruf-nahi-mungkar-cd9e39",
-          "title": "Amar Ma'ruf Nahi Mungkar",
-          "file": "assets/pdf-v2/khutbah/khutbah-jumat/amar-ma-ruf-nahi-mungkar.pdf",
-          "pages": 9
+          "id": "surah-yasin-a18b09-bagian-1",
+          "title": "Surah Yasin",
+          "file": "assets/pdf-v2/quran/surah-pilihan/surah-yasin.pdf",
+          "pages": 12
         },
         {
-          "id": "beramal-untuk-akhirat-866b7d",
-          "title": "Beramal Untuk Akhirat",
-          "file": "assets/pdf-v2/khutbah/khutbah-jumat/beramal-untuk-akhirat.pdf",
-          "pages": 6
-        },
-        {
-          "id": "kematian-95c7b6",
-          "title": "Kematian",
-          "file": "assets/pdf-v2/khutbah/khutbah-jumat/kematian.pdf",
-          "pages": 8
-        },
-        {
-          "id": "masjid-adalah-sarana-ibadah-3f0ee4",
-          "title": "Masjid Adalah Sarana Ibadah",
-          "file": "assets/pdf-v2/khutbah/khutbah-jumat/masjid-adalah-sarana-ibadah.pdf",
-          "pages": 7
-        },
-        {
-          "id": "membina-kekuatan-ummat-3ddf39",
-          "title": "Membina Kekuatan Ummat",
-          "file": "assets/pdf-v2/khutbah/khutbah-jumat/membina-kekuatan-ummat.pdf",
-          "pages": 8
-        },
-        {
-          "id": "menjauhi-hasad-tamak-dan-takabbur-1cfc4f",
-          "title": "Menjauhi Hasad Tamak Dan Takabbur",
-          "file": "assets/pdf-v2/khutbah/khutbah-jumat/menjauhi-hasad-tamak-dan-takabbur.pdf",
-          "pages": 9
-        },
-        {
-          "id": "mensyukuri-nikmat-1f194d",
-          "title": "Mensyukuri Nikmat",
-          "file": "assets/pdf-v2/khutbah/khutbah-jumat/mensyukuri-nikmat.pdf",
-          "pages": 7
-        },
-        {
-          "id": "nabi-muhammad-sebagai-teladan-bb02fe",
-          "title": "Nabi Muhammad Sebagai Teladan",
-          "file": "assets/pdf-v2/khutbah/khutbah-jumat/nabi-muhammad-sebagai-teladan.pdf",
-          "pages": 10
-        },
-        {
-          "id": "tafakkur-mempertebal-iman-72ecc3",
-          "title": "Tafakkur Mempertebal Iman",
-          "file": "assets/pdf-v2/khutbah/khutbah-jumat/tafakkur-mempertebal-iman.pdf",
-          "pages": 7
-        },
-        {
-          "id": "bacaan-09f873",
-          "title": "بچأن بلال صلاة جمعة",
-          "file": "assets/pdf-v2/khutbah/khutbah-jumat/bacaan.pdf",
+          "id": "doa-setelah-membaca-surah-yasin-e8eada",
+          "title": "Doa Setelah Membaca Surah Yasin",
+          "file": "assets/pdf-v2/doa/doa-setelah-membaca-surah-yasin.pdf",
           "pages": 2
         }
       ]
     },
     {
-      "id": "syair",
-      "title": "Kumpulan Syair",
-      "category": "Syair",
-      "type": "group",
-      "coverText": "Kumpulan Syair",
+      "id": "surah-al-mulk-tabarak-d7b01e",
+      "title": "Surah Al Mulk (Tabarak)",
+      "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-mulk-tabarak.pdf",
+      "pages": 6,
+      "category": "Al-Qur'an",
+      "type": "single"
+    },
+    {
+      "id": "surah-al-waqiah-2b58bd",
+      "title": "Surah Al Waqiah",
+      "category": "Al-Qur'an",
+      "type": "collection",
       "parts": [
         {
-          "id": "bacaan-85915f",
-          "title": "أَشْرَقَتْ أَنْوَارْ نَبِيْنَا",
-          "file": "assets/pdf-v2/syair/syair/bacaan.pdf",
-          "pages": 1
+          "id": "surah-al-waqiah-2b58bd-bagian-1",
+          "title": "Surah Al Waqiah",
+          "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-waqiah.pdf",
+          "pages": 8
         },
         {
-          "id": "bacaan-41d967",
-          "title": "إِلٰهِى يَا سَمِيعُ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-2.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-87e305",
-          "title": "اللهُ اَرْجُوْ اَرْجُوْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-3.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-3480bc",
-          "title": "اَحْبَابُنَا فِىْ اللهِ قَوْمٌ بَقَوْا بِالله",
-          "file": "assets/pdf-v2/syair/syair/bacaan-4.pdf",
-          "pages": 5
-        },
-        {
-          "id": "bacaan-5a4d3c",
-          "title": "اَشْرَقَ الْبَدْرُ عَلَيْنَا",
-          "file": "assets/pdf-v2/syair/syair/bacaan-5.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-2ca784",
-          "title": "اَلسَّلَامُ عَلَيْكَ زَيْنَ الْاَنْبِيَاءْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-6.pdf",
+          "id": "doa-surah-al-waqi-ah-c7badd",
+          "title": "Doa Surah Al Waqi'ah",
+          "file": "assets/pdf-v2/doa/doa-surah-al-waqi-ah.pdf",
           "pages": 2
         },
         {
-          "id": "bacaan-732347",
-          "title": "اَللهُ اَللهُ الْمَدَدْ يَا رَسُوْلَ اللهْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-7.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-f71574",
-          "title": "اَللهُ اَللهْ لَمَّا نَادَانِىْ هُوَ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-8.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-aa0670",
-          "title": "اَللهْ اَللهْ اَللهْ اَللهْ مَالَنَا مَوْلًى سِوَى اللهْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-9.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-f5d237",
-          "title": "اَللّٰهُمَّ صَلِّ عَلَی مُحَمَّدْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-10.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-af33f1",
-          "title": "اِنَّ فِى الْجَنَّةِ نَهْرًا مِنْ لَّبَنْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-11.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-d1ba0b",
-          "title": "اِنْ شِئْتَ اَنْ تَدْرِىْ مَقَامَ مُحَمَّدٍ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-12.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-2cfa67",
-          "title": "بُشْرٰی لَنَا نِلْنَا الْمُنٰی",
-          "file": "assets/pdf-v2/syair/syair/bacaan-13.pdf",
+          "id": "doa-surah-al-waqi-ah-panjang-87e0d5",
+          "title": "Doa Surah Al Waqi'ah - Panjang",
+          "file": "assets/pdf-v2/doa/doa-surah-al-waqi-ah-panjang.pdf",
           "pages": 3
-        },
-        {
-          "id": "bacaan-828773",
-          "title": "بِرَسُوْلِ اللهِ وَالْبَدَوِىْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-14.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-ceccae",
-          "title": "حَيُّوا الْهَادِي بِاَجْمَلِ ذِكْرٰى",
-          "file": "assets/pdf-v2/syair/syair/bacaan-15.pdf",
-          "pages": 3
-        },
-        {
-          "id": "bacaan-582578",
-          "title": "حُبُّ اَحْمَدٍ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-16.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-44ff21",
-          "title": "خَبِّرِىْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-17.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-86bedc",
-          "title": "دَعُوْنِىْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-18.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-17e036",
-          "title": "رَبِّ فَانْــفَعْـنَا بِــبَرْكَتِهِمْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-19.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-001af6",
-          "title": "رَبِّى خَلَقْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-20.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-a48a66",
-          "title": "شَيْ لِلّٰهْ شَيْ لِلّٰه",
-          "file": "assets/pdf-v2/syair/syair/bacaan-21.pdf",
-          "pages": 3
-        },
-        {
-          "id": "bacaan-52ddce",
-          "title": "صَـــلَوَاتُ اللهِ تَغْشَى",
-          "file": "assets/pdf-v2/syair/syair/bacaan-22.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-9ae767",
-          "title": "صَلَاةُ اللهِ مَا لَاحَتْ كَوَاكِبْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-23.pdf",
-          "pages": 3
-        },
-        {
-          "id": "bacaan-653a53",
-          "title": "صَلُّوْا عَلَى النُّوْرِ الَّذِيْ عَرَجَ السَّمَاءْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-24.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-33a4a1",
-          "title": "صَلِّ وَسَلِّمْ يَا سَلَامْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-25.pdf",
-          "pages": 3
-        },
-        {
-          "id": "bacaan-b2992a",
-          "title": "صِلْ يَانَبِيْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-26.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-94ce5a",
-          "title": "طَالَمَا اَشْكُوْ غَرَامِىْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-27.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-ab1bdf",
-          "title": "طَلَعَ الْبَدْرُ عَلَيْنَا",
-          "file": "assets/pdf-v2/syair/syair/bacaan-28.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-6b7187",
-          "title": "فِى هَوٰى خَيْرِ الْعِبَادْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-29.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-7dd0a4",
-          "title": "قِفْ وَاسْـتَمِعْ لِىْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-30.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-a67d45",
-          "title": "لَا إِلٰهَ إِلَّا اللهْ اَللَّهْ اَللهْ يَامَوْلَانَا",
-          "file": "assets/pdf-v2/syair/syair/bacaan-31.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-889587",
-          "title": "لَكَ الْحَمْدُ يَا رَبِّىْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-32.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-f224da",
-          "title": "لُذْ فِى حِمٰى",
-          "file": "assets/pdf-v2/syair/syair/bacaan-33.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-e4a1ec",
-          "title": "مَبْرَكَ الْيَوْم ذَا جِيْنَا",
-          "file": "assets/pdf-v2/syair/syair/bacaan-34.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-ff2b5a",
-          "title": "مَرْحَبًا يَا رَمَضَانْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-35.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-f64913",
-          "title": "نُورُ الْمُصْطَفٰى",
-          "file": "assets/pdf-v2/syair/syair/bacaan-36.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-982ed1",
-          "title": "نُورُ الْهُدٰى وَافَانَا",
-          "file": "assets/pdf-v2/syair/syair/bacaan-37.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-d86ede",
-          "title": "نُورُ الْهُدٰى وَالْحَقِّ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-38.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-30edce",
-          "title": "نُوْرُ الْمُصْطَفٰى مَلَأَ الْاَكْوَانْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-39.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-3b54ad",
-          "title": "نُوْرُ الْوُجُودِ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-40.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-a0600b",
-          "title": "هَامَ قَلْبِىْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-41.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-b09914",
-          "title": "هَلُمَّ انْشُدْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-42.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-6068c2",
-          "title": "هُوَ النُّوْرُ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-43.pdf",
-          "pages": 4
-        },
-        {
-          "id": "bacaan-b4a4c5",
-          "title": "وُلِدَ الْحَبِيْبُ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-44.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-6c52d7",
-          "title": "يَا اللّٰهْ يَا عَظِيْم",
-          "file": "assets/pdf-v2/syair/syair/bacaan-45.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-f998f1",
-          "title": "يَا اَللهُ يَا رَحْمٰنْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-46.pdf",
-          "pages": 3
-        },
-        {
-          "id": "bacaan-8ce27b",
-          "title": "يَا اَهْلَ بَيْتِ النَّبِىْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-47.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-eabfe6",
-          "title": "يَا اِمَامَ الرُّسْلِ يَا سَنَدِىْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-48.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-47df61",
-          "title": "يَا اٰلَ بَيْتِ النَّبِىْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-49.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-91217c",
-          "title": "يَا حَبِيْبِىْ كَيْفَ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-50.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-8f1ae7",
-          "title": "يَا خَيْرَ مَوْلُوْدٍ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-51.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-44d76e",
-          "title": "يَا خَيْرَ هَادِى",
-          "file": "assets/pdf-v2/syair/syair/bacaan-52.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-070b6f",
-          "title": "يَا رَبِّ بِالْعَارِفِ السَّمَّانِ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-53.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-fbe354",
-          "title": "يَا رَسُوْلَ الله",
-          "file": "assets/pdf-v2/syair/syair/bacaan-54.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-6770f2",
-          "title": "يَا سَـيِّدَ السَّادَاتِ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-55.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-1a4e64",
-          "title": "يَا سَـيِّدِي يَا رَسُوْلَ اللهْ يَا مَنْ لَهُ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-56.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-e4d208",
-          "title": "يَا سَيِّدِىْ يَا رَسُوْلَ الله",
-          "file": "assets/pdf-v2/syair/syair/bacaan-57.pdf",
-          "pages": 3
-        },
-        {
-          "id": "bacaan-476193",
-          "title": "يَا شَيْخَنَا يَا سَمَّانْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-58.pdf",
-          "pages": 3
-        },
-        {
-          "id": "bacaan-0eaa5b",
-          "title": "يَا طَيْبَةْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-59.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-3227f8",
-          "title": "يَا لَطِيفًا بِالْعِبَادْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-60.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-9fdd8a",
-          "title": "يَا مَنْ يَرٰى وَلَا يُرٰى",
-          "file": "assets/pdf-v2/syair/syair/bacaan-61.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-16ac4d",
-          "title": "يَا مُهَيْمِنُ يَا سَلَامْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-62.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-266b04",
-          "title": "يَا نَبِي سَلَامْ عَلَيْكَ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-63.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-f0c66f",
-          "title": "يَا نَبِيَّنَا الْهَادِى",
-          "file": "assets/pdf-v2/syair/syair/bacaan-64.pdf",
-          "pages": 1
-        },
-        {
-          "id": "bacaan-825ffa",
-          "title": "يَارَبِّ يَا عَالِمَ الْحَالْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-65.pdf",
-          "pages": 2
-        },
-        {
-          "id": "bacaan-53385e",
-          "title": "يَارَبِّ يَارَحْمٰنْ",
-          "file": "assets/pdf-v2/syair/syair/bacaan-66.pdf",
-          "pages": 2
         }
       ]
     },
@@ -1594,30 +1226,6 @@
       "title": "Surah Al Fath",
       "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-fath.pdf",
       "pages": 10,
-      "category": "Al-Qur'an",
-      "type": "single"
-    },
-    {
-      "id": "surah-yasin-a18b09",
-      "title": "Surah Yasin",
-      "file": "assets/pdf-v2/quran/surah-pilihan/surah-yasin.pdf",
-      "pages": 12,
-      "category": "Al-Qur'an",
-      "type": "single"
-    },
-    {
-      "id": "surah-al-waqiah-2b58bd",
-      "title": "Surah Al Waqiah",
-      "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-waqiah.pdf",
-      "pages": 8,
-      "category": "Al-Qur'an",
-      "type": "single"
-    },
-    {
-      "id": "surah-al-mulk-tabarak-d7b01e",
-      "title": "Surah Al Mulk (Tabarak)",
-      "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-mulk-tabarak.pdf",
-      "pages": 6,
       "category": "Al-Qur'an",
       "type": "single"
     },
@@ -1635,6 +1243,534 @@
       "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-kahfi.pdf",
       "pages": 24,
       "category": "Al-Qur'an",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-85915f",
+      "title": "أَشْرَقَتْ أَنْوَارْ نَبِيْنَا",
+      "file": "assets/pdf-v2/syair/syair/bacaan.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-41d967",
+      "title": "إِلٰهِى يَا سَمِيعُ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-2.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-87e305",
+      "title": "اللهُ اَرْجُوْ اَرْجُوْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-3.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-3480bc",
+      "title": "اَحْبَابُنَا فِىْ اللهِ قَوْمٌ بَقَوْا بِالله",
+      "file": "assets/pdf-v2/syair/syair/bacaan-4.pdf",
+      "pages": 5,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-5a4d3c",
+      "title": "اَشْرَقَ الْبَدْرُ عَلَيْنَا",
+      "file": "assets/pdf-v2/syair/syair/bacaan-5.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-2ca784",
+      "title": "اَلسَّلَامُ عَلَيْكَ زَيْنَ الْاَنْبِيَاءْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-6.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-732347",
+      "title": "اَللهُ اَللهُ الْمَدَدْ يَا رَسُوْلَ اللهْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-7.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-f71574",
+      "title": "اَللهُ اَللهْ لَمَّا نَادَانِىْ هُوَ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-8.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-aa0670",
+      "title": "اَللهْ اَللهْ اَللهْ اَللهْ مَالَنَا مَوْلًى سِوَى اللهْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-9.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-f5d237",
+      "title": "اَللّٰهُمَّ صَلِّ عَلَی مُحَمَّدْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-10.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-af33f1",
+      "title": "اِنَّ فِى الْجَنَّةِ نَهْرًا مِنْ لَّبَنْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-11.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-d1ba0b",
+      "title": "اِنْ شِئْتَ اَنْ تَدْرِىْ مَقَامَ مُحَمَّدٍ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-12.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-2cfa67",
+      "title": "بُشْرٰی لَنَا نِلْنَا الْمُنٰی",
+      "file": "assets/pdf-v2/syair/syair/bacaan-13.pdf",
+      "pages": 3,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-828773",
+      "title": "بِرَسُوْلِ اللهِ وَالْبَدَوِىْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-14.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-ceccae",
+      "title": "حَيُّوا الْهَادِي بِاَجْمَلِ ذِكْرٰى",
+      "file": "assets/pdf-v2/syair/syair/bacaan-15.pdf",
+      "pages": 3,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-582578",
+      "title": "حُبُّ اَحْمَدٍ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-16.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-44ff21",
+      "title": "خَبِّرِىْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-17.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-86bedc",
+      "title": "دَعُوْنِىْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-18.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-17e036",
+      "title": "رَبِّ فَانْــفَعْـنَا بِــبَرْكَتِهِمْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-19.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-001af6",
+      "title": "رَبِّى خَلَقْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-20.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-a48a66",
+      "title": "شَيْ لِلّٰهْ شَيْ لِلّٰه",
+      "file": "assets/pdf-v2/syair/syair/bacaan-21.pdf",
+      "pages": 3,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-52ddce",
+      "title": "صَـــلَوَاتُ اللهِ تَغْشَى",
+      "file": "assets/pdf-v2/syair/syair/bacaan-22.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-9ae767",
+      "title": "صَلَاةُ اللهِ مَا لَاحَتْ كَوَاكِبْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-23.pdf",
+      "pages": 3,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-653a53",
+      "title": "صَلُّوْا عَلَى النُّوْرِ الَّذِيْ عَرَجَ السَّمَاءْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-24.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-33a4a1",
+      "title": "صَلِّ وَسَلِّمْ يَا سَلَامْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-25.pdf",
+      "pages": 3,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-b2992a",
+      "title": "صِلْ يَانَبِيْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-26.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-94ce5a",
+      "title": "طَالَمَا اَشْكُوْ غَرَامِىْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-27.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-ab1bdf",
+      "title": "طَلَعَ الْبَدْرُ عَلَيْنَا",
+      "file": "assets/pdf-v2/syair/syair/bacaan-28.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-6b7187",
+      "title": "فِى هَوٰى خَيْرِ الْعِبَادْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-29.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-7dd0a4",
+      "title": "قِفْ وَاسْـتَمِعْ لِىْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-30.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-a67d45",
+      "title": "لَا إِلٰهَ إِلَّا اللهْ اَللَّهْ اَللهْ يَامَوْلَانَا",
+      "file": "assets/pdf-v2/syair/syair/bacaan-31.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-889587",
+      "title": "لَكَ الْحَمْدُ يَا رَبِّىْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-32.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-f224da",
+      "title": "لُذْ فِى حِمٰى",
+      "file": "assets/pdf-v2/syair/syair/bacaan-33.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-e4a1ec",
+      "title": "مَبْرَكَ الْيَوْم ذَا جِيْنَا",
+      "file": "assets/pdf-v2/syair/syair/bacaan-34.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-ff2b5a",
+      "title": "مَرْحَبًا يَا رَمَضَانْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-35.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-f64913",
+      "title": "نُورُ الْمُصْطَفٰى",
+      "file": "assets/pdf-v2/syair/syair/bacaan-36.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-982ed1",
+      "title": "نُورُ الْهُدٰى وَافَانَا",
+      "file": "assets/pdf-v2/syair/syair/bacaan-37.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-d86ede",
+      "title": "نُورُ الْهُدٰى وَالْحَقِّ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-38.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-30edce",
+      "title": "نُوْرُ الْمُصْطَفٰى مَلَأَ الْاَكْوَانْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-39.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-3b54ad",
+      "title": "نُوْرُ الْوُجُودِ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-40.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-a0600b",
+      "title": "هَامَ قَلْبِىْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-41.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-b09914",
+      "title": "هَلُمَّ انْشُدْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-42.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-6068c2",
+      "title": "هُوَ النُّوْرُ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-43.pdf",
+      "pages": 4,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-b4a4c5",
+      "title": "وُلِدَ الْحَبِيْبُ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-44.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-6c52d7",
+      "title": "يَا اللّٰهْ يَا عَظِيْم",
+      "file": "assets/pdf-v2/syair/syair/bacaan-45.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-f998f1",
+      "title": "يَا اَللهُ يَا رَحْمٰنْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-46.pdf",
+      "pages": 3,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-8ce27b",
+      "title": "يَا اَهْلَ بَيْتِ النَّبِىْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-47.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-eabfe6",
+      "title": "يَا اِمَامَ الرُّسْلِ يَا سَنَدِىْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-48.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-47df61",
+      "title": "يَا اٰلَ بَيْتِ النَّبِىْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-49.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-91217c",
+      "title": "يَا حَبِيْبِىْ كَيْفَ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-50.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-8f1ae7",
+      "title": "يَا خَيْرَ مَوْلُوْدٍ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-51.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-44d76e",
+      "title": "يَا خَيْرَ هَادِى",
+      "file": "assets/pdf-v2/syair/syair/bacaan-52.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-070b6f",
+      "title": "يَا رَبِّ بِالْعَارِفِ السَّمَّانِ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-53.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-fbe354",
+      "title": "يَا رَسُوْلَ الله",
+      "file": "assets/pdf-v2/syair/syair/bacaan-54.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-6770f2",
+      "title": "يَا سَـيِّدَ السَّادَاتِ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-55.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-1a4e64",
+      "title": "يَا سَـيِّدِي يَا رَسُوْلَ اللهْ يَا مَنْ لَهُ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-56.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-e4d208",
+      "title": "يَا سَيِّدِىْ يَا رَسُوْلَ الله",
+      "file": "assets/pdf-v2/syair/syair/bacaan-57.pdf",
+      "pages": 3,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-476193",
+      "title": "يَا شَيْخَنَا يَا سَمَّانْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-58.pdf",
+      "pages": 3,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-0eaa5b",
+      "title": "يَا طَيْبَةْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-59.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-3227f8",
+      "title": "يَا لَطِيفًا بِالْعِبَادْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-60.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-9fdd8a",
+      "title": "يَا مَنْ يَرٰى وَلَا يُرٰى",
+      "file": "assets/pdf-v2/syair/syair/bacaan-61.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-16ac4d",
+      "title": "يَا مُهَيْمِنُ يَا سَلَامْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-62.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-266b04",
+      "title": "يَا نَبِي سَلَامْ عَلَيْكَ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-63.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-f0c66f",
+      "title": "يَا نَبِيَّنَا الْهَادِى",
+      "file": "assets/pdf-v2/syair/syair/bacaan-64.pdf",
+      "pages": 1,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-825ffa",
+      "title": "يَارَبِّ يَا عَالِمَ الْحَالْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-65.pdf",
+      "pages": 2,
+      "category": "Syair",
+      "type": "single"
+    },
+    {
+      "id": "bacaan-53385e",
+      "title": "يَارَبِّ يَارَحْمٰنْ",
+      "file": "assets/pdf-v2/syair/syair/bacaan-66.pdf",
+      "pages": 2,
+      "category": "Syair",
       "type": "single"
     }
   ]
