@@ -28,6 +28,9 @@
     </div>
 
     <div class="top-actions">
+      <button id="rebuildCatalogBtn" class="top-btn rebuild-action" type="button" title="Bangun ulang katalog dari folder utama">
+        <span class="ui-icon i-folder" aria-hidden="true"></span><b>Rebuild Folder</b>
+      </button>
       <button id="backupBtn" class="top-btn" type="button" title="Backup & pemulihan">
         <span class="ui-icon i-backup" aria-hidden="true"></span><b>Backup</b>
       </button>
@@ -507,6 +510,79 @@
       <div class="dialog-actions sticky-dialog-actions">
         <button id="cancelBatchBtn" class="ghost" type="button">Batal</button>
         <button id="applyBatchBtn" class="primary" type="button" disabled>Tambahkan ke Katalog</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Rebuild seluruh katalog dari satu folder lokal -->
+  <dialog id="rebuildDialog" class="wide-dialog rebuild-dialog">
+    <div class="dialog-card rebuild-dialog-card">
+      <div class="dialog-head">
+        <div>
+          <small>SUMBER UTAMA KATALOG</small>
+          <h3>Rebuild Catalog from Folder</h3>
+        </div>
+        <button id="closeRebuildBtn" class="icon-btn dark" type="button" aria-label="Tutup">✕</button>
+      </div>
+
+      <div class="rebuild-truth-note">
+        <span class="rebuild-truth-icon">✓</span>
+        <span>
+          <b>Struktur folder lokal menjadi sumber kebenaran.</b>
+          <small>Folder bercabang = Group • folder paling akhir = Collection • PDF di folder paling akhir = Part • relative path = R2 key.</small>
+        </span>
+      </div>
+
+      <div class="rebuild-pick-zone">
+        <div>
+          <small>FOLDER UTAMA</small>
+          <b id="rebuildRootName">Belum ada folder dipilih</b>
+          <span id="rebuildScanStatus">Pilih satu folder utama yang isinya sama dengan struktur yang akan diunggah ke R2.</span>
+        </div>
+        <button id="rebuildChooseFolderBtn" class="primary" type="button">Pilih Folder Utama</button>
+        <input id="rebuildFolderInput" type="file" accept="application/pdf,.pdf" multiple webkitdirectory directory hidden>
+      </div>
+
+      <div id="rebuildMetrics" class="rebuild-metrics">
+        <span><b id="rebuildPdfCount">0</b><small>PDF</small></span>
+        <span><b id="rebuildGroupCount">0</b><small>Group</small></span>
+        <span><b id="rebuildCollectionCount">0</b><small>Collection</small></span>
+        <span><b id="rebuildIssueCount">0</b><small>Masalah</small></span>
+      </div>
+
+      <div class="rebuild-workspace">
+        <section class="rebuild-preview-panel">
+          <div class="rebuild-section-head">
+            <div><small>PREVIEW STRUKTUR</small><b>Group / Collection / Part</b></div>
+            <code id="rebuildR2Base">R2: /</code>
+          </div>
+          <div id="rebuildTree" class="rebuild-tree">
+            <div class="rebuild-empty">Pilih folder utama untuk melihat struktur katalog baru.</div>
+          </div>
+        </section>
+
+        <aside class="rebuild-output-panel">
+          <div class="rebuild-section-head">
+            <div><small>OUTPUT MAINTENANCE</small><b>File yang Dihasilkan</b></div>
+          </div>
+          <div class="rebuild-output-list">
+            <div><span class="output-number">1</span><span><b>books.json</b><small>Struktur katalog baru dari folder.</small></span></div>
+            <div><span class="output-number">2</span><span><b>R2 Upload Manifest</b><small>File lokal → target object key R2.</small></span></div>
+            <div><span class="output-number">3</span><span><b>R2 Cleanup Manifest</b><small>Daftar object key katalog lama untuk dihapus.</small></span></div>
+          </div>
+          <div id="rebuildIssues" class="rebuild-issues">
+            <div class="rebuild-empty compact">Belum ada hasil pemeriksaan.</div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="dialog-actions sticky-dialog-actions rebuild-actions">
+        <button id="cancelRebuildBtn" class="ghost" type="button">Batal</button>
+        <span class="rebuild-download-actions">
+          <button id="downloadCleanupManifestBtn" class="ghost accent" type="button" disabled>Cleanup Manifest</button>
+          <button id="downloadUploadManifestBtn" class="ghost accent" type="button" disabled>Upload Manifest</button>
+        </span>
+        <button id="applyRebuildBtn" class="primary" type="button" disabled>Gunakan sebagai Katalog Baru</button>
       </div>
     </div>
   </dialog>

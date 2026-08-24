@@ -28,6 +28,11 @@ let explorerCategory='';
 let explorerItemId=null;
 let selectedPartRef=null;
 let explorerView=localStorage.getItem('amaliyah:admin:explorer:view:v2361')||'list';
+let rebuildEntries=[];
+let rebuildPlan=null;
+let rebuildCleanupKeys=[];
+let rebuildScanToken=0;
+let rebuildIgnoredCount=0;
 
 async function boot(){
   original=await fetchBooks();
@@ -108,6 +113,15 @@ function bind(){
   $('#batchTargetInput').onchange=()=>{updateBatchModeUI();renderBatchReview();};
   $('#batchTitleInput').oninput=renderBatchReview;
   $('#applyBatchBtn').onclick=applyBatchImport;
+
+  $('#rebuildCatalogBtn').onclick=openRebuildDialog;
+  $('#closeRebuildBtn').onclick=closeRebuildDialog;
+  $('#cancelRebuildBtn').onclick=closeRebuildDialog;
+  $('#rebuildChooseFolderBtn').onclick=()=>$('#rebuildFolderInput').click();
+  $('#rebuildFolderInput').onchange=handleRebuildFolder;
+  $('#downloadUploadManifestBtn').onclick=downloadRebuildUploadManifest;
+  $('#downloadCleanupManifestBtn').onclick=downloadRebuildCleanupManifest;
+  $('#applyRebuildBtn').onclick=applyRebuildCatalog;
 
   $('#deleteItemBtn').onclick=deleteItem;
   $('#previewBtn').onclick=()=>showItemPreview(getSelected());
@@ -2407,6 +2421,397 @@ function applyBatchImport(){
   toast('Batch Import selesai. Jangan lupa unggah PDF fisik ke R2 sesuai key yang dibuat.','ok');
 }
 
+/* ===================== REBUILD CATALOG + R2 REFRESH ===================== */
+function catalogPdfKeys(snapshot=data){
+  if(!snapshot?.items)return [];
+  const keys=[];
+  snapshot.items.forEach(item=>{
+    if(item.type==='single' && item.file)keys.push(r2Key(item.file));
+    (item.parts||[]).forEach(part=>{
+      if(!part.itemId && part.file)keys.push(r2Key(part.file));
+    });
+  });
+  return [...new Set(keys.filter(Boolean))].sort(naturalCompare);
+}
+
+function resetRebuildDialog(){
+  rebuildScanToken++;
+  rebuildEntries=[];
+  rebuildPlan=null;
+  rebuildIgnoredCount=0;
+  rebuildCleanupKeys=catalogPdfKeys(data);
+  $('#rebuildFolderInput').value='';
+  $('#rebuildRootName').textContent='Belum ada folder dipilih';
+  $('#rebuildScanStatus').textContent='Pilih satu folder utama yang isinya sama dengan struktur yang akan diunggah ke R2.';
+  $('#rebuildTree').innerHTML='<div class="rebuild-empty">Pilih folder utama untuk melihat struktur katalog baru.</div>';
+  $('#rebuildIssues').innerHTML='<div class="rebuild-empty compact">Belum ada hasil pemeriksaan.</div>';
+  $('#rebuildPdfCount').textContent='0';
+  $('#rebuildGroupCount').textContent='0';
+  $('#rebuildCollectionCount').textContent='0';
+  $('#rebuildIssueCount').textContent='0';
+  $('#downloadUploadManifestBtn').disabled=true;
+  $('#downloadCleanupManifestBtn').disabled=true;
+  $('#applyRebuildBtn').disabled=true;
+  $('#applyRebuildBtn').textContent='Gunakan sebagai Katalog Baru';
+}
+
+function openRebuildDialog(){
+  resetRebuildDialog();
+  $('#rebuildDialog').showModal();
+}
+
+function closeRebuildDialog(){
+  rebuildScanToken++;
+  $('#rebuildDialog').close();
+}
+
+function displayFolderTitle(name=''){
+  const cleaned=String(name)
+    .replace(/^\s*\d+[\s._-]*/,'')
+    .replace(/[_-]+/g,' ')
+    .replace(/\s+/g,' ')
+    .trim()||'Bacaan';
+  return cleaned.charAt(0).toLocaleUpperCase('id-ID')+cleaned.slice(1);
+}
+
+function categoryTitleFromFolder(name=''){
+  const title=displayFolderTitle(name);
+  const key=slugify(title);
+  return {
+    quran:"Al-Qur'an",
+    'al-quran':"Al-Qur'an",
+    wirid:'Wirid',
+    doa:'Doa',
+    maulid:'Maulid',
+    dalail:'Dalail',
+    syair:'Syair',
+    khutbah:'Khutbah'
+  }[key]||title;
+}
+
+function makeRebuildTree(entries){
+  const root={name:'',path:'',folders:new Map(),files:[]};
+  entries.forEach(entry=>{
+    const segments=entry.r2Key.split('/').filter(Boolean);
+    const filename=segments.pop();
+    let node=root;
+    segments.forEach(segment=>{
+      if(!node.folders.has(segment)){
+        node.folders.set(segment,{
+          name:segment,
+          path:node.path?`${node.path}/${segment}`:segment,
+          folders:new Map(),
+          files:[]
+        });
+      }
+      node=node.folders.get(segment);
+    });
+    node.files.push({...entry,filename:safePdfFilename(filename)});
+  });
+  return root;
+}
+
+function buildRebuildPlan(entries,rootName){
+  const tree=makeRebuildTree(entries);
+  const errors=[];
+  const warnings=[];
+  const seenKeys=new Map();
+
+  entries.forEach(entry=>{
+    const lower=entry.r2Key.toLocaleLowerCase('id-ID');
+    if(seenKeys.has(lower)){
+      errors.push(`R2 key duplikat: ${entry.r2Key}`);
+    }else seenKeys.set(lower,entry.localPath);
+    if(entry.r2Key.split('/').filter(Boolean).length<2){
+      errors.push(`PDF harus berada di dalam folder kategori/Collection: ${entry.localPath}`);
+    }
+    if(!entry.pagesDetected){
+      warnings.push(`Jumlah halaman tidak terdeteksi dan sementara diisi 1: ${entry.localPath}`);
+    }
+  });
+
+  if(rebuildIgnoredCount){
+    warnings.push(`${rebuildIgnoredCount} file non-PDF diabaikan. Hanya PDF yang masuk katalog dan manifest.`);
+  }
+  if(tree.files.length){
+    tree.files.forEach(file=>errors.push(`PDF tidak boleh langsung berada di folder utama: ${file.localPath}`));
+  }
+  if(!tree.folders.size){
+    errors.push('Folder utama belum memiliki folder kategori yang berisi PDF.');
+  }
+
+  function inspectNode(node){
+    if(node.folders.size && node.files.length){
+      errors.push(`Folder bercabang tidak boleh berisi PDF langsung: ${node.path}. Pindahkan PDF ke leaf folder.`);
+    }
+    [...node.folders.values()].forEach(inspectNode);
+  }
+  [...tree.folders.values()].forEach(inspectNode);
+
+  const items=[];
+  const categories=[];
+  const usedIds=new Set();
+  let groupCount=0;
+  let collectionCount=0;
+
+  function uniqueId(base){
+    const seed=base||'bacaan';
+    let id=seed,n=2;
+    while(usedIds.has(id))id=`${seed}-${n++}`;
+    usedIds.add(id);
+    return id;
+  }
+
+  function buildNode(node,category,isTop=false){
+    const children=[...node.folders.values()].sort((a,b)=>naturalCompare(a.name,b.name));
+    const leaf=children.length===0;
+    const title=displayFolderTitle(node.name);
+    const id=uniqueId(slugify(node.path||title));
+    const item={id,title,category,type:leaf?'collection':'group',icon:'◈',parts:[]};
+    if(!isTop)item.hidden=true;
+
+    if(leaf){
+      collectionCount++;
+      [...node.files]
+        .sort((a,b)=>naturalCompare(a.r2Key,b.r2Key))
+        .forEach(entry=>{
+          item.parts.push({
+            id:uniqueId(`${id}-${slugify(entry.title)}`),
+            title:entry.title,
+            file:`assets/pdf-v2/${entry.r2Key}`,
+            pages:Math.max(1,Math.floor(Number(entry.pages)||1))
+          });
+        });
+    }else{
+      groupCount++;
+      children.forEach(child=>{
+        const childItem=buildNode(child,category,false);
+        item.parts.push({
+          id:uniqueId(`${id}-ref-${childItem.id}`),
+          title:childItem.title,
+          itemId:childItem.id
+        });
+      });
+    }
+
+    items.push(item);
+    return item;
+  }
+
+  [...tree.folders.values()]
+    .sort((a,b)=>naturalCompare(a.name,b.name))
+    .forEach(categoryNode=>{
+      const category=categoryTitleFromFolder(categoryNode.name);
+      if(!categories.includes(category))categories.push(category);
+      buildNode(categoryNode,category,true);
+    });
+
+  const books={...clone(data)};
+  books.version='2.38-folder-r2-refresh';
+  books.categories=['Semua',...categories];
+  books.items=items;
+
+  return {
+    rootName,
+    tree,
+    books,
+    errors:[...new Set(errors)],
+    warnings:[...new Set(warnings)],
+    groupCount,
+    collectionCount
+  };
+}
+
+function rebuildTreeMarkup(node,depth=0){
+  const children=[...node.folders.values()].sort((a,b)=>naturalCompare(a.name,b.name));
+  const leaf=children.length===0;
+  const rows=[];
+  if(node.name){
+    rows.push(`<div class="rebuild-tree-row folder-row" style="--depth:${depth}">
+      <span class="rebuild-folder-icon" aria-hidden="true"></span>
+      <span><b>${esc(displayFolderTitle(node.name))}</b><small>${esc(node.path)}</small></span>
+      <em class="${leaf?'collection-badge':'group-badge'}">${leaf?'Collection':'Group'}</em>
+    </div>`);
+  }
+  [...node.files].sort((a,b)=>naturalCompare(a.r2Key,b.r2Key)).forEach(file=>{
+    rows.push(`<div class="rebuild-tree-row pdf-row ${children.length?'invalid-row':''}" style="--depth:${depth+(node.name?1:0)}">
+      <span class="rebuild-pdf-icon">PDF</span>
+      <span><b>${esc(file.title)}</b><small>${esc(file.r2Key)}</small></span>
+      <em>${Math.max(1,Number(file.pages)||1)} hal.</em>
+    </div>`);
+  });
+  children.forEach(child=>rows.push(rebuildTreeMarkup(child,depth+(node.name?1:0))));
+  return rows.join('');
+}
+
+function renderRebuildPlan(){
+  const plan=rebuildPlan;
+  if(!plan)return;
+  const issueCount=plan.errors.length+plan.warnings.length;
+  $('#rebuildPdfCount').textContent=String(rebuildEntries.length);
+  $('#rebuildGroupCount').textContent=String(plan.groupCount);
+  $('#rebuildCollectionCount').textContent=String(plan.collectionCount);
+  $('#rebuildIssueCount').textContent=String(issueCount);
+  $('#rebuildTree').innerHTML=rebuildTreeMarkup(plan.tree)||'<div class="rebuild-empty">Tidak ada struktur PDF yang dapat dibangun.</div>';
+
+  const issues=[];
+  if(!plan.errors.length&&!plan.warnings.length){
+    issues.push('<div class="rebuild-issue ok"><b>✓ Struktur siap</b><small>Folder dan R2 key sudah konsisten.</small></div>');
+  }
+  plan.errors.forEach(message=>issues.push(`<div class="rebuild-issue error"><b>!</b><span><strong>Error</strong><small>${esc(message)}</small></span></div>`));
+  plan.warnings.forEach(message=>issues.push(`<div class="rebuild-issue warning"><b>△</b><span><strong>Perlu dicek</strong><small>${esc(message)}</small></span></div>`));
+  $('#rebuildIssues').innerHTML=issues.join('');
+
+  $('#downloadUploadManifestBtn').disabled=plan.errors.length>0;
+  $('#downloadCleanupManifestBtn').disabled=plan.errors.length>0;
+  $('#applyRebuildBtn').disabled=plan.errors.length>0;
+  $('#applyRebuildBtn').textContent='Gunakan sebagai Katalog Baru';
+}
+
+async function handleRebuildFolder(e){
+  const allFiles=[...(e.target.files||[])];
+  const files=allFiles.filter(file=>/\.pdf$/i.test(file.name));
+  rebuildIgnoredCount=allFiles.length-files.length;
+  e.target.value='';
+  if(!files.length){
+    toast('Folder utama tidak berisi PDF.','warn');
+    return;
+  }
+
+  const token=++rebuildScanToken;
+  const firstPath=(files[0].webkitRelativePath||files[0].name).replace(/\\/g,'/');
+  const rootName=firstPath.split('/')[0]||'Folder Utama';
+  rebuildCleanupKeys=catalogPdfKeys(data);
+  rebuildEntries=files.map(file=>{
+    const localPath=(file.webkitRelativePath||file.name).replace(/\\/g,'/');
+    const segments=localPath.split('/').filter(Boolean);
+    if(segments[0]===rootName)segments.shift();
+    const key=segments.join('/');
+    return {
+      file,
+      localPath,
+      relativePath:key,
+      r2Key:key,
+      filename:safePdfFilename(file.name),
+      title:titleFromFilename(file.name),
+      pages:1,
+      pagesDetected:false,
+      size:Number(file.size)||0,
+      lastModified:Number(file.lastModified)||0
+    };
+  }).sort((a,b)=>naturalCompare(a.r2Key,b.r2Key));
+
+  $('#rebuildRootName').textContent=rootName;
+  $('#rebuildScanStatus').textContent=`Membaca struktur dan jumlah halaman 0/${rebuildEntries.length} PDF…`;
+  rebuildPlan=buildRebuildPlan(rebuildEntries,rootName);
+  renderRebuildPlan();
+  $('#downloadUploadManifestBtn').disabled=true;
+  $('#downloadCleanupManifestBtn').disabled=true;
+  $('#applyRebuildBtn').disabled=true;
+
+  let cursor=0;
+  let completed=0;
+  async function worker(){
+    while(token===rebuildScanToken){
+      const index=cursor++;
+      if(index>=rebuildEntries.length)return;
+      const entry=rebuildEntries[index];
+      const pages=await detectPdfPages(entry.file);
+      if(token!==rebuildScanToken)return;
+      if(pages){entry.pages=pages;entry.pagesDetected=true;}
+      completed++;
+      $('#rebuildScanStatus').textContent=`Membaca struktur dan jumlah halaman ${completed}/${rebuildEntries.length} PDF…`;
+    }
+  }
+
+  await Promise.all(Array.from({length:Math.min(4,rebuildEntries.length)},worker));
+  if(token!==rebuildScanToken)return;
+  rebuildPlan=buildRebuildPlan(rebuildEntries,rootName);
+  renderRebuildPlan();
+  $('#rebuildScanStatus').textContent=rebuildPlan.errors.length
+    ? `Pemindaian selesai • ${rebuildPlan.errors.length} error wajib diperbaiki di folder lokal.`
+    : `Pemindaian selesai • ${rebuildEntries.length} PDF siap menjadi katalog dan object R2.`;
+}
+
+function rebuildUploadManifest(){
+  const generatedAt=new Date().toISOString();
+  return {
+    schemaVersion:1,
+    kind:'amaliyah-r2-upload-manifest',
+    generatedAt,
+    sourceOfTruth:'local-folder',
+    rootFolder:rebuildPlan?.rootName||'',
+    target:'cloudflare-r2',
+    objectCount:rebuildEntries.length,
+    totalBytes:rebuildEntries.reduce((sum,entry)=>sum+entry.size,0),
+    objects:rebuildEntries.map(entry=>({
+      localPath:entry.localPath,
+      relativePath:entry.relativePath,
+      r2Key:entry.r2Key,
+      contentType:'application/pdf',
+      sizeBytes:entry.size,
+      lastModified:entry.lastModified?new Date(entry.lastModified).toISOString():null
+    }))
+  };
+}
+
+function rebuildCleanupManifest(){
+  const generatedAt=new Date().toISOString();
+  const expectedKeys=rebuildEntries.map(entry=>entry.r2Key).sort(naturalCompare);
+  const expectedSet=new Set(expectedKeys);
+  return {
+    schemaVersion:1,
+    kind:'amaliyah-r2-cleanup-manifest',
+    generatedAt,
+    strategy:'delete-listed-keys-before-full-upload',
+    safety:'Only delete keys listed in deleteKeys.',
+    source:'books.json loaded before rebuild',
+    deleteCount:rebuildCleanupKeys.length,
+    deleteKeys:[...rebuildCleanupKeys],
+    replacementCount:expectedKeys.length,
+    expectedKeys,
+    removedFromNewCatalog:rebuildCleanupKeys.filter(key=>!expectedSet.has(key))
+  };
+}
+
+function downloadRebuildUploadManifest(){
+  if(!rebuildPlan||rebuildPlan.errors.length)return;
+  downloadJson(rebuildUploadManifest(),'r2-upload-manifest.json');
+  toast('R2 Upload Manifest berhasil di-download.','ok');
+}
+
+function downloadRebuildCleanupManifest(){
+  if(!rebuildPlan||rebuildPlan.errors.length)return;
+  downloadJson(rebuildCleanupManifest(),'r2-cleanup-manifest.json');
+  toast('R2 Cleanup Manifest berhasil di-download.','ok');
+}
+
+async function applyRebuildCatalog(){
+  if(!rebuildPlan||rebuildPlan.errors.length)return;
+  const ok=await confirmInternal(
+    'Ganti seluruh katalog?',
+    `Seluruh struktur katalog editor saat ini akan diganti oleh hasil folder “${rebuildPlan.rootName}”. Backup lokal dibuat terlebih dahulu. PDF fisik di R2 belum disentuh.`,
+    'Ya, Ganti Katalog',
+    'Batal'
+  );
+  if(!ok)return;
+
+  createBackup('Sebelum Rebuild Catalog from Folder');
+  data=clone(rebuildPlan.books);
+  selectedId=null;
+  explorerCategory='';
+  explorerItemId=null;
+  selectedPartRef=null;
+  refreshCategoryUI();
+  markDirty('Katalog dibangun ulang dari folder lokal');
+  renderList();
+  showEmptyEditor();
+  $('#applyRebuildBtn').disabled=true;
+  $('#applyRebuildBtn').textContent='Katalog Baru Sudah Digunakan';
+  $('#rebuildScanStatus').textContent='Katalog baru sudah masuk ke editor. Download kedua manifest, lalu Preview & Download books.json.';
+  toast('Rebuild selesai. Download manifest R2 dan books.json.','ok');
+}
+
 /* ===================== CREATE / DELETE ITEM ===================== */
 function openItemDialog(){
   $('#newTitleInput').value='';
@@ -2801,7 +3206,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.33-admin-comfort';
+  data.version='2.38-folder-r2-refresh';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);
