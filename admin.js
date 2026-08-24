@@ -786,6 +786,42 @@ function parseExplorerSelectionKey(key=''){
   return {kind:'unknown'};
 }
 
+function stableExplorerSelectionEntry(key){
+  const ref=parseExplorerSelectionKey(key);
+  if(ref.kind==='item')return {kind:'item',itemId:ref.id};
+  if(ref.kind==='part'){
+    const parent=data.items.find(x=>x.id===ref.parentId);
+    const part=parent?.parts?.[ref.index];
+    if(part&&!part.itemId)return {
+      kind:'part',parentId:ref.parentId,partId:part.id,partIndex:ref.index
+    };
+  }
+  return null;
+}
+
+function explorerPayloadForDrag(selectionKey,fallback){
+  if(!explorerSelection.has(selectionKey)){
+    explorerSelection.clear();
+    explorerSelection.add(selectionKey);
+    explorerSelectionAnchor=selectionKey;
+    syncExplorerSelectionVisuals();
+  }
+  const entries=[...explorerSelection]
+    .map(stableExplorerSelectionEntry)
+    .filter(Boolean);
+  return entries.length>1?{kind:'multi',entries}:fallback;
+}
+
+function currentPartIndex(payload){
+  const parent=data.items.find(x=>x.id===payload?.parentId);
+  if(!parent||!Array.isArray(parent.parts))return -1;
+  if(payload.partId){
+    const found=parent.parts.findIndex(part=>part.id===payload.partId);
+    if(found>=0)return found;
+  }
+  return Number(payload.partIndex);
+}
+
 function showExplorerSelectionSummary(){
   selectedId=null;
   selectedPartRef=null;
@@ -849,11 +885,16 @@ function handleExplorerSelectionClick(row,event){
   const shift=event.shiftKey;
   const visible=explorerVisibleKeys;
 
-  if(shift && explorerSelectionAnchor && visible.includes(explorerSelectionAnchor)){
-    const from=visible.indexOf(explorerSelectionAnchor);
+  const rangeAnchor=explorerSelectionAnchor&&visible.includes(explorerSelectionAnchor)
+    ? explorerSelectionAnchor
+    : visible.find(value=>explorerSelection.has(value));
+
+  if(shift && rangeAnchor && visible.includes(rangeAnchor)){
+    const from=visible.indexOf(rangeAnchor);
     const to=visible.indexOf(key);
     if(!ctrl)explorerSelection.clear();
     visible.slice(Math.min(from,to),Math.max(from,to)+1).forEach(value=>explorerSelection.add(value));
+    explorerSelectionAnchor=rangeAnchor;
   }else if(ctrl){
     if(explorerSelection.has(key))explorerSelection.delete(key);
     else explorerSelection.add(key);
@@ -946,15 +987,18 @@ function explorerDragEnd(){
 }
 
 function canDropOnCategory(payload){
+  if(payload?.kind==='multi')return payload.entries?.length>0&&payload.entries.every(canDropOnCategory);
   return !!payload && (payload.kind==='item'||payload.kind==='part');
 }
 
 function canDropOnRoot(payload){
+  if(payload?.kind==='multi')return false;
   return !!payload && payload.kind==='item';
 }
 
 function canDropOnItem(payload,target){
   if(!payload||!target)return false;
+  if(payload.kind==='multi')return false;
   if(payload.kind==='item'){
     if(payload.itemId===target.id)return false;
     const source=data.items.find(x=>x.id===payload.itemId);
@@ -1025,10 +1069,16 @@ async function dropExplorerOnCategory(payload,category){
     return;
   }
 
+  if(payload.kind==='multi'){
+    await dropExplorerMultipleOnCategory(payload.entries,category);
+    return;
+  }
+
   // File PDF/part yang dikeluarkan dari Collection/Group menjadi Single.
   if(payload.kind==='part'){
     const sourceParent=data.items.find(x=>x.id===payload.parentId);
-    const part=sourceParent?.parts?.[payload.partIndex];
+    const sourceIndex=currentPartIndex(payload);
+    const part=sourceParent?.parts?.[sourceIndex];
     if(!sourceParent||!part||part.itemId){
       toast('Folder referensi tidak dapat diubah menjadi Single dengan cara ini.','warn');
       return;
@@ -1041,7 +1091,7 @@ async function dropExplorerOnCategory(payload,category){
     );
     if(!ok)return;
     createBackup(`Sebelum mengeluarkan ${part.title} dari ${sourceParent.title}`);
-    const moved=removeDirectPart(sourceParent,payload.partIndex);
+    const moved=removeDirectPart(sourceParent,sourceIndex);
     if(!moved)return;
     let newId=String(moved.id||slugify(moved.title));
     if(data.items.some(x=>x.id===newId))newId=uniqueItemId(newId);
@@ -1084,6 +1134,76 @@ async function dropExplorerOnCategory(payload,category){
   renderList();
   selectItem(item.id);
   toast(`${item.title} dipindahkan ke ${category}.`,'ok');
+}
+
+async function dropExplorerMultipleOnCategory(entries,category){
+  const movable=(entries||[]).filter(entry=>canDropOnCategory(entry));
+  if(!movable.length)return;
+
+  const ok=await confirmInternal(
+    'Pindahkan beberapa item?',
+    `${movable.length} item yang dipilih akan dipindahkan ke folder kategori “${category}”. PDF dari dalam Collection/Group akan menjadi bacaan Single tanpa mengunggah ulang file.`,
+    `Pindahkan ${movable.length} Item`,
+    'Batal'
+  );
+  if(!ok)return;
+
+  createBackup(`Sebelum memindahkan ${movable.length} item ke ${category}`);
+  const movedIds=[];
+
+  for(const entry of movable){
+    if(entry.kind==='item'){
+      const item=data.items.find(x=>x.id===entry.itemId);
+      if(!item)continue;
+      detachItemFromGroups(item.id);
+      item.hidden=false;
+      item.category=category;
+      movedIds.push(item.id);
+      continue;
+    }
+
+    if(entry.kind==='part'){
+      const sourceParent=data.items.find(x=>x.id===entry.parentId);
+      const sourceIndex=currentPartIndex(entry);
+      const part=sourceParent?.parts?.[sourceIndex];
+      if(!sourceParent||!part||part.itemId)continue;
+      const moved=removeDirectPart(sourceParent,sourceIndex);
+      if(!moved)continue;
+      let newId=String(moved.id||slugify(moved.title));
+      if(data.items.some(x=>x.id===newId))newId=uniqueItemId(newId);
+      const {itemId:_ignoredItemId,icon:_ignoredIcon,...partData}=moved;
+      const single={
+        ...partData,
+        id:newId,
+        title:moved.title||newId,
+        category,
+        type:'single',
+        file:moved.file||'',
+        pages:Math.max(1,Number(moved.pages)||1)
+      };
+      data.items.push(single);
+      movedIds.push(single.id);
+    }
+  }
+
+  if(!movedIds.length){
+    toast('Tidak ada item yang dapat dipindahkan.','warn');
+    return;
+  }
+
+  explorerCategory=category;
+  explorerItemId=null;
+  selectedId=null;
+  selectedPartRef=null;
+  $('#categoryFilter').value=category;
+  explorerSelection.clear();
+  movedIds.forEach(id=>explorerSelection.add(itemSelectionKey(id)));
+  explorerSelectionAnchor=itemSelectionKey(movedIds[0]);
+  markDirty(`${movedIds.length} item dipindahkan ke kategori ${category}`);
+  renderList();
+  applyExplorerSelection();
+  syncExplorerSelectionVisuals();
+  toast(`${movedIds.length} item berhasil dipindahkan ke ${category}.`,'ok');
 }
 
 async function dropExplorerOnRoot(payload){
@@ -1225,7 +1345,12 @@ function bindExplorerPartReorder(list){
     row.addEventListener('dragstart',e=>{
       const parent=data.items.find(x=>x.id===explorerItemId);
       if(!parent)return;
-      explorerDragStart({kind:'part',parentId:parent.id,partIndex:Number(row.dataset.partIndex)},row,e);
+      const partIndex=Number(row.dataset.partIndex);
+      const part=parent.parts?.[partIndex];
+      const key=row.dataset.selectionKey||partSelectionKey(parent.id,partIndex);
+      explorerDragStart(explorerPayloadForDrag(key,{
+        kind:'part',parentId:parent.id,partId:part?.id,partIndex
+      }),row,e);
     });
     row.addEventListener('dragend',explorerDragEnd);
     row.addEventListener('dragover',e=>{
@@ -1439,7 +1564,8 @@ function renderList(){
       const item=data.items.find(x=>x.id===id);
       if(!item)return;
       mainDragIndex=Number(row.dataset.mainIndex);
-      explorerDragStart({kind:'item',itemId:id},row,e);
+      const key=row.dataset.selectionKey||itemSelectionKey(id);
+      explorerDragStart(explorerPayloadForDrag(key,{kind:'item',itemId:id}),row,e);
     });
     row.addEventListener('dragend',()=>{mainDragIndex=null;explorerDragEnd();});
     bindExplorerDropTarget(row,{kind:'item',itemId:row.dataset.id});
@@ -3749,7 +3875,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.38.7-home-category-icons';
+  data.version='2.38.8-admin-multiselect-drag';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);
