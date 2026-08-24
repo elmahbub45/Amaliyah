@@ -1292,3 +1292,36 @@ body{
 .library-book-row .book-main{
   grid-template-columns:minmax(0,1fr) auto 16px !important;
 }
+
+
+/* =========================================================
+   V2.38.7 — Ikon kategori pada Bacaan Terakhir dan Favorit
+   ========================================================= */
+.home-book-icon,
+.favorite-icon{
+  background:linear-gradient(145deg,#fffaf1,#f3eadc) !important;
+  color:#b4883d !important;
+  border:1px solid rgba(194,148,65,.28) !important;
+  box-shadow:0 6px 15px rgba(95,70,29,.08) !important;
+  font-family:inherit !important;
+}
+.home-book-icon{
+  border-radius:15px !important;
+}
+.favorite-icon{
+  border-radius:13px !important;
+}
+.home-book-icon svg,
+.favorite-icon svg{
+  width:22px;
+  height:22px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.55;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.favorite-icon svg{
+  width:20px;
+  height:20px;
+}

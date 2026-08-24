@@ -143,7 +143,6 @@ function bind(){
   $('#categoryInput').oninput=()=>patchSelected('category',$('#categoryInput').value);
   $('#locationInput').onchange=moveSelectedByLocation;
   $('#typeInput').onchange=changeType;
-  $('#iconInput').oninput=()=>patchSelected('icon',$('#iconInput').value);
 
   $('#singleFileInput').oninput=()=>{
     patchSelected('file',$('#singleFileInput').value);
@@ -586,7 +585,11 @@ function refreshDraftFolderTypes(){
 
 function normalizeExport(){
   refreshDraftFolderTypes();
-  data.items.forEach(item=>delete item.draftFolder);
+  data.items.forEach(item=>{
+    delete item.draftFolder;
+    delete item.icon;
+    (item.parts||[]).forEach(part=>delete part.icon);
+  });
   delete data.draftCategories;
   syncCategoriesForExport();
   return data;
@@ -1049,7 +1052,6 @@ async function dropExplorerOnCategory(payload,category){
       title:moved.title||newId,
       category,
       type:'single',
-      icon:moved.icon||'◈',
       file:moved.file||'',
       pages:Math.max(1,Number(moved.pages)||1)
     };
@@ -1594,7 +1596,6 @@ function selectItem(id,{preserveExplorerSelection=false,skipListRender=false}={}
   $('#titleInput').value=x.title||'';
   $('#categoryInput').value=x.category||'';
   $('#typeInput').value=x.type||'single';
-  $('#iconInput').value=x.icon||'';
   $('#idInput').value=x.id||'';
   buildLocationOptions(x);
 
@@ -1813,7 +1814,6 @@ function renderLivePreview(){
   const x=getSelected();
   if(!x)return;
 
-  $('#previewIcon').textContent=x.icon||'◈';
   $('#previewCategory').textContent=(x.category||'Tanpa kategori').toUpperCase();
   $('#previewTitle').textContent=x.title||'(Tanpa judul)';
   $('#previewType').textContent=(x.type||'').toUpperCase();
@@ -2177,7 +2177,6 @@ function renderExistingPartList(){
   }
   list.innerHTML=items.map(x=>`
     <button class="existing-part-row ${existingPartSourceId===x.id?'selected':''}" type="button" data-existing-id="${esc(x.id)}">
-      <span class="existing-icon">${esc(x.icon||'◈')}</span>
       <span class="existing-copy">
         <b>${esc(x.title||'(Tanpa judul)')}</b>
         <small>${esc(x.category||'Tanpa kategori')} • ${esc(basename(x.file||''))} • ${Math.max(1,Number(x.pages)||1)} hal.</small>
@@ -2443,7 +2442,7 @@ function applyFolderTreeImport(category,baseFolder=""){
     const childFolders=[...node.folders.values()].sort((a,b)=>naturalCompare(a.name,b.name));
     const leaf=childFolders.length===0;
     const id=uniqueGlobal(slugify(node.path||title));
-    const item={id,title,category,type:leaf?'collection':'group',icon:'◈',parts:[]};
+    const item={id,title,category,type:leaf?'collection':'group',parts:[]};
     if(parentGroupId)item.hidden=true;
 
     if(leaf){
@@ -2456,7 +2455,7 @@ function applyFolderTreeImport(category,baseFolder=""){
       // PDF langsung di folder bercabang: jadikan Single tersembunyi dan referensikan dari Group.
       for(const entry of [...node.files].sort((a,b)=>naturalCompare(a.filename,b.filename))){
         const sid=uniqueGlobal(`${id}-${slugify(entry.title)}`);
-        const single={id:sid,title:entry.title.trim(),category,type:'single',icon:'◈',file:`${virtualBase}/${folderPath}/${entry.filename}`,pages:Math.max(1,Math.floor(Number(entry.pages)||1)),hidden:true};
+        const single={id:sid,title:entry.title.trim(),category,type:'single',file:`${virtualBase}/${folderPath}/${entry.filename}`,pages:Math.max(1,Math.floor(Number(entry.pages)||1)),hidden:true};
         data.items.push(single);created.push(single);
         item.parts.push({id:uniqueGlobal(`${id}-ref-${sid}`),title:single.title,itemId:sid});
       }
@@ -2718,7 +2717,6 @@ function applyBatchImport(){
         title,
         category,
         type:'single',
-        icon:'◈',
         file:batchPathFor(entry,i),
         pages:Math.max(1,Math.floor(Number(entry.pages)||1))
       };
@@ -2763,7 +2761,6 @@ function applyBatchImport(){
       title,
       category,
       type:mode,
-      icon:'◈',
       parts
     };
     data.items.push(item);
@@ -2928,7 +2925,7 @@ function buildRebuildPlan(entries,rootName){
     const leaf=children.length===0;
     const title=displayFolderTitle(node.name);
     const id=uniqueId(slugify(node.path||title));
-    const item={id,title,category,type:leaf?'collection':'group',icon:'◈',parts:[]};
+    const item={id,title,category,type:leaf?'collection':'group',parts:[]};
     if(!isTop)item.hidden=true;
 
     if(leaf){
@@ -3299,7 +3296,6 @@ function createNewFolder(){
     title,
     category,
     type:'group',
-    icon:'◈',
     parts:[],
     draftFolder:true
   };
@@ -3339,7 +3335,6 @@ function createNewFolder(){
 
 function openItemDialog(){
   $('#newTitleInput').value='';
-  $('#newIconInput').value='';
   $('#newCategoryInput').value=categories()[0]||'Doa';
   $('#newTypeInput').value='single';
   $('#itemDialog').showModal();
@@ -3354,15 +3349,13 @@ function createItem(){
 
   const type=$('#newTypeInput').value;
   const category=$('#newCategoryInput').value.trim()||'Lainnya';
-  const icon=$('#newIconInput').value.trim()||'◈';
   const id=uniqueItemId(slugify(title));
 
   const item={
     id,
     title,
     category,
-    type,
-    icon
+    type
   };
 
   if(type==='single'){
@@ -3463,10 +3456,6 @@ function validateAll(){
 
     if(!VALID_TYPES.has(item.type)){
       errors.push({...base,scope:label,message:`Tipe tidak valid: ${item.type||'(kosong)'}`,fix:'Pilih Single, Collection, atau Group.',field:'type'});
-    }
-
-    if(!String(item.icon||'').trim()){
-      warnings.push({...base,scope:label,message:'Icon kartu kosong.',fix:'Isi icon jika ingin kartu aplikasi memiliki tanda visual.',field:'icon'});
     }
 
 
@@ -3694,7 +3683,6 @@ function focusIssue(issue,closeValidation=false){
       title:'#titleInput',
       category:'#categoryInput',
       type:'#typeInput',
-      icon:'#iconInput',
       'single-file':'#singlePdfChooseBtn',
       'single-pages':'#singlePagesInput',
       parts:'#addPartBtn'
@@ -3722,7 +3710,6 @@ function showItemPreview(x){
 
   $('#previewDialogContent').innerHTML=`
     <div class="preview-hero">
-      <div class="preview-hero-icon">${esc(x.icon||'◈')}</div>
       <div>
         <small>${esc((x.category||'TANPA KATEGORI').toUpperCase())} • ${esc((x.type||'').toUpperCase())}</small>
         <h4>${esc(x.title||'(Tanpa judul)')}</h4>
@@ -3762,7 +3749,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.38.5-root-category-draft';
+  data.version='2.38.7-home-category-icons';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);

@@ -210,5 +210,67 @@
 </div>
 
 <script type="module" src="app.js"></script>
+<script>
+/* V2.38.7 — ikon Bacaan Terakhir/Favorit mengikuti kategori.
+   Diletakkan di index agar pembaruan website langsung berlaku di APK. */
+(()=>{
+  const icons={
+    quran:'<path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H12v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M19 4.5A2.5 2.5 0 0 0 16.5 2H12v18h4.5A2.5 2.5 0 0 1 19 22z"/>',
+    wirid:'<path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><circle cx="18.5" cy="5.5" r="1.5"/>',
+    doa:'<path d="M8 12.5V8a2 2 0 0 1 4 0v3"/><path d="M12 11V7a2 2 0 0 1 4 0v5"/><path d="M16 12V9a2 2 0 0 1 4 0v5c0 4.5-3.2 7-7.5 7C8 21 5 18.5 5 14.5V12a2 2 0 0 1 3 0z"/>',
+    maulid:'<path d="M16.7 4.2A7.5 7.5 0 1 0 19.8 15 6.2 6.2 0 1 1 16.7 4.2z"/><path d="m17.8 7 .7 1.5 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2z"/>',
+    dalail:'<path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z"/><path d="M8 4v16M12 8h3M12 12h3"/><path d="m19 5 .6 1.3 1.4.2-1 .9.2 1.4-1.2-.7-1.2.7.2-1.4-1-.9 1.4-.2z"/>',
+    syair:'<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/><path d="M9 9l10-2"/>',
+    khutbah:'<path d="M8 21h8M12 17v4M9 4h6v7a3 3 0 0 1-6 0z"/><path d="M6 10v1a6 6 0 0 0 12 0v-1"/>',
+    other:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'
+  };
+  let items=[];
+
+  function categoryKey(value){
+    const text=String(value||'').toLocaleLowerCase('id-ID');
+    if(text.includes('qur'))return 'quran';
+    if(text.includes('wirid'))return 'wirid';
+    if(text.includes('doa'))return 'doa';
+    if(text.includes('maulid'))return 'maulid';
+    if(text.includes('dalail'))return 'dalail';
+    if(text.includes('syair'))return 'syair';
+    if(text.includes('khutbah'))return 'khutbah';
+    return 'other';
+  }
+  function decorate(node,category){
+    if(!node)return;
+    const key=categoryKey(category);
+    if(node.dataset.categoryIcon===key && node.querySelector('svg'))return;
+    node.dataset.categoryIcon=key;
+    node.setAttribute('aria-label',`Kategori ${category||'Lainnya'}`);
+    node.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${icons[key]}</svg>`;
+  }
+  function itemFromFavoriteKey(key){
+    const value=String(key||'');
+    const id=value.startsWith('item:')
+      ? value.slice(5)
+      : value.startsWith('part:') ? value.slice(5).split(':')[0] : '';
+    return items.find(item=>item.id===id);
+  }
+  function refreshCategoryIcons(){
+    if(!items.length)return;
+    const lastId=localStorage.getItem('amaliyah:lastItem');
+    const lastItem=items.find(item=>item.id===lastId);
+    if(lastItem)decorate(document.querySelector('#continueIcon'),lastItem.category);
+    document.querySelectorAll('#favoriteBooks [data-fav-key]').forEach(card=>{
+      const item=itemFromFavoriteKey(card.dataset.favKey);
+      if(item)decorate(card.querySelector('.favorite-icon'),item.category);
+    });
+  }
+
+  new MutationObserver(refreshCategoryIcons).observe(document.body,{
+    childList:true,subtree:true,characterData:true
+  });
+  fetch('./books.json',{cache:'no-store'})
+    .then(response=>response.json())
+    .then(catalog=>{items=Array.isArray(catalog.items)?catalog.items:[];refreshCategoryIcons();})
+    .catch(()=>{});
+})();
+</script>
 </body>
 </html>
