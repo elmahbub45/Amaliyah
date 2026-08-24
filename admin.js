@@ -660,6 +660,14 @@ function normalizeExport(){
   });
   if(Object.keys(normalizedIcons).length)data.categoryIcons=normalizedIcons;
   else delete data.categoryIcons;
+  const normalizedAliases={};
+  Object.entries(data.categoryAliases||{}).forEach(([previous,current])=>{
+    const from=String(previous||'').trim();
+    const to=String(current||'').trim();
+    if(from&&to&&from!==to&&activeCategories.has(to))normalizedAliases[from]=to;
+  });
+  if(Object.keys(normalizedAliases).length)data.categoryAliases=normalizedAliases;
+  else delete data.categoryAliases;
   return data;
 }
 
@@ -1911,6 +1919,13 @@ async function renameSelectedCategory(){
     data.categoryIcons[next]=data.categoryIcons[current];
     delete data.categoryIcons[current];
   }
+  if(!data.categoryAliases||typeof data.categoryAliases!=='object'||Array.isArray(data.categoryAliases)){
+    data.categoryAliases={};
+  }
+  Object.entries(data.categoryAliases).forEach(([previous,target])=>{
+    if(target===current)data.categoryAliases[previous]=next;
+  });
+  data.categoryAliases[current]=next;
   if(explorerCategory===current)explorerCategory=next;
   explorerSelection.clear();
   explorerSelection.add(categorySelectionKey(next));
@@ -1943,6 +1958,12 @@ async function deleteSelectedCategory(){
   data.categories=(data.categories||[]).filter(name=>name!==category);
   data.draftCategories=(data.draftCategories||[]).filter(name=>name!==category);
   if(data.categoryIcons)delete data.categoryIcons[category];
+  if(data.categoryAliases){
+    delete data.categoryAliases[category];
+    Object.entries(data.categoryAliases).forEach(([previous,target])=>{
+      if(target===category)delete data.categoryAliases[previous];
+    });
+  }
   resetExplorerSelection();
   explorerCategory='';
   explorerItemId=null;
@@ -3165,7 +3186,7 @@ function buildRebuildPlan(entries,rootName){
     });
 
   const books={...clone(data)};
-  books.version='2.40.1-svg-icon-library';
+  books.version='2.40.2-category-rename-routing';
   books.categories=['Semua',...categories];
   books.items=items;
 
@@ -3949,7 +3970,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.40.1-svg-icon-library';
+  data.version='2.40.2-category-rename-routing';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);

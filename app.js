@@ -169,6 +169,9 @@ const categories = catalog.categories || ['Semua'];
 const categoryIcons = catalog.categoryIcons && typeof catalog.categoryIcons==='object'
   ? catalog.categoryIcons
   : {};
+const categoryAliases = catalog.categoryAliases && typeof catalog.categoryAliases==='object'
+  ? catalog.categoryAliases
+  : {};
 let prayerCountdownTimer = null;
 let prayerNotificationTimer = null;
 let latestPrayerTimes = null;
@@ -354,6 +357,8 @@ function itemSearchText(item){
 
 function updateHome(){
   const state=getLastState();
+  updateCategoryCounts();
+  renderHomeFavorites();
   if(!state)return;
   const {item,part}=state;
   const pr=partProgress(part);
@@ -368,23 +373,76 @@ function updateHome(){
   $('#progressBar').style.width=pr.percent+'%';
   $('#continueBtn').onclick=()=>continueItem(item.id);
 
-  updateCategoryCounts();
-  renderHomeFavorites();
+}
+
+function normalizedCategoryName(value=''){
+  return String(value)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLocaleLowerCase('id-ID')
+    .replace(/[^a-z0-9]+/g,' ')
+    .trim();
+}
+
+function catalogCategoryNames(){
+  const used=[...new Set(items
+    .map(item=>item.category)
+    .filter(category=>category&&normalizedCategoryName(category)!=='semua'))];
+  if(used.length)return used;
+  return [...new Set(categories
+    .filter(category=>category&&normalizedCategoryName(category)!=='semua'))];
+}
+
+function resolveHomeCategory(preferred,used=new Set()){
+  const available=catalogCategoryNames().filter(category=>!used.has(category));
+  const preferredName=normalizedCategoryName(preferred);
+  const aliased=categoryAliases[preferred];
+
+  const exact=available.find(category=>normalizedCategoryName(category)===preferredName);
+  if(exact)return exact;
+
+  if(aliased){
+    const aliasMatch=available.find(category=>normalizedCategoryName(category)===normalizedCategoryName(aliased));
+    if(aliasMatch)return aliasMatch;
+  }
+
+  const related=available.find(category=>{
+    const name=normalizedCategoryName(category);
+    return name.includes(preferredName)||preferredName.includes(name);
+  });
+  if(related)return related;
+
+  const visualKey=categoryVisualKey(preferred);
+  if(visualKey!=='other'){
+    const visualMatch=available.find(category=>categoryVisualKey(category)===visualKey);
+    if(visualMatch)return visualMatch;
+  }
+
+  return available[0]||null;
 }
 
 function updateCategoryCounts(){
+  const used=new Set();
   document.querySelectorAll('[data-category-card]').forEach(el=>{
-    const cat=el.dataset.categoryCard;
-    const count=cat==='Semua' ? items.length : items.filter(b=>b.category===cat).length;
+    const preferred=el.dataset.categoryCard;
+    const isAll=preferred==='Semua';
+    const cat=isAll?'Semua':resolveHomeCategory(preferred,used);
+    if(cat&&!isAll)used.add(cat);
+    el.classList.toggle('hidden',!cat);
+    if(!cat)return;
+
+    el.dataset.activeCategory=cat;
+    const count=isAll ? items.length : items.filter(b=>b.category===cat).length;
+    const title=el.querySelector('b');
+    if(title)title.textContent=isAll?'Lihat Semua':categoryDisplayName(cat);
     const label=el.querySelector('small');
     if(label){
-      label.textContent=cat==='Semua'
+      label.textContent=isAll
         ? (count?`${count} Bacaan`:'Semua Bacaan')
         : (count?`${count} Bacaan`:'Segera');
     }
     const icon=el.querySelector('.category-icon');
     if(icon)icon.innerHTML=categoryVisualSvg(cat);
-    el.onclick=()=>cat==='Semua'?showCategories():showLibrary(cat);
+    el.onclick=()=>isAll?showCategories():showLibrary(cat);
   });
 }
 
