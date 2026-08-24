@@ -175,7 +175,7 @@ let librarySearchQuery='';
 let activeCollectionId=null;
 
 const SCREEN_TO_ID={
-  home:'#app', library:'#library', collection:'#collection',
+  home:'#app', categories:'#categoryIndex', library:'#library', collection:'#collection',
   settings:'#settings', monthly:'#monthly', bookmarks:'#bookmarks', history:'#history'
 };
 let currentScreen='home';
@@ -245,6 +245,7 @@ function navigateScreen(screen='home',opts={}){
   paintScreen(screen);
   saveScreenState(screen,{category,focusNotifications,itemId});
   if(screen==='home')updateHome();
+  if(screen==='categories')renderCategoryIndex();
   if(screen==='library')renderLibrary(category);
   if(screen==='collection')renderCollection(itemId||activeCollectionId);
   if(screen==='settings'){
@@ -259,6 +260,7 @@ function navigateScreen(screen='home',opts={}){
   if(screen==='history')renderHistory();
 }
 function showHome(){navigateScreen('home')}
+function showCategories(){navigateScreen('categories')}
 function showLibrary(category='Semua'){navigateScreen('library',{category})}
 function showCollection(id){activeCollectionId=id;navigateScreen('collection',{itemId:id})}
 function showSettings(focusNotifications=false){navigateScreen('settings',{focusNotifications})}
@@ -377,8 +379,62 @@ function updateCategoryCounts(){
         ? (count?`${count} Bacaan`:'Semua Bacaan')
         : (count?`${count} Bacaan`:'Segera');
     }
-    el.onclick=()=>showLibrary(cat==='Semua'?'Semua':cat);
+    el.onclick=()=>showCategories();
   });
+}
+
+function categoryVisualKey(value){
+  const text=String(value||'').toLocaleLowerCase('id-ID');
+  if(text.includes('qur'))return 'quran';
+  if(text.includes('wirid'))return 'wirid';
+  if(text.includes('doa'))return 'doa';
+  if(text.includes('maulid'))return 'maulid';
+  if(text.includes('dalail'))return 'dalail';
+  if(text.includes('syair'))return 'syair';
+  if(text.includes('khutbah'))return 'khutbah';
+  return 'other';
+}
+
+function categoryVisualSvg(category){
+  const icons={
+    quran:'<path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H12v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M19 4.5A2.5 2.5 0 0 0 16.5 2H12v18h4.5A2.5 2.5 0 0 1 19 22z"/>',
+    wirid:'<path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><circle cx="18.5" cy="5.5" r="1.5"/>',
+    doa:'<path d="M8 12.5V8a2 2 0 0 1 4 0v3"/><path d="M12 11V7a2 2 0 0 1 4 0v5"/><path d="M16 12V9a2 2 0 0 1 4 0v5c0 4.5-3.2 7-7.5 7C8 21 5 18.5 5 14.5V12a2 2 0 0 1 3 0z"/>',
+    maulid:'<path d="M16.7 4.2A7.5 7.5 0 1 0 19.8 15 6.2 6.2 0 1 1 16.7 4.2z"/><path d="m17.8 7 .7 1.5 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2z"/>',
+    dalail:'<path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z"/><path d="M8 4v16M12 8h3M12 12h3"/><path d="m19 5 .6 1.3 1.4.2-1 .9.2 1.4-1.2-.7-1.2.7.2-1.4-1-.9 1.4-.2z"/>',
+    syair:'<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/><path d="M9 9l10-2"/>',
+    khutbah:'<path d="M8 21h8M12 17v4M9 4h6v7a3 3 0 0 1-6 0z"/><path d="M6 10v1a6 6 0 0 0 12 0v-1"/>',
+    other:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'
+  };
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[categoryVisualKey(category)]}</svg>`;
+}
+
+function categoryDisplayName(category){
+  return String(category||'').toLocaleLowerCase('id-ID')==='doa'?'Doa Harian':category;
+}
+
+function renderCategoryIndex(){
+  const directory=$('#categoryDirectory');
+  if(!directory)return;
+  const available=[...new Set([
+    ...categories.filter(category=>String(category).toLocaleLowerCase('id-ID')!=='semua'),
+    ...items.map(item=>item.category).filter(Boolean)
+  ])];
+  directory.replaceChildren();
+  available.forEach(category=>{
+    const count=items.filter(item=>item.category===category).length;
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='category-directory-card';
+    button.setAttribute('aria-label',`Buka kategori ${categoryDisplayName(category)}`);
+    button.innerHTML=`<span class="category-directory-icon">${categoryVisualSvg(category)}</span><span class="category-directory-copy"><b></b><small></small></span><span class="category-directory-arrow" aria-hidden="true">›</span>`;
+    button.querySelector('b').textContent=categoryDisplayName(category);
+    button.querySelector('small').textContent=count?`${count} bacaan`:'Belum tersedia';
+    button.onclick=()=>showLibrary(category);
+    directory.appendChild(button);
+  });
+  const countLabel=$('#allBooksCollectionCount');
+  if(countLabel)countLabel.textContent=`${items.length} bacaan dari semua kategori`;
 }
 
 function renderChips(active='Semua'){
@@ -1203,7 +1259,23 @@ const DEFAULT_NOTIF_SETTINGS={
 
 
 function pushSupported(){
+  if(nativeNotificationApp())return true;
   return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
+function nativeNotificationApp(){
+  return !!(window.AmaliyahAndroid &&
+    typeof window.AmaliyahAndroid.getNotificationPermission==='function');
+}
+function waitForNativeNotificationPermission(){
+  return new Promise(resolve=>{
+    const started=Date.now();
+    const check=()=>{
+      const permission=notificationPermission();
+      if(permission==='granted' || Date.now()-started>30000)return resolve(permission);
+      setTimeout(check,250);
+    };
+    check();
+  });
 }
 function urlBase64ToUint8Array(base64String){
   const padding='='.repeat((4-base64String.length%4)%4);
@@ -1261,7 +1333,8 @@ function buildPushSchedule(){
 }
 async function syncPushSubscription({silent=true}={}){
   const settings=getNotificationSettings();
-  if(!settings.enabled || Notification.permission!=='granted')return null;
+  if(nativeNotificationApp())return settings.enabled ? {native:true} : null;
+  if(!settings.enabled || notificationPermission()!=='granted')return null;
 
   try{
     const sub=await ensurePushSubscription();
@@ -1314,6 +1387,7 @@ function queuePushSync(){
   pushSyncTimer=setTimeout(()=>syncPushSubscription({silent:true}),700);
 }
 async function disablePushSubscription(){
+  if(nativeNotificationApp())return;
   const sub=await getPushSubscription();
   if(!sub)return;
 
@@ -1332,6 +1406,23 @@ async function updatePushStatus(error=null){
   const testBtn=$('#notificationTestBtn');
   const note=$('#notificationPushNote');
   const s=getNotificationSettings();
+
+  if(nativeNotificationApp()){
+    let fcmStatus='connecting';
+    try{fcmStatus=window.AmaliyahAndroid.getFcmStatus?.()||'connecting';}catch{}
+    if(testBtn)testBtn.disabled=notificationPermission()!=='granted';
+    if(status){
+      status.classList.toggle('notification-push-error',fcmStatus==='error');
+      status.classList.toggle('notification-push-live',notificationPermission()==='granted'&&s.enabled);
+      status.textContent=notificationPermission()==='granted'&&s.enabled
+        ? `Notifikasi Native Aktif • Firebase ${fcmStatus==='ready'?'tersambung':fcmStatus==='error'?'perlu disambungkan ulang':'sedang disambungkan'}`
+        : 'Notifikasi native belum diaktifkan';
+    }
+    if(note)note.textContent=fcmStatus==='error'
+      ? 'Notifikasi lokal aktif, tetapi Firebase belum tersambung. Buka ulang halaman ini dengan internet aktif untuk mencoba lagi.'
+      : 'APK memakai notifikasi Android native. Nama GitHub tidak ditampilkan pada notifikasi.';
+    return;
+  }
 
   if(!pushSupported()){
     if(testBtn)testBtn.disabled=true;
@@ -1367,6 +1458,11 @@ async function testPushNotification(){
   const btn=$('#notificationTestBtn');
   try{
     if(btn){btn.disabled=true;btn.textContent='Mengirim…';}
+    if(nativeNotificationApp()){
+      await showAppNotification('Tes Amaliyah','Notifikasi native berhasil. Nama pengirim akan tampil sebagai Amaliyah.');
+      await appNotice('Tes notifikasi native telah dikirim.');
+      return;
+    }
     const sub=await syncPushSubscription({silent:false});
     if(!sub)throw new Error('Subscription belum tersedia.');
 
@@ -1391,17 +1487,30 @@ async function testPushNotification(){
 function getNotificationSettings(){
   try{
     const saved=JSON.parse(store.getItem(NOTIF_SETTINGS_KEY)||'null');
-    return {
+    const settings={
       ...DEFAULT_NOTIF_SETTINGS,
       ...(saved||{}),
       prayers:{...DEFAULT_NOTIF_SETTINGS.prayers,...(saved?.prayers||{})}
     };
+    if(nativeNotificationApp() && typeof window.AmaliyahAndroid.getNotificationEnabledState==='function'){
+      const nativeState=window.AmaliyahAndroid.getNotificationEnabledState();
+      if(nativeState==='true' || nativeState==='false')settings.enabled=nativeState==='true';
+      else window.AmaliyahAndroid.setNotificationEnabled?.(!!settings.enabled);
+    }
+    return settings;
   }catch{return {...DEFAULT_NOTIF_SETTINGS,prayers:{...DEFAULT_NOTIF_SETTINGS.prayers}}}
 }
 function setNotificationSettings(settings){
   store.setItem(NOTIF_SETTINGS_KEY,JSON.stringify(settings));
+  if(nativeNotificationApp()){
+    try{window.AmaliyahAndroid.setNotificationEnabled?.(!!settings.enabled);}catch{}
+  }
 }
 function notificationPermission(){
+  if(nativeNotificationApp()){
+    try{return window.AmaliyahAndroid.getNotificationPermission();}
+    catch{return 'default'}
+  }
   return 'Notification' in window ? Notification.permission : 'unsupported';
 }
 function syncNotificationUI(){
@@ -1425,7 +1534,9 @@ function syncNotificationUI(){
     if(status)status.textContent='Browser ini tidak mendukung notifikasi web.';
     if(btn)btn.classList.add('hidden');
   }else if(permission==='denied'){
-    if(status)status.textContent='Izin notifikasi diblokir di pengaturan browser.';
+    if(status)status.textContent=nativeNotificationApp()
+      ? 'Izin notifikasi diblokir di pengaturan aplikasi.'
+      : 'Izin notifikasi diblokir di pengaturan browser.';
     if(btn){btn.textContent='Izin Diblokir';btn.disabled=true;}
   }else if(permission==='granted'){
     if(status)status.textContent=s.enabled?'Notifikasi Aktif':'Izin tersedia • notifikasi sedang OFF';
@@ -1438,6 +1549,22 @@ function syncNotificationUI(){
   updatePushStatus();
 }
 async function requestNotifications(){
+  if(nativeNotificationApp()){
+    try{window.AmaliyahAndroid.requestNotificationPermission();}catch{}
+    const p=await waitForNativeNotificationPermission();
+    if(p==='granted'){
+      const s=getNotificationSettings();
+      s.enabled=true;
+      setNotificationSettings(s);
+      syncNotificationUI();
+      startPrayerNotificationScheduler();
+      await showAppNotification('Amaliyah','Notifikasi native berhasil diaktifkan.');
+    }else{
+      syncNotificationUI();
+      await appNotice('Izin notifikasi belum diberikan. Aktifkan melalui pengaturan aplikasi Amaliyah.');
+    }
+    return;
+  }
   if(!pushSupported())return appNotice('Browser ini tidak mendukung Web Push.');
   if(Notification.permission==='denied'){
     syncNotificationUI();
@@ -1480,6 +1607,7 @@ async function setNotificationMaster(enabled){
   startPrayerNotificationScheduler();
 
   if(enabled){
+    if(nativeNotificationApp())return;
     try{await syncPushSubscription({silent:false});}
     catch(err){await appNotice(`Web Push belum tersambung: ${err.message}`);}
   }else{
@@ -1500,6 +1628,11 @@ function saveNotificationSettings(){
 }
 async function showAppNotification(title,body){
   if(notificationPermission()!=='granted')return;
+  if(nativeNotificationApp()){
+    try{window.AmaliyahAndroid.showNotification(String(title||'Amaliyah'),String(body||''));}
+    catch{}
+    return;
+  }
   try{
     const reg=await navigator.serviceWorker?.ready;
     if(reg?.showNotification){
@@ -1642,6 +1775,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 window.showHome=showHome;
+window.showCategories=showCategories;
 window.showLibrary=showLibrary;
 window.showCollection=showCollection;
 window.showSettings=showSettings;
@@ -1686,7 +1820,20 @@ renderLibrary(initialState.category||'Semua');
 syncSettingsLocation();
 syncNotificationUI();
 bootPrayer();
-if('serviceWorker'in navigator){
+if(nativeNotificationApp()){
+  // APK memakai Firebase dan notifikasi Android native. Service Worker PWA dapat
+  // mengganti app.js dengan versi browser saat aplikasi dibuka kembali.
+  if('serviceWorker'in navigator){
+    navigator.serviceWorker.getRegistrations()
+      .then(registrations=>Promise.all(registrations.map(reg=>reg.unregister())))
+      .catch(()=>{});
+  }
+  if('caches'in window){
+    caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{});
+  }
+  try{window.AmaliyahAndroid.retryFcmRegistration?.();}catch{}
+  startPrayerNotificationScheduler();
+}else if('serviceWorker'in navigator){
   navigator.serviceWorker.register('./sw.js').then(()=>startPrayerNotificationScheduler()).catch(()=>{});
 }else{
   startPrayerNotificationScheduler();

@@ -56,7 +56,7 @@
     <section class="category-section">
       <div class="section-head">
         <b>KATEGORI BACAAN</b>
-        <button class="link" type="button" onclick="showLibrary()">Lihat Semua <span aria-hidden="true">›</span></button>
+        <button class="link" type="button" onclick="showCategories()">Lihat Semua <span aria-hidden="true">›</span></button>
       </div>
       <div class="categories">
         <button data-category-card="Al-Qur'an">
@@ -91,7 +91,7 @@
     <button class="active" type="button" onclick="showHome()" aria-label="Beranda">
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5M5.5 10.5V20h13v-9.5M9.5 20v-6h5v6"/></svg><span>Beranda</span>
     </button>
-    <button type="button" onclick="showLibrary()" aria-label="Kategori">
+    <button type="button" onclick="showCategories()" aria-label="Kategori">
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>Kategori</span>
     </button>
     <button type="button" onclick="showBookmarks()" aria-label="Bookmark">
@@ -104,6 +104,28 @@
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2-.7a6.8 6.8 0 0 0-.7-1.7l.9-1.9-2.1-2.1-1.9.9a6.8 6.8 0 0 0-1.7-.7L10.5 2h-3l-.7 2a6.8 6.8 0 0 0-1.7.7l-1.9-.9-2.1 2.1.9 1.9a6.8 6.8 0 0 0-.7 1.7L0 10.5v3l2 .7a6.8 6.8 0 0 0 .7 1.7l-.9 1.9 2.1 2.1 1.9-.9a6.8 6.8 0 0 0 1.7.7l.7 2h3l.7-2a6.8 6.8 0 0 0 1.7-.7l1.9.9 2.1-2.1-.9-1.9a6.8 6.8 0 0 0 .7-1.7z" transform="translate(1.5 0) scale(.875)"/></svg><span>Pengaturan</span>
     </button>
   </nav>
+</div>
+
+<div id="categoryIndex" class="screen category-index-screen hidden">
+  <div class="screenbar category-index-bar">
+    <button type="button" onclick="goBackInApp()" aria-label="Kembali">‹</button>
+    <b>Semua Kategori</b>
+    <span></span>
+  </div>
+  <div class="category-index-intro">
+    <span class="category-index-intro-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
+    </span>
+    <div><b>Jelajahi Kategori Bacaan</b><p>Pilih kategori untuk melihat bacaan yang tersedia.</p></div>
+  </div>
+  <div id="categoryDirectory" class="category-directory" aria-label="Daftar semua kategori"></div>
+  <button id="allBooksCollectionBtn" class="all-books-collection" type="button" onclick="showLibrary('Semua')">
+    <span class="all-books-collection-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H12v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M19 4.5A2.5 2.5 0 0 0 16.5 2H12v18h4.5A2.5 2.5 0 0 1 19 22z"/></svg>
+    </span>
+    <span class="all-books-collection-copy"><b>Koleksi Semua Bacaan</b><small id="allBooksCollectionCount">Lihat seluruh bacaan</small></span>
+    <span class="all-books-collection-arrow" aria-hidden="true">›</span>
+  </button>
 </div>
 
 <div id="library" class="screen hidden">
