@@ -14,6 +14,8 @@
   let controlsTimer=0;
   let touchStartX=0;
   let touchStartY=0;
+  let readerOpen=false;
+  let readingCommitTimer=0;
 
   const clampPage=value=>Math.min(total,Math.max(1,Number(value)||1));
   const pad=value=>String(value).padStart(Number(config.pageDigits)||3,'0');
@@ -33,12 +35,9 @@
     $('#continueQuran').firstChild.textContent=hasProgress?'Lanjutkan ':'Mulai Membaca ';
   }
 
-  function directoryItem(number,title,subtitle,trailing,page){
-    return `<button class="directory-item" type="button" data-open-page="${page}">
-      <span class="directory-number">${number}</span>
-      <span class="directory-copy"><b>${title}</b><small>${subtitle}</small></span>
-      <span class="${trailing.startsWith('›')?'directory-arrow':'directory-arabic'}">${trailing}</span>
-    </button>`;
+  function directoryItem(number,title,subtitle,trailing,page,{kind='surah',last=false}={}){
+    const trail=kind==='surah'?`<span class="directory-arabic">${trailing}</span>`:`<span class="directory-arrow">›</span>`;
+    return `<button class="directory-item directory-item-${kind}${last?' is-last-read':''}" type="button" data-open-page="${page}"><span class="directory-number">${number}</span><span class="directory-copy">${last?'<em>TERAKHIR DIBACA</em>':''}<b>${title}</b><small>${subtitle}</small></span>${trail}</button>`;
   }
 
   function renderDirectory(){
@@ -46,130 +45,60 @@
     const search=String($('#quranSearch')?.value||'').trim().toLocaleLowerCase('id-ID');
     $('#quranSearchWrap').classList.toggle('hidden',activeTab!=='surah');
     let html='';
+    const lastPage=storedLastPage();
+    const hasProgress=store.getItem('amaliyah:quran:last-page')!==null;
     if(activeTab==='surah'){
-      html=surahs.filter(item=>!search||String(item[0])===search||item[1].toLocaleLowerCase('id-ID').includes(search)||item[2].includes(search))
-        .map(item=>directoryItem(item[0],item[1],`Mulai halaman ${item[3]}`,item[2],item[3])).join('');
+      html=surahs.filter(item=>!search||String(item[0])===search||item[1].toLocaleLowerCase('id-ID').includes(search)||item[2].includes(search)).map(item=>directoryItem(item[0],item[1],`Mulai halaman ${item[3]} • Mushaf Madinah`,item[2],item[3],{kind:'surah',last:hasProgress&&nearestSurah(lastPage)[0]===item[0]})).join('');
     }else if(activeTab==='juz'){
-      html=juzPages.map((page,index)=>directoryItem(index+1,`Juz ${index+1}`,`Mulai halaman ${page}`,'›',page)).join('');
+      html=juzPages.map((page,index)=>directoryItem(index+1,`Juz ${index+1}`,`Mulai halaman ${page}`,'›',page,{kind:'juz',last:hasProgress&&approximateJuz(lastPage)===index+1})).join('');
     }else{
-      const meta=pageMetadata();
-      const pages=bookmarks().sort((a,b)=>a-b);
-      html=pages.map(page=>{
-        const info=meta[page]||{};
-        const detail=[info.surah?`Surah ${info.surah}`:'',info.juz?`Juz ${info.juz}`:''].filter(Boolean).join(' • ')||'Mushaf Madinah';
-        return directoryItem('۞',`Halaman ${page}`,detail,'›',page);
-      }).join('');
-      if(!pages.length)html='<div class="directory-empty"><b>Belum ada penanda</b><p>Saat membaca, tekan ikon penanda di kanan atas.</p></div>';
+      const meta=pageMetadata(); const pages=bookmarks().sort((a,b)=>a-b);
+      html=pages.map(page=>{const info=meta[page]||{};const detail=[info.surah?`Surah ${info.surah}`:'',info.juz?`Juz ${info.juz}`:''].filter(Boolean).join(' • ')||'Mushaf Madinah';return directoryItem('۞',`Halaman ${page}`,detail,'›',page,{kind:'bookmark'});}).join('');
+      if(!pages.length)html='<div class="directory-empty"><span>۞</span><b>Belum ada penanda</b><p>Saat membaca, tekan ikon penanda di kanan atas.</p></div>';
     }
     list.innerHTML=html||'<div class="directory-empty"><b>Surah tidak ditemukan</b><p>Coba nama atau nomor yang berbeda.</p></div>';
     list.querySelectorAll('[data-open-page]').forEach(button=>button.onclick=()=>openReader(button.dataset.openPage));
   }
 
-  function setActiveTab(tab){
-    activeTab=['surah','juz','bookmarks'].includes(tab)?tab:'surah';
-    $$('[data-quran-tab]').forEach(button=>button.classList.toggle('active',button.dataset.quranTab===activeTab));
-    renderDirectory();
-  }
-
-  function showControls(autoHide=true){
-    $('#quranReader').classList.remove('controls-hidden');
-    clearTimeout(controlsTimer);
-    if(autoHide)controlsTimer=setTimeout(()=>$('#quranReader').classList.add('controls-hidden'),2800);
-  }
-
-  function updateBookmarkButton(){
-    const marked=bookmarks().includes(currentPage);
-    $('#toggleQuranBookmark').classList.toggle('marked',marked);
-    $('#toggleQuranBookmark').setAttribute('aria-label',marked?'Hapus penanda halaman':'Tandai halaman');
-  }
+  function setActiveTab(tab){activeTab=['surah','juz','bookmarks'].includes(tab)?tab:'surah';$$('[data-quran-tab]').forEach(button=>button.classList.toggle('active',button.dataset.quranTab===activeTab));renderDirectory();}
+  function showControls(autoHide=true){$('#quranReader').classList.remove('controls-hidden');clearTimeout(controlsTimer);if(autoHide)controlsTimer=setTimeout(()=>$('#quranReader').classList.add('controls-hidden'),3200);}
+  function updateBookmarkButton(){const marked=bookmarks().includes(currentPage);$('#toggleQuranBookmark').classList.toggle('marked',marked);$('#toggleQuranBookmark').setAttribute('aria-label',marked?'Hapus penanda halaman':'Tandai halaman');}
+  function applyReaderMeta(info,page){const surah=info.surah||nearestSurah(page)[1];const juz=info.juz||approximateJuz(page);$('#readerSurah').textContent=`Surah ${surah}`;$('#readerMeta').textContent=`Juz ${juz} • Halaman ${page}`;$('#immersiveSurah').textContent=`Surah ${surah}`;$('#immersiveJuz').textContent=`Juz ${juz}`;$('#immersivePage').textContent=`Halaman ${page}`;}
+  function commitLastRead(page=currentPage){const committed=clampPage(page);store.setItem('amaliyah:quran:last-page',String(committed));const info=pageMetadata()[committed];if(info)store.setItem('amaliyah:quran:last-meta',JSON.stringify(info));}
+  function scheduleLastReadCommit(page=currentPage){clearTimeout(readingCommitTimer);readingCommitTimer=setTimeout(()=>{if(readerOpen&&currentPage===clampPage(page))commitLastRead(page);},7000);}
 
   async function loadMetadata(page){
-    const fallback=nearestSurah(page);
-    let info={surah:fallback[1],juz:approximateJuz(page)};
-    try{
-      const response=await fetch(`${config.metadataApi}/page/${page}/quran-uthmani`);
-      if(response.ok){
-        const body=await response.json();
-        const ayah=body?.data?.ayahs?.[0];
-        if(ayah)info={surah:ayah.surah?.englishName||fallback[1],juz:ayah.juz||approximateJuz(page)};
-      }
-    }catch{}
-    if(page!==currentPage)return;
-    $('#readerSurah').textContent=`Surah ${info.surah}`;
-    $('#readerMeta').textContent=`Juz ${info.juz} • Halaman ${page}`;
-    store.setItem('amaliyah:quran:last-meta',JSON.stringify(info));
-    const all=pageMetadata();all[page]=info;store.setItem('amaliyah:quran:page-meta',JSON.stringify(all));
+    const fallback=nearestSurah(page);let info={surah:fallback[1],juz:approximateJuz(page)};applyReaderMeta(info,page);
+    try{const response=await fetch(`${config.metadataApi}/page/${page}/quran-uthmani`);if(response.ok){const body=await response.json();const ayah=body?.data?.ayahs?.[0];if(ayah)info={surah:ayah.surah?.englishName||fallback[1],juz:ayah.juz||approximateJuz(page)};}}catch{}
+    if(page!==currentPage)return;applyReaderMeta(info,page);const all=pageMetadata();all[page]=info;store.setItem('amaliyah:quran:page-meta',JSON.stringify(all));if(Number(store.getItem('amaliyah:quran:last-page'))===page)store.setItem('amaliyah:quran:last-meta',JSON.stringify(info));
   }
 
-  function prefetch(page){
-    [page-1,page+1].filter(x=>x>=1&&x<=total).forEach(x=>{const image=new Image();image.src=pageUrl(x)});
+  function prefetch(page){[page-1,page+1].filter(x=>x>=1&&x<=total).forEach(x=>{const image=new Image();image.src=pageUrl(x)});}
+  function loadPage(value,{replaceUrl=true,recordLast=true}={}){
+    currentPage=clampPage(value);const image=$('#quranPageImage');image.classList.remove('loaded');$('#quranLoading').classList.remove('hidden');$('#quranImageError').classList.add('hidden');
+    image.onload=()=>{image.classList.add('loaded');$('#quranLoading').classList.add('hidden');prefetch(currentPage)};image.onerror=()=>{$('#quranLoading').classList.add('hidden');$('#quranImageError').classList.remove('hidden')};image.src=pageUrl(currentPage);image.alt=`Halaman ${currentPage} Mushaf Al-Qur'an`;
+    $('#pageCounter b').textContent=`${currentPage} / ${total}`;$('#previousQuranPage').disabled=currentPage<=1;$('#nextQuranPage').disabled=currentPage>=total;clearTimeout(readingCommitTimer);if(recordLast)commitLastRead(currentPage);else scheduleLastReadCommit(currentPage);if(replaceUrl&&readerOpen)history.replaceState({quranReader:true,page:currentPage},'',`quran.html?page=${currentPage}`);updateBookmarkButton();loadMetadata(currentPage);showControls();
   }
 
-  function loadPage(value,{replaceUrl=true}={}){
-    currentPage=clampPage(value);
-    const image=$('#quranPageImage');
-    image.classList.remove('loaded');
-    $('#quranLoading').classList.remove('hidden');
-    $('#quranImageError').classList.add('hidden');
-    image.onload=()=>{image.classList.add('loaded');$('#quranLoading').classList.add('hidden');prefetch(currentPage)};
-    image.onerror=()=>{$('#quranLoading').classList.add('hidden');$('#quranImageError').classList.remove('hidden')};
-    image.src=pageUrl(currentPage);
-    image.alt=`Halaman ${currentPage} Mushaf Al-Qur'an`;
-    $('#pageCounter b').textContent=`${currentPage} / ${total}`;
-    $('#previousQuranPage').disabled=currentPage<=1;
-    $('#nextQuranPage').disabled=currentPage>=total;
-    store.setItem('amaliyah:quran:last-page',String(currentPage));
-    if(replaceUrl)history.replaceState({quranReader:true,page:currentPage},'',`quran.html?page=${currentPage}`);
-    updateBookmarkButton();
-    loadMetadata(currentPage);
-    showControls();
-  }
+  function showReaderUi(){readerOpen=true;$('#quranDirectory').classList.add('hidden');$('#quranReader').classList.remove('hidden');document.documentElement.style.overflow='hidden';}
+  function showDirectoryUi(){readerOpen=false;clearTimeout(controlsTimer);clearTimeout(readingCommitTimer);$('#quranReader').classList.add('hidden');$('#quranDirectory').classList.remove('hidden');document.documentElement.style.overflow='';updateIntro();renderDirectory();}
+  function openReader(page=storedLastPage()){showReaderUi();history.pushState({quranReader:true,page:clampPage(page)},'',`quran.html?page=${clampPage(page)}`);loadPage(page,{replaceUrl:true,recordLast:false});}
+  function closeReader(){if(!readerOpen)return;if(history.state?.quranReader)history.back();else{showDirectoryUi();history.replaceState({quranDirectory:true},'',`quran.html`);}}
+  function toggleBookmark(){const set=new Set(bookmarks());set.has(currentPage)?set.delete(currentPage):set.add(currentPage);store.setItem('amaliyah:quran:bookmarks',JSON.stringify([...set].sort((a,b)=>a-b)));updateBookmarkButton();showControls();}
 
-  function openReader(page=storedLastPage()){
-    $('#quranDirectory').classList.add('hidden');
-    $('#quranReader').classList.remove('hidden');
-    document.documentElement.style.overflow='hidden';
-    loadPage(page);
-  }
-
-  function closeReader(){
-    clearTimeout(controlsTimer);
-    $('#quranReader').classList.add('hidden');
-    $('#quranDirectory').classList.remove('hidden');
-    document.documentElement.style.overflow='';
-    history.replaceState({},'',`quran.html`);
-    updateIntro();renderDirectory();
-  }
-
-  function toggleBookmark(){
-    const set=new Set(bookmarks());
-    set.has(currentPage)?set.delete(currentPage):set.add(currentPage);
-    store.setItem('amaliyah:quran:bookmarks',JSON.stringify([...set].sort((a,b)=>a-b)));
-    updateBookmarkButton();showControls();
-  }
+  function populateQuickNavigator(){$('#pickerSurahSelect').innerHTML=surahs.map(item=>`<option value="${item[3]}">${item[0]}. ${item[1]} — ${item[2]}</option>`).join('');$('#pickerJuzSelect').innerHTML=juzPages.map((page,index)=>`<option value="${page}">Juz ${index+1} — halaman ${page}</option>`).join('');}
+  function setPickerTab(tab='page'){$$('[data-picker-tab]').forEach(button=>button.classList.toggle('active',button.dataset.pickerTab===tab));$$('[data-picker-panel]').forEach(panel=>panel.classList.toggle('hidden',panel.dataset.pickerPanel!==tab));}
+  function openQuickNavigator(tab='page'){const dialog=$('#pagePicker');const page=readerOpen?currentPage:storedLastPage();$('#pagePickerInput').value=page;$('#pickerSurahSelect').value=String(nearestSurah(page)[3]);$('#pickerJuzSelect').value=String(juzPages[approximateJuz(page)-1]);setPickerTab(tab);if(!dialog.open)dialog.showModal();if(tab==='page')setTimeout(()=>$('#pagePickerInput').select(),30);}
+  function jumpFromPicker(page){$('#pagePicker').close();if(readerOpen)loadPage(page,{recordLast:false});else openReader(page);}
 
   function boot(){
-    updateIntro();renderDirectory();
-    $('#quranHomeBack').onclick=()=>location.href='index.html';
-    $('#openLastPage').onclick=()=>openReader(storedLastPage());
-    $('#continueQuran').onclick=()=>openReader(storedLastPage());
-    $$('[data-quran-tab]').forEach(button=>button.onclick=()=>setActiveTab(button.dataset.quranTab));
-    $('#quranSearch').oninput=renderDirectory;
-    $('#closeReader').onclick=closeReader;
-    $('#previousQuranPage').onclick=()=>loadPage(currentPage-1);
-    $('#nextQuranPage').onclick=()=>loadPage(currentPage+1);
-    $('#pageTapPrev').onclick=()=>loadPage(currentPage-1);
-    $('#pageTapNext').onclick=()=>loadPage(currentPage+1);
-    $('#toggleQuranBookmark').onclick=toggleBookmark;
-    $('#retryQuranPage').onclick=()=>loadPage(currentPage,{replaceUrl:false});
-    $('#pageCounter').onclick=()=>{const dialog=$('#pagePicker');$('#pagePickerInput').value=currentPage;dialog.showModal();setTimeout(()=>$('#pagePickerInput').select(),30)};
-    $('#confirmPagePicker').onclick=event=>{event.preventDefault();loadPage($('#pagePickerInput').value);$('#pagePicker').close()};
+    populateQuickNavigator();updateIntro();renderDirectory();const requested=new URLSearchParams(location.search).get('page');history.replaceState({quranDirectory:true},'',`quran.html`);if(requested)openReader(requested);
+    $('#quranHomeBack').onclick=()=>location.href='index.html';$('#openQuickJump').onclick=()=>openQuickNavigator('page');$('#continueQuran').onclick=()=>openReader(storedLastPage());$$('[data-quran-tab]').forEach(button=>button.onclick=()=>setActiveTab(button.dataset.quranTab));$('#quranSearch').oninput=renderDirectory;$('#closeReader').onclick=closeReader;
+    $('#previousQuranPage').onclick=()=>loadPage(currentPage-1);$('#nextQuranPage').onclick=()=>loadPage(currentPage+1);$('#pageTapPrev').onclick=()=>loadPage(currentPage+1);$('#pageTapNext').onclick=()=>loadPage(currentPage-1);$('#toggleQuranBookmark').onclick=toggleBookmark;$('#retryQuranPage').onclick=()=>loadPage(currentPage,{replaceUrl:false,recordLast:false});$('#pageCounter').onclick=()=>openQuickNavigator('page');$$('[data-picker-tab]').forEach(button=>button.onclick=()=>setPickerTab(button.dataset.pickerTab));$('#confirmPagePicker').onclick=()=>jumpFromPicker($('#pagePickerInput').value);$('#confirmSurahPicker').onclick=()=>jumpFromPicker($('#pickerSurahSelect').value);$('#confirmJuzPicker').onclick=()=>jumpFromPicker($('#pickerJuzSelect').value);
     $('#quranStage').addEventListener('click',event=>{if(event.target.id==='quranStage'||event.target.id==='quranPageShell'||event.target.id==='quranPageImage'){$('#quranReader').classList.contains('controls-hidden')?showControls():$('#quranReader').classList.add('controls-hidden')}});
-    $('#quranStage').addEventListener('touchstart',event=>{touchStartX=event.changedTouches[0].clientX;touchStartY=event.changedTouches[0].clientY},{passive:true});
-    $('#quranStage').addEventListener('touchend',event=>{const dx=event.changedTouches[0].clientX-touchStartX;const dy=event.changedTouches[0].clientY-touchStartY;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.4)loadPage(currentPage+(dx<0?1:-1))},{passive:true});
-    document.addEventListener('keydown',event=>{if($('#quranReader').classList.contains('hidden'))return;if(event.key==='ArrowLeft')loadPage(currentPage+1);if(event.key==='ArrowRight')loadPage(currentPage-1);if(event.key==='Escape')closeReader()});
-    const requested=new URLSearchParams(location.search).get('page');
-    if(requested)openReader(requested);
+    $('#quranStage').addEventListener('touchstart',event=>{touchStartX=event.changedTouches[0].clientX;touchStartY=event.changedTouches[0].clientY},{passive:true});$('#quranStage').addEventListener('touchend',event=>{const dx=event.changedTouches[0].clientX-touchStartX;const dy=event.changedTouches[0].clientY-touchStartY;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.4)loadPage(currentPage+(dx>0?1:-1));},{passive:true});
+    window.addEventListener('popstate',event=>{if(event.state?.quranReader){showReaderUi();loadPage(event.state.page||storedLastPage(),{replaceUrl:false,recordLast:false});}else showDirectoryUi();});
+    document.addEventListener('keydown',event=>{if(!readerOpen)return;if(event.key==='ArrowRight')loadPage(currentPage+1);if(event.key==='ArrowLeft')loadPage(currentPage-1);if(event.key==='Escape')closeReader();});
   }
   boot();
 })();

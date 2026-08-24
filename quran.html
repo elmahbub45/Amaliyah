@@ -13,7 +13,7 @@
     <header class="directory-header">
       <button class="round-button" id="quranHomeBack" type="button" aria-label="Kembali ke Amaliyah">‹</button>
       <div><span>MUSHAF AL-QUR'AN</span><b>Al-Qur'an Al-Karim</b></div>
-      <button class="round-button" id="openLastPage" type="button" aria-label="Buka halaman terakhir">↗</button>
+      <button class="round-button quick-jump-button" id="openQuickJump" type="button" aria-label="Lompat ke Surah, Juz, atau halaman">↗</button>
     </header>
 
     <section class="mushaf-intro">
@@ -53,8 +53,10 @@
       </button>
     </header>
 
+    <div class="immersive-meta immersive-meta-top" aria-hidden="true"><span id="immersiveSurah">Al-Qur'an Al-Karim</span><span id="immersiveJuz">Juz 1</span></div>
+
     <div id="quranStage" class="quran-stage">
-      <button class="page-tap-zone page-tap-prev" id="pageTapPrev" type="button" aria-label="Halaman sebelumnya"></button>
+      <button class="page-tap-zone page-tap-prev" id="pageTapPrev" type="button" aria-label="Halaman berikutnya"></button>
       <figure id="quranPageShell" class="quran-page-shell">
         <div id="quranLoading" class="quran-loading"><i></i><span>Memuat halaman…</span></div>
         <img id="quranPageImage" alt="Halaman Mushaf Al-Qur'an" draggable="false">
@@ -64,21 +66,24 @@
           <button id="retryQuranPage" type="button">Coba Lagi</button>
         </div>
       </figure>
-      <button class="page-tap-zone page-tap-next" id="pageTapNext" type="button" aria-label="Halaman berikutnya"></button>
+      <button class="page-tap-zone page-tap-next" id="pageTapNext" type="button" aria-label="Halaman sebelumnya"></button>
     </div>
 
+    <div class="immersive-meta immersive-meta-bottom" aria-hidden="true"><span id="immersivePage">Halaman 1</span></div>
+
     <footer id="quranReaderFooter" class="reader-footer reader-control">
-      <button id="previousQuranPage" type="button" aria-label="Halaman sebelumnya">‹</button>
+      <button id="previousQuranPage" type="button" aria-label="Halaman sebelumnya">›</button>
       <button id="pageCounter" class="page-counter" type="button" aria-label="Pilih halaman"><span>HALAMAN</span><b>1 / 604</b></button>
-      <button id="nextQuranPage" type="button" aria-label="Halaman berikutnya">›</button>
+      <button id="nextQuranPage" type="button" aria-label="Halaman berikutnya">‹</button>
     </footer>
 
-    <dialog id="pagePicker" class="page-picker">
+    <dialog id="pagePicker" class="page-picker quick-navigator">
       <form method="dialog">
-        <b>Buka Halaman</b>
-        <p>Masukkan nomor halaman 1–604.</p>
-        <input id="pagePickerInput" type="number" min="1" max="604" inputmode="numeric">
-        <div><button value="cancel">Batal</button><button id="confirmPagePicker" value="default">Buka</button></div>
+        <div class="picker-heading"><div><span>NAVIGASI CEPAT</span><b>Buka Al-Qur'an</b></div><button class="picker-close" value="cancel" aria-label="Tutup">×</button></div>
+        <div class="picker-tabs" role="tablist" aria-label="Cara berpindah"><button type="button" class="active" data-picker-tab="page">Halaman</button><button type="button" data-picker-tab="surah">Surah</button><button type="button" data-picker-tab="juz">Juz</button></div>
+        <section class="picker-panel" data-picker-panel="page"><p>Masukkan nomor halaman 1–604.</p><div class="picker-page-row"><input id="pagePickerInput" type="number" min="1" max="604" inputmode="numeric"><button id="confirmPagePicker" type="button">Buka</button></div></section>
+        <section class="picker-panel hidden" data-picker-panel="surah"><label class="picker-select-label">Pilih Surah<select id="pickerSurahSelect"></select></label><button id="confirmSurahPicker" class="picker-primary" type="button">Buka Surah</button></section>
+        <section class="picker-panel hidden" data-picker-panel="juz"><label class="picker-select-label">Pilih Juz<select id="pickerJuzSelect"></select></label><button id="confirmJuzPicker" class="picker-primary" type="button">Buka Juz</button></section>
       </form>
     </dialog>
   </section>
