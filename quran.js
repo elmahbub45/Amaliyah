@@ -74,10 +74,13 @@
   }
 
   function prefetch(page){[page-1,page+1].filter(x=>x>=1&&x<=total).forEach(x=>{const image=new Image();image.src=pageUrl(x)});}
-  function loadPage(value,{replaceUrl=true,recordLast=true}={}){
+  function loadPage(value,{replaceUrl=true,recordLast=true,preserveImmersive=true}={}){
+    const reader=$('#quranReader');
+    const wasImmersive=preserveImmersive&&reader.classList.contains('controls-hidden');
     currentPage=clampPage(value);const image=$('#quranPageImage');image.classList.remove('loaded');$('#quranLoading').classList.remove('hidden');$('#quranImageError').classList.add('hidden');
     image.onload=()=>{image.classList.add('loaded');$('#quranLoading').classList.add('hidden');prefetch(currentPage)};image.onerror=()=>{$('#quranLoading').classList.add('hidden');$('#quranImageError').classList.remove('hidden')};image.src=pageUrl(currentPage);image.alt=`Halaman ${currentPage} Mushaf Al-Qur'an`;
-    $('#pageCounter b').textContent=`${currentPage} / ${total}`;$('#previousQuranPage').disabled=currentPage<=1;$('#nextQuranPage').disabled=currentPage>=total;clearTimeout(readingCommitTimer);if(recordLast)commitLastRead(currentPage);else scheduleLastReadCommit(currentPage);if(replaceUrl&&readerOpen)history.replaceState({quranReader:true,page:currentPage},'',`quran.html?page=${currentPage}`);updateBookmarkButton();loadMetadata(currentPage);showControls();
+    $('#pageCounter b').textContent=`${currentPage} / ${total}`;$('#previousQuranPage').disabled=currentPage<=1;$('#nextQuranPage').disabled=currentPage>=total;clearTimeout(readingCommitTimer);if(recordLast)commitLastRead(currentPage);else scheduleLastReadCommit(currentPage);if(replaceUrl&&readerOpen)history.replaceState({quranReader:true,page:currentPage},'',`quran.html?page=${currentPage}`);updateBookmarkButton();loadMetadata(currentPage);
+    if(wasImmersive){clearTimeout(controlsTimer);reader.classList.add('controls-hidden');}else showControls();
   }
 
   function showReaderUi(){readerOpen=true;$('#quranDirectory').classList.add('hidden');$('#quranReader').classList.remove('hidden');document.documentElement.style.overflow='hidden';}
