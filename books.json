@@ -1,5 +1,5 @@
 {
-  "version": "2.40.1-svg-icon-library",
+  "version": "2.40.2-category-rename-routing",
   "categories": [
     "Semua",
     "Wirid",
@@ -8,7 +8,7 @@
     "Doa",
     "Sholat",
     "Khutbah",
-    "Al-Qur'an",
+    "Surah Pilihan",
     "Syair"
   ],
   "items": [
@@ -1170,7 +1170,7 @@
     {
       "id": "surah-yasin-a18b09",
       "title": "Surah Yasin",
-      "category": "Al-Qur'an",
+      "category": "Surah Pilihan",
       "type": "collection",
       "parts": [
         {
@@ -1192,13 +1192,13 @@
       "title": "Surah Al Mulk (Tabarak)",
       "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-mulk-tabarak.pdf",
       "pages": 6,
-      "category": "Al-Qur'an",
+      "category": "Surah Pilihan",
       "type": "single"
     },
     {
       "id": "surah-al-waqiah-2b58bd",
       "title": "Surah Al Waqiah",
-      "category": "Al-Qur'an",
+      "category": "Surah Pilihan",
       "type": "collection",
       "parts": [
         {
@@ -1226,7 +1226,7 @@
       "title": "Surah Al Fath",
       "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-fath.pdf",
       "pages": 10,
-      "category": "Al-Qur'an",
+      "category": "Surah Pilihan",
       "type": "single"
     },
     {
@@ -1234,7 +1234,7 @@
       "title": "Surah Ar-Rahman",
       "file": "assets/pdf-v2/quran/surah-pilihan/surah-ar-rahman.pdf",
       "pages": 6,
-      "category": "Al-Qur'an",
+      "category": "Surah Pilihan",
       "type": "single"
     },
     {
@@ -1242,7 +1242,7 @@
       "title": "Surah Al Kahfi",
       "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-kahfi.pdf",
       "pages": 24,
-      "category": "Al-Qur'an",
+      "category": "Surah Pilihan",
       "type": "single"
     },
     {
@@ -1775,6 +1775,10 @@
     }
   ],
   "categoryIcons": {
-    "Sholat": "kaaba"
+    "Sholat": "kaaba",
+    "Surah Pilihan": "quran"
+  },
+  "categoryAliases": {
+    "Al-Qur'an": "Surah Pilihan"
   }
 }
