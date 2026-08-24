@@ -9,8 +9,23 @@
   <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
   <link rel="stylesheet" href="reader.css">
   <style>
-    /* V2.38.6 — canvas tetap di tengah ketika stage memakai layout block. */
-    #pdf{display:block;margin-inline:auto}
+    /*
+      V2.38.9 — adaptive fullscreen centering.
+      Auto margin memusatkan halaman yang lebih pendek dari viewport.
+      Jika halaman lebih tinggi, margin otomatis menjadi nol sehingga
+      bagian atas PDF tetap dapat dibaca dan tidak terpotong.
+    */
+    #stage,
+    body.controls-off #stage{
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+    }
+    #pdf{
+      display:block;
+      flex:0 0 auto;
+      margin:auto;
+    }
   </style>
   <title>Amaliyah Reader</title>
 </head>
