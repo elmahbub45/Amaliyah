@@ -3509,6 +3509,22 @@ dialog.rebuild-dialog{width:min(1120px,calc(100% - 28px))}
 .rebuild-empty{padding:42px 16px;color:var(--muted);font-size:9px;text-align:center}
 .rebuild-empty.compact{padding:20px 12px}
 
+
+.rebuild-workflow-guide{
+  margin-top:10px;padding:11px 12px;border:1px solid #d9d1c4;border-radius:11px;background:#fffdf8;
+}
+.rebuild-workflow-guide .workflow-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.rebuild-workflow-guide .workflow-head small{font-size:7.4px;font-weight:900;letter-spacing:.11em;color:var(--gold-dark)}
+.rebuild-workflow-guide .workflow-head b{font-size:9.6px;color:#214f43}
+.rebuild-workflow-guide ol{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;list-style:none;padding:0;margin:0;counter-reset:r2step}
+.rebuild-workflow-guide li{counter-increment:r2step;position:relative;padding:9px 8px 9px 31px;border:1px solid #e7e0d5;border-radius:9px;background:#fff}
+.rebuild-workflow-guide li:before{content:counter(r2step);position:absolute;left:8px;top:8px;width:17px;height:17px;display:grid;place-items:center;border-radius:6px;background:#edf5f1;color:#226450;font-size:7.5px;font-weight:900}
+.rebuild-workflow-guide li b,.rebuild-workflow-guide li small{display:block}
+.rebuild-workflow-guide li b{font-size:8.8px}
+.rebuild-workflow-guide li small{margin-top:2px;font-size:7.5px;line-height:1.35;color:#6b7672}
+.rebuild-workflow-guide p{margin:8px 1px 0;font-size:7.8px;line-height:1.45;color:#6d6559}
+.rebuild-workflow-guide p strong{color:#8b6416}
+
 .rebuild-actions{margin:12px -20px 0;padding:11px 20px;background:#fffefa}
 .rebuild-actions,.rebuild-download-actions{display:flex;align-items:center;gap:7px}
 .rebuild-actions #cancelRebuildBtn{margin-right:auto}
@@ -3530,8 +3546,10 @@ dialog.rebuild-dialog{width:min(1120px,calc(100% - 28px))}
   .rebuild-metrics{grid-template-columns:repeat(2,1fr)}
   .rebuild-tree-row{padding-left:calc(8px + var(--depth,0) * 13px)}
   .rebuild-tree-row em{display:none}
+  .rebuild-workflow-guide ol{grid-template-columns:1fr 1fr}
   .rebuild-actions{margin-left:-14px;margin-right:-14px;padding:10px 14px;flex-wrap:wrap}
   .rebuild-download-actions{width:100%;order:3;display:grid;grid-template-columns:1fr 1fr}
+  .rebuild-download-actions #downloadRefreshPlanBtn{grid-column:1/-1}
   .rebuild-actions #applyRebuildBtn{flex:1}
 }
 

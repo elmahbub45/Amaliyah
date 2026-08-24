@@ -140,6 +140,7 @@ function bind(){
   $('#rebuildFolderInput').onchange=handleRebuildFolder;
   $('#downloadUploadManifestBtn').onclick=downloadRebuildUploadManifest;
   $('#downloadCleanupManifestBtn').onclick=downloadRebuildCleanupManifest;
+  $('#downloadRefreshPlanBtn').onclick=downloadRebuildRefreshPlan;
   $('#applyRebuildBtn').onclick=applyRebuildCatalog;
 
   $('#deleteItemBtn').onclick=deleteItem;
@@ -3030,6 +3031,7 @@ function resetRebuildDialog(){
   $('#rebuildIssueCount').textContent='0';
   $('#downloadUploadManifestBtn').disabled=true;
   $('#downloadCleanupManifestBtn').disabled=true;
+  $('#downloadRefreshPlanBtn').disabled=true;
   $('#applyRebuildBtn').disabled=true;
   $('#applyRebuildBtn').textContent='Gunakan sebagai Katalog Baru';
 }
@@ -3243,6 +3245,7 @@ function renderRebuildPlan(){
 
   $('#downloadUploadManifestBtn').disabled=plan.errors.length>0;
   $('#downloadCleanupManifestBtn').disabled=plan.errors.length>0;
+  $('#downloadRefreshPlanBtn').disabled=plan.errors.length>0;
   $('#applyRebuildBtn').disabled=plan.errors.length>0;
   $('#applyRebuildBtn').textContent='Gunakan sebagai Katalog Baru';
 }
@@ -3286,6 +3289,7 @@ async function handleRebuildFolder(e){
   renderRebuildPlan();
   $('#downloadUploadManifestBtn').disabled=true;
   $('#downloadCleanupManifestBtn').disabled=true;
+  $('#downloadRefreshPlanBtn').disabled=true;
   $('#applyRebuildBtn').disabled=true;
 
   let cursor=0;
@@ -3338,18 +3342,48 @@ function rebuildCleanupManifest(){
   const generatedAt=new Date().toISOString();
   const expectedKeys=rebuildEntries.map(entry=>entry.r2Key).sort(naturalCompare);
   const expectedSet=new Set(expectedKeys);
+  const obsoleteKeys=rebuildCleanupKeys.filter(key=>!expectedSet.has(key)).sort(naturalCompare);
+  return {
+    schemaVersion:2,
+    kind:'amaliyah-r2-safe-cleanup-manifest',
+    generatedAt,
+    strategy:'delete-obsolete-after-upload-and-verification',
+    safety:'Default cleanup only deletes keys that are absent from the rebuilt catalog.',
+    source:'books.json loaded before rebuild',
+    previousCatalogCount:rebuildCleanupKeys.length,
+    replacementCount:expectedKeys.length,
+    deleteCount:obsoleteKeys.length,
+    deleteKeys:obsoleteKeys,
+    expectedKeys,
+    retainedKeys:rebuildCleanupKeys.filter(key=>expectedSet.has(key)).sort(naturalCompare)
+  };
+}
+
+function rebuildRefreshPlan(){
+  const generatedAt=new Date().toISOString();
+  const upload=rebuildUploadManifest();
+  const safeCleanup=rebuildCleanupManifest();
   return {
     schemaVersion:1,
-    kind:'amaliyah-r2-cleanup-manifest',
+    kind:'amaliyah-r2-full-refresh-plan',
     generatedAt,
-    strategy:'delete-listed-keys-before-full-upload',
-    safety:'Only delete keys listed in deleteKeys.',
-    source:'books.json loaded before rebuild',
-    deleteCount:rebuildCleanupKeys.length,
-    deleteKeys:[...rebuildCleanupKeys],
-    replacementCount:expectedKeys.length,
-    expectedKeys,
-    removedFromNewCatalog:rebuildCleanupKeys.filter(key=>!expectedSet.has(key))
+    sourceOfTruth:'local-folder',
+    warning:'Full refresh deletes every object key referenced by the previous catalog. Verify bucket/prefix and keep a backup before deleting.',
+    recommendedOrder:[
+      'backup-current-r2-or-confirm-recoverability',
+      'download-and-publish-books-json',
+      'upload-all-objects-from-upload-manifest',
+      'verify-random-reader-samples',
+      'run-safe-cleanup-for-obsolete-keys'
+    ],
+    fullRefreshAlternative:{
+      useOnlyWhenIntentional:true,
+      order:['backup','delete-fullRefreshDeleteKeys','upload-all-objects','verify-reader'],
+      deleteCount:rebuildCleanupKeys.length,
+      fullRefreshDeleteKeys:[...rebuildCleanupKeys]
+    },
+    uploadManifest:upload,
+    safeCleanupManifest:safeCleanup
   };
 }
 
@@ -3361,8 +3395,14 @@ function downloadRebuildUploadManifest(){
 
 function downloadRebuildCleanupManifest(){
   if(!rebuildPlan||rebuildPlan.errors.length)return;
-  downloadJson(rebuildCleanupManifest(),'r2-cleanup-manifest.json');
-  toast('R2 Cleanup Manifest berhasil di-download.','ok');
+  downloadJson(rebuildCleanupManifest(),'r2-safe-cleanup-manifest.json');
+  toast('Safe Cleanup Manifest berhasil di-download.','ok');
+}
+
+function downloadRebuildRefreshPlan(){
+  if(!rebuildPlan||rebuildPlan.errors.length)return;
+  downloadJson(rebuildRefreshPlan(),'r2-full-refresh-plan.json');
+  toast('Full Refresh Plan berhasil di-download. Baca warning sebelum menghapus object R2.','ok');
 }
 
 async function applyRebuildCatalog(){

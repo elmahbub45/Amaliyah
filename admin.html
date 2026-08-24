@@ -639,7 +639,8 @@
           <div class="rebuild-output-list">
             <div><span class="output-number">1</span><span><b>books.json</b><small>Struktur katalog baru dari folder.</small></span></div>
             <div><span class="output-number">2</span><span><b>R2 Upload Manifest</b><small>File lokal → target object key R2.</small></span></div>
-            <div><span class="output-number">3</span><span><b>R2 Cleanup Manifest</b><small>Daftar object key katalog lama untuk dihapus.</small></span></div>
+            <div><span class="output-number">3</span><span><b>R2 Safe Cleanup</b><small>Hanya object lama yang sudah tidak ada di katalog baru.</small></span></div>
+            <div><span class="output-number">4</span><span><b>R2 Full Refresh Plan</b><small>Daftar lengkap hapus-lama → upload-baru untuk refresh total.</small></span></div>
           </div>
           <div id="rebuildIssues" class="rebuild-issues">
             <div class="rebuild-empty compact">Belum ada hasil pemeriksaan.</div>
@@ -647,11 +648,23 @@
         </aside>
       </div>
 
+      <section id="rebuildWorkflowGuide" class="rebuild-workflow-guide" aria-label="Urutan refresh R2">
+        <div class="workflow-head"><small>URUTAN AMAN R2</small><b>Jangan hapus object lama sebelum file baru siap diunggah.</b></div>
+        <ol>
+          <li><b>Rebuild katalog</b><small>Gunakan folder lokal sebagai sumber kebenaran.</small></li>
+          <li><b>Download books.json + Upload Manifest</b><small>Upload PDF baru ke R2 sesuai key yang sama.</small></li>
+          <li><b>Verifikasi PDF baru</b><small>Pastikan beberapa bacaan dapat dibuka dari aplikasi.</small></li>
+          <li><b>Jalankan Safe Cleanup</b><small>Hapus hanya object yang memang sudah tidak dipakai.</small></li>
+        </ol>
+        <p><strong>Full Refresh Plan</strong> disediakan bila kamu memang ingin menghapus seluruh object katalog lama dan mengunggah ulang semuanya. Gunakan setelah backup dan hanya pada prefix bucket yang benar.</p>
+      </section>
+
       <div class="dialog-actions sticky-dialog-actions rebuild-actions">
         <button id="cancelRebuildBtn" class="ghost" type="button">Batal</button>
         <span class="rebuild-download-actions">
-          <button id="downloadCleanupManifestBtn" class="ghost accent" type="button" disabled>Cleanup Manifest</button>
+          <button id="downloadCleanupManifestBtn" class="ghost accent" type="button" disabled>Safe Cleanup</button>
           <button id="downloadUploadManifestBtn" class="ghost accent" type="button" disabled>Upload Manifest</button>
+          <button id="downloadRefreshPlanBtn" class="ghost accent" type="button" disabled>Full Refresh Plan</button>
         </span>
         <button id="applyRebuildBtn" class="primary" type="button" disabled>Gunakan sebagai Katalog Baru</button>
       </div>
