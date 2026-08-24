@@ -3801,3 +3801,31 @@ dialog.rebuild-dialog{width:min(1120px,calc(100% - 28px))}
   .category-inspector-actions{flex-direction:column-reverse}
   .category-inspector-actions button{width:100%}
 }
+
+
+/* =========================================================
+   V2.44.1 — ADMIN FRIENDLY MODE
+   Bahasa sederhana + output TXT untuk workflow R2.
+   ========================================================= */
+.rebuild-output-list .output-caution{background:#fffaf0}
+.rebuild-output-list .output-caution .output-number{background:#fff0cf;color:#8a5b00}
+.rebuild-output-list .output-technical{background:#fafafa}
+.rebuild-output-list .output-technical .output-number{background:#eef0f2;color:#59636d}
+.friendly-download{height:auto!important;min-height:46px!important;display:flex!important;flex-direction:column;align-items:flex-start!important;justify-content:center;gap:1px;padding:7px 10px!important;line-height:1.15;text-align:left}
+.friendly-download b,.friendly-download small{display:block}
+.friendly-download b{font-size:8.7px}
+.friendly-download small{font-size:7.1px;font-weight:650;opacity:.72}
+.technical-download{border-style:dashed!important;color:#5e6964!important;background:#fafbfa!important}
+.rebuild-download-actions{align-items:stretch}
+@media(max-width:600px){
+  .rebuild-download-actions{grid-template-columns:1fr 1fr}
+  .rebuild-download-actions #downloadRefreshPlanBtn,
+  .rebuild-download-actions #downloadTechnicalReportBtn{grid-column:auto}
+  .friendly-download{min-height:54px!important}
+  .friendly-download b{font-size:8.5px}
+}
+@media(max-width:430px){
+  .rebuild-download-actions{grid-template-columns:1fr}
+  .rebuild-download-actions #downloadRefreshPlanBtn,
+  .rebuild-download-actions #downloadTechnicalReportBtn{grid-column:1}
+}

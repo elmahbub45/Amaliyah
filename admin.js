@@ -141,6 +141,7 @@ function bind(){
   $('#downloadUploadManifestBtn').onclick=downloadRebuildUploadManifest;
   $('#downloadCleanupManifestBtn').onclick=downloadRebuildCleanupManifest;
   $('#downloadRefreshPlanBtn').onclick=downloadRebuildRefreshPlan;
+  $('#downloadTechnicalReportBtn').onclick=downloadRebuildTechnicalReport;
   $('#applyRebuildBtn').onclick=applyRebuildCatalog;
 
   $('#deleteItemBtn').onclick=deleteItem;
@@ -3032,6 +3033,7 @@ function resetRebuildDialog(){
   $('#downloadUploadManifestBtn').disabled=true;
   $('#downloadCleanupManifestBtn').disabled=true;
   $('#downloadRefreshPlanBtn').disabled=true;
+  $('#downloadTechnicalReportBtn').disabled=true;
   $('#applyRebuildBtn').disabled=true;
   $('#applyRebuildBtn').textContent='Gunakan sebagai Katalog Baru';
 }
@@ -3246,6 +3248,7 @@ function renderRebuildPlan(){
   $('#downloadUploadManifestBtn').disabled=plan.errors.length>0;
   $('#downloadCleanupManifestBtn').disabled=plan.errors.length>0;
   $('#downloadRefreshPlanBtn').disabled=plan.errors.length>0;
+  $('#downloadTechnicalReportBtn').disabled=plan.errors.length>0;
   $('#applyRebuildBtn').disabled=plan.errors.length>0;
   $('#applyRebuildBtn').textContent='Gunakan sebagai Katalog Baru';
 }
@@ -3290,6 +3293,7 @@ async function handleRebuildFolder(e){
   $('#downloadUploadManifestBtn').disabled=true;
   $('#downloadCleanupManifestBtn').disabled=true;
   $('#downloadRefreshPlanBtn').disabled=true;
+  $('#downloadTechnicalReportBtn').disabled=true;
   $('#applyRebuildBtn').disabled=true;
 
   let cursor=0;
@@ -3387,22 +3391,121 @@ function rebuildRefreshPlan(){
   };
 }
 
+function humanDateTime(){
+  return new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short'}).format(new Date());
+}
+
+function simpleUploadText(){
+  const rows=rebuildEntries.map((entry,index)=>`${index+1}. ${entry.localPath}\n   → R2: ${entry.r2Key}`);
+  return [
+    'AMALIYAH — DAFTAR FILE YANG PERLU DIUPLOAD',
+    '===========================================',
+    `Dibuat: ${humanDateTime()}`,
+    `Folder utama: ${rebuildPlan?.rootName||'-'}`,
+    `Jumlah PDF: ${rebuildEntries.length}`,
+    '',
+    'CARA PAKAI:',
+    '1. Upload setiap PDF ke Cloudflare R2.',
+    '2. Pastikan alamat/key di R2 sama persis dengan yang tertulis setelah tanda “→ R2:”.',
+    '3. Setelah selesai, coba buka beberapa bacaan dari aplikasi.',
+    '4. Jangan hapus file lama sebelum file baru sudah berhasil dibuka.',
+    '',
+    'DAFTAR FILE:',
+    rows.length?rows.join('\n\n'):'Tidak ada PDF yang perlu diupload.',
+    '',
+    'Catatan: file TXT ini hanya panduan. Tidak perlu diupload ke R2.'
+  ].join('\n');
+}
+
+function simpleCleanupText(){
+  const cleanup=rebuildCleanupManifest();
+  const rows=cleanup.deleteKeys.map((key,index)=>`${index+1}. ${key}`);
+  return [
+    'AMALIYAH — FILE LAMA YANG AMAN DIHAPUS',
+    '=======================================',
+    `Dibuat: ${humanDateTime()}`,
+    `Jumlah file yang aman dihapus: ${cleanup.deleteCount}`,
+    '',
+    'KAPAN DIPAKAI?',
+    'Gunakan SETELAH PDF terbaru selesai diupload ke R2 dan sudah kamu cek dari aplikasi.',
+    '',
+    'CARA PAKAI:',
+    '1. Buka Cloudflare R2.',
+    '2. Cari file dengan key/path yang tercantum di bawah.',
+    '3. Hapus HANYA file yang ada di daftar ini.',
+    '4. File yang tidak ada di daftar ini jangan dihapus.',
+    '',
+    cleanup.deleteCount?'FILE YANG AMAN DIHAPUS:':'HASIL PEMERIKSAAN:',
+    rows.length?rows.join('\n'):'Tidak ada file lama yang perlu dihapus. R2 sudah bersih terhadap katalog lama yang diketahui.',
+    '',
+    'Catatan: file TXT ini hanya panduan. Tidak perlu diupload ke R2.'
+  ].join('\n');
+}
+
+function simpleRefreshText(){
+  const plan=rebuildRefreshPlan();
+  const deleteKeys=plan.fullRefreshAlternative.fullRefreshDeleteKeys||[];
+  const uploadRows=rebuildEntries.map((entry,index)=>`${index+1}. ${entry.localPath}\n   → R2: ${entry.r2Key}`);
+  return [
+    'AMALIYAH — RENCANA BERSIHKAN & UPLOAD ULANG SEMUA',
+    '=================================================',
+    `Dibuat: ${humanDateTime()}`,
+    '',
+    '⚠ PERINGATAN PENTING',
+    'Ini BUKAN langkah maintenance rutin. Gunakan hanya jika kamu memang ingin melakukan reset besar isi R2.',
+    'Simpan backup terlebih dahulu dan pastikan kamu berada pada bucket/folder R2 yang benar.',
+    '',
+    'URUTAN YANG DISARANKAN:',
+    '1. Backup file lama atau pastikan semua PDF lokal terbaru lengkap.',
+    '2. Hapus file lama yang tercantum pada BAGIAN A.',
+    '3. Upload semua PDF pada BAGIAN B ke alamat R2 yang tertulis.',
+    '4. Ganti books.json di GitHub dengan hasil terbaru.',
+    '5. Coba buka beberapa bacaan di aplikasi sebelum menganggap pekerjaan selesai.',
+    '',
+    `BAGIAN A — FILE LAMA YANG AKAN DIHAPUS (${deleteKeys.length})`,
+    deleteKeys.length?deleteKeys.map((key,index)=>`${index+1}. ${key}`).join('\n'):'Tidak ada key katalog lama yang tercatat.',
+    '',
+    `BAGIAN B — FILE YANG HARUS DIUPLOAD ULANG (${rebuildEntries.length})`,
+    uploadRows.length?uploadRows.join('\n\n'):'Tidak ada PDF.',
+    '',
+    'Catatan: file TXT ini hanya panduan. Tidak perlu diupload ke R2.'
+  ].join('\n');
+}
+
 function downloadRebuildUploadManifest(){
   if(!rebuildPlan||rebuildPlan.errors.length)return;
-  downloadJson(rebuildUploadManifest(),'r2-upload-manifest.json');
-  toast('R2 Upload Manifest berhasil di-download.','ok');
+  downloadText(simpleUploadText(),'DAFTAR-FILE-UNTUK-DIUPLOAD.txt');
+  toast('Daftar file untuk diupload sudah dibuat. Isinya TXT sederhana.','ok');
 }
 
 function downloadRebuildCleanupManifest(){
   if(!rebuildPlan||rebuildPlan.errors.length)return;
-  downloadJson(rebuildCleanupManifest(),'r2-safe-cleanup-manifest.json');
-  toast('Safe Cleanup Manifest berhasil di-download.','ok');
+  downloadText(simpleCleanupText(),'FILE-LAMA-AMAN-DIHAPUS.txt');
+  toast('Daftar file lama yang aman dihapus sudah dibuat.','ok');
 }
 
-function downloadRebuildRefreshPlan(){
+async function downloadRebuildRefreshPlan(){
   if(!rebuildPlan||rebuildPlan.errors.length)return;
-  downloadJson(rebuildRefreshPlan(),'r2-full-refresh-plan.json');
-  toast('Full Refresh Plan berhasil di-download. Baca warning sebelum menghapus object R2.','ok');
+  const ok=await confirmInternal(
+    'Buat rencana reset besar R2?',
+    'Fitur ini untuk kondisi khusus ketika kamu ingin membersihkan file katalog lama dan mengupload ulang semuanya. Untuk maintenance biasa, gunakan “File Lama Aman Dihapus”.',
+    'Ya, Buat Rencana',
+    'Batal'
+  );
+  if(!ok)return;
+  downloadText(simpleRefreshText(),'RENCANA-BERSIHKAN-DAN-UPLOAD-ULANG-SEMUA.txt');
+  toast('Rencana reset besar sudah dibuat. Baca bagian PERINGATAN sebelum digunakan.','ok');
+}
+
+function downloadRebuildTechnicalReport(){
+  if(!rebuildPlan||rebuildPlan.errors.length)return;
+  downloadJson({
+    keterangan:'Laporan teknis lengkap. Untuk penggunaan harian, gunakan file TXT sederhana dari tombol lain.',
+    upload:rebuildUploadManifest(),
+    safeCleanup:rebuildCleanupManifest(),
+    fullRefresh:rebuildRefreshPlan()
+  },'LAPORAN-TEKNIS-R2.json');
+  toast('Laporan teknis JSON sudah dibuat. File ini opsional.','ok');
 }
 
 async function applyRebuildCatalog(){
@@ -4020,6 +4123,18 @@ function exportJson(){
   $('#validationDialog').close();
   updateAllStatus(false,'books.json berhasil dibuat — replace file ini di GitHub');
   toast('books.json berhasil di-download.','ok');
+}
+
+function downloadText(text,filename){
+  const blob=new Blob([String(text||'')+'\n'],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1200);
 }
 
 function downloadJson(obj,filename){

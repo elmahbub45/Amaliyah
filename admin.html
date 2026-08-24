@@ -590,8 +590,8 @@
     <div class="dialog-card rebuild-dialog-card">
       <div class="dialog-head">
         <div>
-          <small>SUMBER UTAMA KATALOG</small>
-          <h3>Rebuild Catalog from Folder</h3>
+          <small>PERBARUI KATALOG DARI FOLDER</small>
+          <h3>Bangun Ulang Katalog dari Folder</h3>
         </div>
         <button id="closeRebuildBtn" class="icon-btn dark" type="button" aria-label="Tutup">✕</button>
       </div>
@@ -600,7 +600,7 @@
         <span class="rebuild-truth-icon">✓</span>
         <span>
           <b>Struktur folder lokal menjadi sumber kebenaran.</b>
-          <small>Folder bercabang = Group • folder paling akhir = Collection • PDF di folder paling akhir = Part • relative path = R2 key.</small>
+          <small>Admin akan membaca susunan folder dan PDF secara otomatis. Nama folder tetap dipakai agar susunan katalog dan lokasi file di R2 selalu sama.</small>
         </span>
       </div>
 
@@ -616,15 +616,15 @@
 
       <div id="rebuildMetrics" class="rebuild-metrics">
         <span><b id="rebuildPdfCount">0</b><small>PDF</small></span>
-        <span><b id="rebuildGroupCount">0</b><small>Group</small></span>
-        <span><b id="rebuildCollectionCount">0</b><small>Collection</small></span>
+        <span><b id="rebuildGroupCount">0</b><small>Grup</small></span>
+        <span><b id="rebuildCollectionCount">0</b><small>Koleksi</small></span>
         <span><b id="rebuildIssueCount">0</b><small>Masalah</small></span>
       </div>
 
       <div class="rebuild-workspace">
         <section class="rebuild-preview-panel">
           <div class="rebuild-section-head">
-            <div><small>PREVIEW STRUKTUR</small><b>Group / Collection / Part</b></div>
+            <div><small>PRATINJAU SUSUNAN</small><b>Folder → Koleksi → PDF</b></div>
             <code id="rebuildR2Base">R2: /</code>
           </div>
           <div id="rebuildTree" class="rebuild-tree">
@@ -634,13 +634,14 @@
 
         <aside class="rebuild-output-panel">
           <div class="rebuild-section-head">
-            <div><small>OUTPUT MAINTENANCE</small><b>File yang Dihasilkan</b></div>
+            <div><small>HASIL YANG BISA DIUNDUH</small><b>Dibuat agar mudah dipakai</b></div>
           </div>
           <div class="rebuild-output-list">
-            <div><span class="output-number">1</span><span><b>books.json</b><small>Struktur katalog baru dari folder.</small></span></div>
-            <div><span class="output-number">2</span><span><b>R2 Upload Manifest</b><small>File lokal → target object key R2.</small></span></div>
-            <div><span class="output-number">3</span><span><b>R2 Safe Cleanup</b><small>Hanya object lama yang sudah tidak ada di katalog baru.</small></span></div>
-            <div><span class="output-number">4</span><span><b>R2 Full Refresh Plan</b><small>Daftar lengkap hapus-lama → upload-baru untuk refresh total.</small></span></div>
+            <div><span class="output-number">1</span><span><b>books.json</b><small>File katalog aplikasi. Ini yang menggantikan books.json lama di GitHub.</small></span></div>
+            <div><span class="output-number">2</span><span><b>Daftar File yang Perlu Diupload</b><small>Daftar sederhana: file di komputer → lokasi tujuan di R2.</small></span></div>
+            <div><span class="output-number">3</span><span><b>Daftar File Lama yang Aman Dihapus</b><small>Hanya menampilkan file lama yang sudah tidak dipakai katalog baru.</small></span></div>
+            <div class="output-caution"><span class="output-number">4</span><span><b>Rencana Bersihkan & Upload Ulang Semua</b><small>Untuk reset besar saja. Bukan untuk maintenance rutin.</small></span></div>
+            <div class="output-technical"><span class="output-number">i</span><span><b>Laporan Teknis (JSON)</b><small>Opsional. Dipakai hanya bila suatu saat diperlukan untuk pengecekan teknis.</small></span></div>
           </div>
           <div id="rebuildIssues" class="rebuild-issues">
             <div class="rebuild-empty compact">Belum ada hasil pemeriksaan.</div>
@@ -649,24 +650,25 @@
       </div>
 
       <section id="rebuildWorkflowGuide" class="rebuild-workflow-guide" aria-label="Urutan refresh R2">
-        <div class="workflow-head"><small>URUTAN AMAN R2</small><b>Jangan hapus object lama sebelum file baru siap diunggah.</b></div>
+        <div class="workflow-head"><small>URUTAN PALING AMAN</small><b>Ikuti langkah ini dari kiri ke kanan.</b></div>
         <ol>
-          <li><b>Rebuild katalog</b><small>Gunakan folder lokal sebagai sumber kebenaran.</small></li>
-          <li><b>Download books.json + Upload Manifest</b><small>Upload PDF baru ke R2 sesuai key yang sama.</small></li>
-          <li><b>Verifikasi PDF baru</b><small>Pastikan beberapa bacaan dapat dibuka dari aplikasi.</small></li>
-          <li><b>Jalankan Safe Cleanup</b><small>Hapus hanya object yang memang sudah tidak dipakai.</small></li>
+          <li><b>1. Pilih folder terbaru</b><small>Folder di komputer menjadi patokan utama.</small></li>
+          <li><b>2. Buat katalog & daftar upload</b><small>Download books.json dan daftar file yang perlu diupload.</small></li>
+          <li><b>3. Upload lalu cek</b><small>Upload PDF ke R2, kemudian coba buka beberapa bacaan di aplikasi.</small></li>
+          <li><b>4. Bersihkan file lama</b><small>Jika perlu, hapus hanya file yang tercantum pada daftar aman.</small></li>
         </ol>
-        <p><strong>Full Refresh Plan</strong> disediakan bila kamu memang ingin menghapus seluruh object katalog lama dan mengunggah ulang semuanya. Gunakan setelah backup dan hanya pada prefix bucket yang benar.</p>
+        <p><strong>Untuk penggunaan biasa:</strong> kamu hampir selalu cukup memakai “Daftar File yang Perlu Diupload” dan “File Lama yang Aman Dihapus”. <strong>“Bersihkan & Upload Ulang Semua”</strong> hanya untuk reset besar setelah backup.</p>
       </section>
 
       <div class="dialog-actions sticky-dialog-actions rebuild-actions">
         <button id="cancelRebuildBtn" class="ghost" type="button">Batal</button>
         <span class="rebuild-download-actions">
-          <button id="downloadCleanupManifestBtn" class="ghost accent" type="button" disabled>Safe Cleanup</button>
-          <button id="downloadUploadManifestBtn" class="ghost accent" type="button" disabled>Upload Manifest</button>
-          <button id="downloadRefreshPlanBtn" class="ghost accent" type="button" disabled>Full Refresh Plan</button>
+          <button id="downloadUploadManifestBtn" class="ghost accent friendly-download" type="button" disabled><b>Daftar File untuk Diupload</b><small>TXT sederhana</small></button>
+          <button id="downloadCleanupManifestBtn" class="ghost accent friendly-download" type="button" disabled><b>File Lama Aman Dihapus</b><small>TXT sederhana</small></button>
+          <button id="downloadRefreshPlanBtn" class="danger friendly-download" type="button" disabled><b>Bersihkan & Upload Ulang Semua</b><small>Untuk reset besar</small></button>
+          <button id="downloadTechnicalReportBtn" class="ghost friendly-download technical-download" type="button" disabled><b>Laporan Teknis</b><small>JSON • opsional</small></button>
         </span>
-        <button id="applyRebuildBtn" class="primary" type="button" disabled>Gunakan sebagai Katalog Baru</button>
+        <button id="applyRebuildBtn" class="primary" type="button" disabled>Gunakan Katalog Baru</button>
       </div>
     </div>
   </dialog>
