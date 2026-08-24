@@ -42,6 +42,23 @@
       <button id="monthlyBtn" class="monthly-link" type="button">▣ Lihat Jadwal Bulanan <span>›</span></button>
     </section>
 
+    <section class="quran-home-section" aria-labelledby="quranHomeTitle">
+      <div class="section-head quran-section-head">
+        <b id="quranHomeTitle">MUSHAF AL-QUR'AN</b>
+        <span class="quran-separate-badge">Terpisah dari PDF</span>
+      </div>
+      <article class="quran-home-card">
+        <div class="quran-home-ornament" aria-hidden="true">۞</div>
+        <div class="quran-home-copy">
+          <span class="quran-home-kicker">MUSHAF MADINAH • 604 HALAMAN</span>
+          <h2>Al-Qur'an Al-Karim</h2>
+          <p id="quranHomeMeta">Baca Al-Qur'an dengan susunan halaman seperti mushaf.</p>
+          <div class="quran-home-progress" aria-hidden="true"><i id="quranHomeProgress"></i></div>
+        </div>
+        <button class="quran-home-button" id="quranHomeButton" type="button">Buka Mushaf <span>›</span></button>
+      </article>
+    </section>
+
     <section><div class="section-title">LANJUTKAN MEMBACA</div><article class="reading-card"><div class="home-book-icon" id="continueIcon">و</div><div class="grow"><h3 id="continueTitle">Wirdul Latif</h3><p id="lastPage">Belum dibaca</p><div class="progress"><i id="progressBar"></i></div></div><button class="primary" id="continueBtn">Baca →</button></article></section>
 
 
@@ -159,6 +176,10 @@
 
 <div id="bookmarks" class="screen hidden">
   <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Bookmark</b><span></span></div>
+  <div class="bookmark-kind-tabs" role="tablist" aria-label="Jenis bookmark">
+    <button class="active" id="bookmarkPdfTab" type="button" role="tab" aria-selected="true" onclick="showBookmarkKind('pdf')">Bacaan</button>
+    <button id="bookmarkQuranTab" type="button" role="tab" aria-selected="false" onclick="showBookmarkKind('quran')">Al-Qur'an</button>
+  </div>
   <div id="bookmarkList" class="list-wrap"></div>
 </div>
 <div id="history" class="screen hidden">

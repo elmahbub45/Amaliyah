@@ -1,5 +1,5 @@
-const C='amaliyah-v2-40-2-category-rename-routing';
-const A=['./','./index.html','./style.css','./app.js','./icon-library.js','./reader.html','./reader.css','./reader.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
+const C='amaliyah-v2-41-0-mushaf-quran';
+const A=['./','./index.html','./style.css','./app.js','./icon-library.js','./reader.html','./reader.css','./reader.js','./quran.html','./quran.css','./quran.js','./quran-config.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
 
 self.addEventListener('install',e=>{
   self.skipWaiting();

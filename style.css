@@ -1497,3 +1497,51 @@ body{
   .category-directory{grid-template-columns:1fr}
   .category-directory-card{min-height:70px}
 }
+
+/* Mushaf Al-Qur'an — modul mandiri, terpisah dari katalog PDF */
+.quran-home-section{margin-top:21px}
+.quran-section-head{align-items:center}
+.quran-separate-badge{
+  padding:5px 8px;border:1px solid rgba(183,139,53,.22);border-radius:999px;
+  background:#f7efe0;color:#9b7227;font-size:8px;font-weight:750;letter-spacing:.02em
+}
+.quran-home-card{
+  position:relative;overflow:hidden;display:grid;grid-template-columns:62px minmax(0,1fr);
+  gap:14px;align-items:center;padding:19px;border:1px solid rgba(225,193,121,.28);
+  border-radius:24px;background:linear-gradient(145deg,#0d624d,#064437);color:#fff;
+  box-shadow:0 14px 30px rgba(5,72,56,.17)
+}
+.quran-home-card:after{
+  content:"";position:absolute;right:-45px;top:-70px;width:190px;height:190px;border-radius:50%;
+  border:1px solid rgba(235,200,121,.12);box-shadow:0 0 0 22px rgba(235,200,121,.035),0 0 0 45px rgba(235,200,121,.025)
+}
+.quran-home-ornament{
+  position:relative;z-index:1;width:62px;height:76px;display:grid;place-items:center;
+  border:1px solid rgba(237,202,120,.5);border-radius:17px;background:rgba(255,255,255,.07);
+  color:#edca78;font-family:serif;font-size:34px;box-shadow:inset 0 0 22px rgba(0,0,0,.08)
+}
+.quran-home-copy{position:relative;z-index:1;min-width:0;padding-right:3px}
+.quran-home-kicker{display:block;color:#e7c36f;font-size:8px;font-weight:800;letter-spacing:.1em}
+.quran-home-copy h2{margin:5px 0 4px;font-family:Georgia,serif;font-size:20px;color:#fff7e8}
+.quran-home-copy p{margin:0;color:rgba(255,255,255,.72);font-size:9px;line-height:1.45}
+.quran-home-progress{height:4px;margin-top:11px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden}
+.quran-home-progress i{display:block;width:0;height:100%;border-radius:inherit;background:#e1b85d;transition:width .25s ease}
+.quran-home-button{
+  position:relative;z-index:1;grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:6px;
+  min-height:40px;border:1px solid rgba(239,206,130,.25);border-radius:14px;
+  background:rgba(255,255,255,.09);color:#fff8e8;font:inherit;font-size:10px;font-weight:800
+}
+.quran-home-button span{color:#e8c36d;font-size:18px;line-height:1}
+.bookmark-kind-tabs{
+  position:sticky;top:58px;z-index:5;display:grid;grid-template-columns:1fr 1fr;gap:5px;
+  margin:12px 16px 0;padding:4px;border:1px solid #e9dfce;border-radius:14px;background:#f5efe5
+}
+.bookmark-kind-tabs button{min-height:38px;border:0;border-radius:10px;background:transparent;color:#6e7873;font:inherit;font-size:11px;font-weight:750}
+.bookmark-kind-tabs button.active{background:#fff;color:#0a5946;box-shadow:0 4px 12px rgba(42,61,54,.08)}
+.quran-bookmark-overview .bookmark-overview-icon{font-family:serif;font-size:27px;color:#e5bb60}
+.quran-bookmark-card .bookmark-card-icon{font-family:serif;font-size:24px}
+.quran-empty-button{min-height:40px;margin-top:12px;padding:0 18px;border:0;border-radius:13px;background:#0b5b49;color:#fff;font:inherit;font-weight:750}
+@media(min-width:430px){
+  .quran-home-card{grid-template-columns:68px minmax(0,1fr) auto}
+  .quran-home-button{grid-column:auto;min-width:92px;padding:0 12px}
+}

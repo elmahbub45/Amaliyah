@@ -185,6 +185,7 @@ const SCREEN_TO_ID={
   settings:'#settings', monthly:'#monthly', bookmarks:'#bookmarks', history:'#history'
 };
 let currentScreen='home';
+let bookmarkKind='pdf';
 const SCREEN_STATE_KEY='amaliyah:screenState';
 
 function allParts(){
@@ -359,6 +360,7 @@ function updateHome(){
   const state=getLastState();
   updateCategoryCounts();
   renderHomeFavorites();
+  updateQuranHomeCard();
   if(!state)return;
   const {item,part}=state;
   const pr=partProgress(part);
@@ -373,6 +375,37 @@ function updateHome(){
   $('#progressBar').style.width=pr.percent+'%';
   $('#continueBtn').onclick=()=>continueItem(item.id);
 
+}
+
+function quranBookmarks(){
+  try{
+    const value=JSON.parse(store.getItem('amaliyah:quran:bookmarks')||'[]');
+    return Array.isArray(value)?value.map(Number).filter(page=>page>=1&&page<=604):[];
+  }catch{return []}
+}
+
+function quranPageMeta(){
+  try{return JSON.parse(store.getItem('amaliyah:quran:last-meta')||'{}')||{}}
+  catch{return {}}
+}
+
+function updateQuranHomeCard(){
+  const page=Math.min(604,Math.max(1,+(store.getItem('amaliyah:quran:last-page')||1)));
+  const meta=quranPageMeta();
+  const hasProgress=store.getItem('amaliyah:quran:last-page')!==null;
+  const detail=[meta.surah?`Surah ${meta.surah}`:'',meta.juz?`Juz ${meta.juz}`:''].filter(Boolean).join(' • ');
+  const text=hasProgress
+    ? `Terakhir halaman ${page} dari 604${detail?' • '+detail:''}`
+    : 'Baca Al-Qur\'an dengan susunan halaman seperti mushaf.';
+  const metaEl=$('#quranHomeMeta');
+  const progressEl=$('#quranHomeProgress');
+  const button=$('#quranHomeButton');
+  if(metaEl)metaEl.textContent=text;
+  if(progressEl)progressEl.style.width=(hasProgress?(page/604)*100:0)+'%';
+  if(button){
+    button.firstChild.textContent=hasProgress?'Lanjutkan ':'Buka Mushaf ';
+    button.onclick=()=>location.href=`quran.html${hasProgress?`?page=${page}`:''}`;
+  }
 }
 
 function normalizedCategoryName(value=''){
@@ -712,6 +745,12 @@ function renderBookmarks(){
   const wrap=$('#bookmarkList');
   if(!wrap)return;
 
+  $('#bookmarkPdfTab')?.classList.toggle('active',bookmarkKind==='pdf');
+  $('#bookmarkQuranTab')?.classList.toggle('active',bookmarkKind==='quran');
+  $('#bookmarkPdfTab')?.setAttribute('aria-selected',String(bookmarkKind==='pdf'));
+  $('#bookmarkQuranTab')?.setAttribute('aria-selected',String(bookmarkKind==='quran'));
+  if(bookmarkKind==='quran')return renderQuranBookmarks(wrap);
+
   const entries=[];
 
   Object.keys(localStorage).forEach(k=>{
@@ -803,6 +842,51 @@ function renderBookmarks(){
       if(x)openPart(x.parent.id,x.part.id,x.page);
     };
   });
+}
+
+function renderQuranBookmarks(wrap){
+  const pages=quranBookmarks().sort((a,b)=>a-b);
+  let meta={};
+  try{meta=JSON.parse(store.getItem('amaliyah:quran:page-meta')||'{}')||{}}catch{}
+
+  const overview=`
+    <section class="bookmark-overview quran-bookmark-overview" aria-label="Ringkasan penanda Al-Qur'an">
+      <div class="bookmark-overview-icon" aria-hidden="true">۞</div>
+      <div class="bookmark-overview-copy">
+        <span>PENANDA MUSHAF AL-QUR'AN</span>
+        <b>${pages.length} Halaman</b>
+        <small>Penanda ini tersimpan terpisah dari bookmark bacaan PDF.</small>
+      </div>
+    </section>`;
+
+  if(!pages.length){
+    wrap.innerHTML=overview+`<div class="bookmark-empty">
+      <div class="bookmark-empty-mark" aria-hidden="true">۞</div>
+      <b>Belum ada penanda Al-Qur'an</b>
+      <p>Tekan ikon penanda saat membuka halaman Mushaf.</p>
+      <button class="quran-empty-button" type="button" data-open-quran>Buka Mushaf</button>
+    </div>`;
+    wrap.querySelector('[data-open-quran]')?.addEventListener('click',()=>location.href='quran.html');
+    return;
+  }
+
+  wrap.innerHTML=overview+`<div class="bookmark-stack">${pages.map(page=>{
+    const info=meta[page]||{};
+    const detail=[info.surah?`Surah ${info.surah}`:'',info.juz?`Juz ${info.juz}`:''].filter(Boolean).join(' • ')||'Mushaf Madinah';
+    return `<button class="bookmark-card quran-bookmark-card" type="button" data-quran-page="${page}">
+      <span class="bookmark-card-icon" aria-hidden="true">۞</span>
+      <span class="bookmark-card-copy"><span class="bookmark-card-kicker">AL-QUR'AN</span><b>Halaman ${page}</b><small>${detail}</small></span>
+      <span class="bookmark-card-arrow" aria-hidden="true">›</span>
+    </button>`;
+  }).join('')}</div>`;
+  wrap.querySelectorAll('[data-quran-page]').forEach(button=>{
+    button.onclick=()=>location.href=`quran.html?page=${button.dataset.quranPage}`;
+  });
+}
+
+function showBookmarkKind(kind='pdf'){
+  bookmarkKind=kind==='quran'?'quran':'pdf';
+  renderBookmarks();
 }
 
 function getHistoryEntries(){
@@ -1850,6 +1934,7 @@ window.showCollection=showCollection;
 window.showSettings=showSettings;
 window.showMonthly=showMonthly;
 window.showBookmarks=showBookmarks;
+window.showBookmarkKind=showBookmarkKind;
 window.showHistory=showHistory;
 window.goBackInApp=goBackInApp;
 window.goBackScreen=goBackInApp;

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
+  <meta name="theme-color" content="#064638">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <link rel="stylesheet" href="quran.css">
+  <title>Mushaf Al-Qur'an — Amaliyah</title>
+</head>
+<body>
+  <main id="quranDirectory" class="quran-directory">
+    <header class="directory-header">
+      <button class="round-button" id="quranHomeBack" type="button" aria-label="Kembali ke Amaliyah">‹</button>
+      <div><span>MUSHAF AL-QUR'AN</span><b>Al-Qur'an Al-Karim</b></div>
+      <button class="round-button" id="openLastPage" type="button" aria-label="Buka halaman terakhir">↗</button>
+    </header>
+
+    <section class="mushaf-intro">
+      <div class="mushaf-seal" aria-hidden="true">۞</div>
+      <div class="mushaf-intro-copy">
+        <span>MUSHAF MADINAH</span>
+        <h1>بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</h1>
+        <p id="lastReadSummary">604 halaman • Tampilan halaman mushaf</p>
+      </div>
+      <button id="continueQuran" type="button">Mulai Membaca <span>›</span></button>
+    </section>
+
+    <section class="directory-card">
+      <div class="directory-tabs" role="tablist" aria-label="Daftar Al-Qur'an">
+        <button class="active" data-quran-tab="surah" type="button" role="tab">Surah</button>
+        <button data-quran-tab="juz" type="button" role="tab">Juz</button>
+        <button data-quran-tab="bookmarks" type="button" role="tab">Penanda</button>
+      </div>
+      <label class="quran-search" id="quranSearchWrap">
+        <span aria-hidden="true">⌕</span>
+        <input id="quranSearch" type="search" placeholder="Cari nama atau nomor surah…" autocomplete="off">
+      </label>
+      <div id="quranDirectoryList" class="directory-list" aria-live="polite"></div>
+    </section>
+
+    <footer class="quran-attribution">
+      Tampilan halaman mengikuti susunan Mushaf Madinah 604 halaman. Modul ini terpisah dari katalog PDF Amaliyah.
+    </footer>
+  </main>
+
+  <section id="quranReader" class="quran-reader hidden" aria-label="Pembaca Mushaf">
+    <header id="quranReaderHeader" class="reader-header reader-control">
+      <button id="closeReader" type="button" aria-label="Kembali ke daftar">‹</button>
+      <div><b id="readerSurah">Al-Qur'an Al-Karim</b><small id="readerMeta">Mushaf Madinah</small></div>
+      <button id="toggleQuranBookmark" type="button" aria-label="Tandai halaman">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/></svg>
+      </button>
+    </header>
+
+    <div id="quranStage" class="quran-stage">
+      <button class="page-tap-zone page-tap-prev" id="pageTapPrev" type="button" aria-label="Halaman sebelumnya"></button>
+      <figure id="quranPageShell" class="quran-page-shell">
+        <div id="quranLoading" class="quran-loading"><i></i><span>Memuat halaman…</span></div>
+        <img id="quranPageImage" alt="Halaman Mushaf Al-Qur'an" draggable="false">
+        <div id="quranImageError" class="quran-image-error hidden">
+          <b>Halaman belum dapat dimuat</b>
+          <p>Periksa koneksi internet lalu coba kembali.</p>
+          <button id="retryQuranPage" type="button">Coba Lagi</button>
+        </div>
+      </figure>
+      <button class="page-tap-zone page-tap-next" id="pageTapNext" type="button" aria-label="Halaman berikutnya"></button>
+    </div>
+
+    <footer id="quranReaderFooter" class="reader-footer reader-control">
+      <button id="previousQuranPage" type="button" aria-label="Halaman sebelumnya">‹</button>
+      <button id="pageCounter" class="page-counter" type="button" aria-label="Pilih halaman"><span>HALAMAN</span><b>1 / 604</b></button>
+      <button id="nextQuranPage" type="button" aria-label="Halaman berikutnya">›</button>
+    </footer>
+
+    <dialog id="pagePicker" class="page-picker">
+      <form method="dialog">
+        <b>Buka Halaman</b>
+        <p>Masukkan nomor halaman 1–604.</p>
+        <input id="pagePickerInput" type="number" min="1" max="604" inputmode="numeric">
+        <div><button value="cancel">Batal</button><button id="confirmPagePicker" value="default">Buka</button></div>
+      </form>
+    </dialog>
+  </section>
+
+  <script src="quran-config.js"></script>
+  <script src="quran.js"></script>
+</body>
+</html>
