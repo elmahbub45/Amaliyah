@@ -33,6 +33,9 @@ let rebuildPlan=null;
 let rebuildCleanupKeys=[];
 let rebuildScanToken=0;
 let rebuildIgnoredCount=0;
+let explorerSelection=new Set();
+let explorerSelectionAnchor=null;
+let explorerVisibleKeys=[];
 
 async function boot(){
   original=await fetchBooks();
@@ -83,8 +86,8 @@ function assertBooksShape(parsed){
 
 function bind(){
   $('#searchInput').addEventListener('input',renderList);
-  $('#categoryFilter').addEventListener('change',()=>{explorerCategory=$('#categoryFilter').value;explorerItemId=null;selectedId=null;showEmptyEditor();renderList();});
-  $('#categoryRootBtn').onclick=()=>{explorerCategory='';explorerItemId=null;selectedId=null;$('#categoryFilter').value='';showEmptyEditor();renderList();};
+  $('#categoryFilter').addEventListener('change',()=>{resetExplorerSelection();explorerCategory=$('#categoryFilter').value;explorerItemId=null;selectedId=null;showEmptyEditor();renderList();});
+  $('#categoryRootBtn').onclick=()=>{resetExplorerSelection();explorerCategory='';explorerItemId=null;selectedId=null;$('#categoryFilter').value='';showEmptyEditor();renderList();};
   $('#typeFilter').addEventListener('change',renderList);
   $('#gridViewBtn').onclick=()=>setExplorerView('grid');
   $('#listViewBtn').onclick=()=>setExplorerView('list');
@@ -473,6 +476,7 @@ function renderCategoryTree(){
   }).join('');
 
   $$('[data-tree-category]',host).forEach(btn=>btn.onclick=()=>{
+    resetExplorerSelection();
     explorerCategory=btn.dataset.treeCategory;
     explorerItemId=null;
     selectedId=null;
@@ -482,6 +486,7 @@ function renderCategoryTree(){
   });
 
   $$('[data-tree-item]',host).forEach(btn=>btn.onclick=()=>{
+    resetExplorerSelection();
     explorerItemId=btn.dataset.treeItem;
     selectedId=null;
     showEmptyEditor();
@@ -708,6 +713,111 @@ function renderBackups(){
 }
 
 /* ===================== LIST / ORDER ===================== */
+function itemSelectionKey(id){return `item:${id}`;}
+function partSelectionKey(parentId,index){return `part:${parentId}:${index}`;}
+function categorySelectionKey(category){return `category:${category}`;}
+
+function resetExplorerSelection(){
+  explorerSelection.clear();
+  explorerSelectionAnchor=null;
+  explorerVisibleKeys=[];
+}
+
+function parseExplorerSelectionKey(key=''){
+  if(key.startsWith('item:'))return {kind:'item',id:key.slice(5)};
+  if(key.startsWith('category:'))return {kind:'category',category:key.slice(9)};
+  if(key.startsWith('part:')){
+    const rest=key.slice(5);
+    const split=rest.lastIndexOf(':');
+    return {kind:'part',parentId:rest.slice(0,split),index:Number(rest.slice(split+1))};
+  }
+  return {kind:'unknown'};
+}
+
+function showExplorerSelectionSummary(){
+  selectedId=null;
+  selectedPartRef=null;
+  $('#editorContent').classList.add('hidden');
+  $('#partInspector')?.classList.add('hidden');
+  const empty=$('#emptyEditor');
+  empty.classList.remove('hidden');
+  const count=explorerSelection.size;
+  $('.empty-ornament',empty).textContent=count>1?String(count):'✓';
+  $('h2',empty).textContent=count>1?`${count} item dipilih`:'Folder dipilih';
+  $('p',empty).textContent=count>1
+    ? 'Gunakan Ctrl untuk menambah atau mengurangi pilihan, dan Shift untuk memilih satu rentang.'
+    : 'Klik dua kali folder untuk membukanya. Gunakan Ctrl atau Shift untuk memilih beberapa item.';
+}
+
+function syncExplorerSelectionVisuals(){
+  const list=$('#itemList');
+  if(!list)return;
+  $$('[data-selection-key]',list).forEach(row=>{
+    row.classList.toggle('active',explorerSelection.has(row.dataset.selectionKey));
+  });
+  const countNode=$('#explorerItemCount');
+  if(countNode){
+    const total=explorerVisibleKeys.length;
+    countNode.textContent=explorerSelection.size
+      ? `${total} item • ${explorerSelection.size} dipilih`
+      : `${total} item`;
+  }
+}
+
+function applyExplorerSelection(){
+  if(explorerSelection.size!==1){
+    showExplorerSelectionSummary();
+    return;
+  }
+  const key=[...explorerSelection][0];
+  const ref=parseExplorerSelectionKey(key);
+  if(ref.kind==='item'){
+    selectItem(ref.id,{preserveExplorerSelection:true,skipListRender:true});
+    return;
+  }
+  if(ref.kind==='part'){
+    const parent=data.items.find(x=>x.id===ref.parentId);
+    if(parent?.parts?.[ref.index]){
+      showPartInspector(parent,ref.index,{preserveExplorerSelection:true,skipListRender:true});
+      return;
+    }
+  }
+  showExplorerSelectionSummary();
+}
+
+function handleExplorerSelectionClick(row,event){
+  const key=row?.dataset.selectionKey;
+  if(!key)return;
+  const ctrl=event.ctrlKey||event.metaKey;
+  const shift=event.shiftKey;
+  const visible=explorerVisibleKeys;
+
+  if(shift && explorerSelectionAnchor && visible.includes(explorerSelectionAnchor)){
+    const from=visible.indexOf(explorerSelectionAnchor);
+    const to=visible.indexOf(key);
+    if(!ctrl)explorerSelection.clear();
+    visible.slice(Math.min(from,to),Math.max(from,to)+1).forEach(value=>explorerSelection.add(value));
+  }else if(ctrl){
+    if(explorerSelection.has(key))explorerSelection.delete(key);
+    else explorerSelection.add(key);
+    explorerSelectionAnchor=key;
+  }else{
+    explorerSelection.clear();
+    explorerSelection.add(key);
+    explorerSelectionAnchor=key;
+  }
+
+  if(!explorerSelection.size){
+    explorerSelectionAnchor=null;
+    selectedId=null;
+    showEmptyEditor();
+    syncExplorerSelectionVisuals();
+    return;
+  }
+  applyExplorerSelection();
+  syncExplorerSelectionVisuals();
+}
+
 function setExplorerView(view){
   explorerView=view==='list'?'list':'grid';
   localStorage.setItem('amaliyah:admin:explorer:view:v2361',explorerView);
@@ -1092,6 +1202,7 @@ function renderExplorerBreadcrumb(){
     return `${i?'<span class="crumb-sep">›</span>':''}<button type="button" class="crumb ${last?'current':''}" data-crumb-kind="${c.kind}" ${c.id?`data-crumb-id="${esc(c.id)}"`:''}>${esc(c.label)}</button>`;
   }).join('');
   $$('[data-crumb-kind]',host).forEach(btn=>btn.onclick=()=>{
+    resetExplorerSelection();
     const kind=btn.dataset.crumbKind;
     if(kind==='root'){explorerCategory='';explorerItemId=null;$('#categoryFilter').value='';}
     else if(kind==='category'){explorerItemId=null;$('#categoryFilter').value=explorerCategory;}
@@ -1114,6 +1225,7 @@ function openExplorerItem(id){
     selectItem(id);
     return;
   }
+  resetExplorerSelection();
   explorerItemId=id;
   selectedId=id;
   selectItem(id);
@@ -1122,11 +1234,13 @@ function openExplorerItem(id){
 
 function explorerCardForItem(x,index){
   const isFolder=x.type!=='single';
+  const selectionKey=itemSelectionKey(x.id);
+  const active=explorerSelection.size?explorerSelection.has(selectionKey):x.id===selectedId;
   const countValue=x.type==='single'?Math.max(1,Number(x.pages)||1):(x.parts||[]).length;
   const countLabel=x.type==='single'?'hal.':'isi';
   const typeLabel=x.type==='group'?'Group':x.type==='collection'?'Collection':'Single';
-  return `<div class="explorer-entry ${isFolder?'is-folder':'is-file'} ${x.id===selectedId?'active':''}" draggable="true" data-id="${esc(x.id)}" data-main-index="${index}">
-    <button class="explorer-open" type="button" data-open-explorer="${esc(x.id)}" title="${isFolder?'Buka folder':'Edit bacaan'}">
+  return `<div class="explorer-entry ${isFolder?'is-folder':'is-file'} ${active?'active':''}" draggable="true" data-id="${esc(x.id)}" data-selection-key="${esc(selectionKey)}" data-main-index="${index}">
+    <button class="explorer-open" type="button" data-open-explorer="${esc(x.id)}" title="${isFolder?'Klik dua kali untuk membuka folder':'Klik dua kali untuk mengedit PDF'}">
       <span class="explorer-icon ${isFolder?'folder-icon':'file-icon'}" aria-hidden="true"></span>
       <span class="explorer-entry-copy"><b>${esc(x.title||'(Tanpa judul)')}</b><small>${isFolder?'Folder bacaan':'Dokumen PDF'}</small></span>
     </button>
@@ -1144,9 +1258,12 @@ function explorerCardForPart(parent,p,i){
     const child=data.items.find(x=>x.id===p.itemId);
     return child?explorerCardForItem(child,data.items.indexOf(child)):'';
   }
-  const active=selectedPartRef?.parentId===parent.id&&selectedPartRef?.index===i;
-  return `<div class="explorer-entry is-file part-file ${active?'active':''}" draggable="true" data-part-index="${i}">
-    <button class="explorer-open" type="button" data-select-part-index="${i}" title="Pilih file">
+  const selectionKey=partSelectionKey(parent.id,i);
+  const active=explorerSelection.size
+    ? explorerSelection.has(selectionKey)
+    : selectedPartRef?.parentId===parent.id&&selectedPartRef?.index===i;
+  return `<div class="explorer-entry is-file part-file ${active?'active':''}" draggable="true" data-part-index="${i}" data-selection-key="${esc(selectionKey)}">
+    <button class="explorer-open" type="button" data-select-part-index="${i}" title="Klik dua kali untuk mengedit PDF">
       <span class="explorer-icon file-icon" aria-hidden="true"></span>
       <span class="explorer-entry-copy"><b>${esc(p.title||'(Tanpa judul)')}</b><small>Dokumen PDF</small></span>
     </button>
@@ -1173,7 +1290,7 @@ function renderList(){
   let html='';
   if(!explorerCategory && !explorerItemId && !q && !type){
     const cats=categories();
-    html=cats.map(c=>`<div class="explorer-entry is-folder category-folder" data-drop-category-entry="${esc(c)}"><button class="explorer-open" type="button" data-open-category="${esc(c)}"><span class="explorer-icon folder-icon" aria-hidden="true"></span><span class="explorer-entry-copy"><b>${esc(c)}</b><small>Folder kategori</small></span></button><span class="explorer-col explorer-col-type"><small>Kategori</small></span><span class="explorer-col explorer-col-count"><b>${explorerRoots(c).length}</b><small>item</small></span><div class="explorer-entry-actions"></div></div>`).join('');
+    html=cats.map(c=>{const key=categorySelectionKey(c);return `<div class="explorer-entry is-folder category-folder ${explorerSelection.has(key)?'active':''}" data-selection-key="${esc(key)}" data-drop-category-entry="${esc(c)}"><button class="explorer-open" type="button" data-open-category="${esc(c)}" title="Klik dua kali untuk membuka folder"><span class="explorer-icon folder-icon" aria-hidden="true"></span><span class="explorer-entry-copy"><b>${esc(c)}</b><small>Folder kategori</small></span></button><span class="explorer-col explorer-col-type"><small>Kategori</small></span><span class="explorer-col explorer-col-count"><b>${explorerRoots(c).length}</b><small>item</small></span><div class="explorer-entry-actions"></div></div>`}).join('');
   }else if(explorerItemId){
     const parent=data.items.find(x=>x.id===explorerItemId);
     if(!parent){explorerItemId=null;return renderList();}
@@ -1196,19 +1313,14 @@ function renderList(){
   }
   list.innerHTML=html;
   const visibleCount=list.querySelectorAll('.explorer-entry').length;
-  const countNode=$('#explorerItemCount');
-  if(countNode)countNode.textContent=`${visibleCount} item`;
+  explorerVisibleKeys=$$('[data-selection-key]',list).map(row=>row.dataset.selectionKey);
+  const visibleSet=new Set(explorerVisibleKeys);
+  [...explorerSelection].forEach(key=>{if(!visibleSet.has(key))explorerSelection.delete(key);});
+  if(explorerSelectionAnchor&&!visibleSet.has(explorerSelectionAnchor))explorerSelectionAnchor=null;
+  syncExplorerSelectionVisuals();
 
-  $$('[data-open-category]',list).forEach(btn=>btn.onclick=()=>{explorerCategory=btn.dataset.openCategory;explorerItemId=null;$('#categoryFilter').value=explorerCategory;selectedId=null;showEmptyEditor();renderList();});
   $$('[data-drop-category-entry]',list).forEach(row=>bindExplorerDropTarget(row,{kind:'category',category:row.dataset.dropCategoryEntry}));
-  $$('[data-open-explorer]',list).forEach(btn=>btn.onclick=()=>openExplorerItem(btn.dataset.openExplorer));
   $$('[data-edit-explorer]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();selectItem(btn.dataset.editExplorer);});
-  $$('[data-select-part-index]',list).forEach(btn=>btn.onclick=e=>{
-    e.stopPropagation();
-    const i=Number(btn.dataset.selectPartIndex);
-    const parent=data.items.find(x=>x.id===explorerItemId);
-    if(parent)showPartInspector(parent,i);
-  });
   $$('[data-edit-part-index]',list).forEach(btn=>btn.onclick=e=>{
     e.stopPropagation();
     const i=Number(btn.dataset.editPartIndex);
@@ -1216,9 +1328,42 @@ function renderList(){
     if(parent){selectedPartRef={parentId:parent.id,index:i};selectedId=parent.id;openPartDialog(i);}
   });
 
-  // Double click folder = open; drag = move like a file explorer.
+  $$('[data-selection-key]',list).forEach(row=>{
+    row.onclick=e=>{
+      if(e.target.closest('.explorer-entry-actions'))return;
+      handleExplorerSelectionClick(row,e);
+    };
+  });
+
+  $$('.category-folder',list).forEach(row=>{
+    row.ondblclick=e=>{
+      e.preventDefault();
+      e.stopPropagation();
+      const category=$('[data-open-category]',row)?.dataset.openCategory;
+      if(!category)return;
+      resetExplorerSelection();
+      explorerCategory=category;
+      explorerItemId=null;
+      $('#categoryFilter').value=category;
+      selectedId=null;
+      showEmptyEditor();
+      renderList();
+    };
+  });
+
+  // Klik sekali memilih; double-click membuka folder atau editor PDF.
   $$('.explorer-entry[data-id]',list).forEach(row=>{
-    row.ondblclick=()=>{const id=row.dataset.id;const item=data.items.find(x=>x.id===id);if(item?.type!=='single')openExplorerItem(id);};
+    row.ondblclick=e=>{
+      e.preventDefault();
+      e.stopPropagation();
+      const id=row.dataset.id;
+      const item=data.items.find(x=>x.id===id);
+      if(!item)return;
+      if(item.type==='single'){
+        selectItem(id);
+        setTimeout(()=>$('#titleInput')?.focus(),20);
+      }else openExplorerItem(id);
+    };
     row.addEventListener('dragstart',e=>{
       const id=row.dataset.id;
       const item=data.items.find(x=>x.id===id);
@@ -1240,6 +1385,14 @@ function renderList(){
   bindExplorerPartReorder(list);
   $$('[data-main-up]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();moveMainItem(Number(btn.dataset.mainUp),Number(btn.dataset.mainUp)-1);});
   $$('[data-main-down]',list).forEach(btn=>btn.onclick=e=>{e.stopPropagation();moveMainItem(Number(btn.dataset.mainDown),Number(btn.dataset.mainDown)+1);});
+
+  list.onclick=e=>{
+    if(e.target.closest('.explorer-entry'))return;
+    resetExplorerSelection();
+    selectedId=null;
+    showEmptyEditor();
+    syncExplorerSelectionVisuals();
+  };
 
   updateAllStatus(dirty);
 }
@@ -1304,9 +1457,15 @@ async function moveSelectedByLocation(){
   if(still && selectedId===still.id)buildLocationOptions(still);
 }
 
-function showPartInspector(parent,index){
+function showPartInspector(parent,index,{preserveExplorerSelection=false,skipListRender=false}={}){
   const part=parent?.parts?.[index];
   if(!parent||!part||part.itemId)return;
+  if(!preserveExplorerSelection){
+    const key=partSelectionKey(parent.id,index);
+    explorerSelection.clear();
+    explorerSelection.add(key);
+    explorerSelectionAnchor=key;
+  }
   selectedPartRef={parentId:parent.id,index};
   selectedId=parent.id;
   $('#emptyEditor').classList.add('hidden');
@@ -1319,7 +1478,7 @@ function showPartInspector(parent,index){
   $('#partInspectorFile').textContent=part.file||'—';
   $('#partInspectorId').textContent=part.id||'—';
   $('#partInspectorR2').textContent=r2Key(part.file)||'—';
-  renderList();
+  if(!skipListRender)renderList();
 }
 
 function moveMainItem(from,to){
@@ -1340,10 +1499,15 @@ function moveMainItem(from,to){
 }
 
 /* ===================== EDITOR ===================== */
-function selectItem(id){
+function selectItem(id,{preserveExplorerSelection=false,skipListRender=false}={}){
+  if(!preserveExplorerSelection){
+    explorerSelection.clear();
+    explorerSelection.add(itemSelectionKey(id));
+    explorerSelectionAnchor=itemSelectionKey(id);
+  }
   selectedPartRef=null;
   selectedId=id;
-  renderList();
+  if(!skipListRender)renderList();
 
   const x=getSelected();
   if(!x)return;
@@ -1392,7 +1556,11 @@ function showEmptyEditor(){
   selectedPartRef=null;
   $('#editorContent').classList.add('hidden');
   $('#partInspector')?.classList.add('hidden');
-  $('#emptyEditor').classList.remove('hidden');
+  const empty=$('#emptyEditor');
+  empty.classList.remove('hidden');
+  $('.empty-ornament',empty).textContent='✦';
+  $('h2',empty).textContent='Pilih file atau folder';
+  $('p',empty).textContent='Klik sekali untuk memilih. Klik dua kali untuk membuka folder atau mengedit PDF.';
 }
 
 function patchSelected(key,value){
@@ -2607,7 +2775,7 @@ function buildRebuildPlan(entries,rootName){
     });
 
   const books={...clone(data)};
-  books.version='2.38-folder-r2-refresh';
+  books.version='2.38.1-explorer-multiselect';
   books.categories=['Semua',...categories];
   books.items=items;
 
@@ -3206,7 +3374,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.38-folder-r2-refresh';
+  data.version='2.38.1-explorer-multiselect';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);

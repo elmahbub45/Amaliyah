@@ -3375,6 +3375,12 @@ input,select,textarea{min-height:38px;border-radius:8px;font-size:10.3px}
   background:rgba(236,203,128,.14);
 }
 .top-btn.rebuild-action:hover{background:rgba(236,203,128,.23)}
+.item-list .explorer-entry,.item-list .explorer-open{user-select:none}
+.item-list .explorer-entry.active{
+  outline:1px solid rgba(8,105,82,.18);
+  outline-offset:-1px;
+}
+.item-list .explorer-entry.active .explorer-entry-copy b{color:#075b49}
 
 dialog.rebuild-dialog{width:min(1120px,calc(100% - 28px))}
 .rebuild-dialog-card{padding:20px 20px 0;overflow:hidden}
