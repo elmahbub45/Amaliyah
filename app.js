@@ -394,8 +394,9 @@ function updateQuranHomeCard(){
   const meta=quranPageMeta();
   const hasProgress=store.getItem('amaliyah:quran:last-page')!==null;
   const detail=[meta.surah?`Surah ${meta.surah}`:'',meta.juz?`Juz ${meta.juz}`:''].filter(Boolean).join(' • ');
+  const percent=Math.round((page/604)*100);
   const text=hasProgress
-    ? `Terakhir halaman ${page} dari 604${detail?' • '+detail:''}`
+    ? `Halaman ${page} dari 604 • ${percent}%${detail?' • '+detail:''}`
     : 'Baca Al-Qur\'an dengan susunan halaman seperti mushaf.';
   const metaEl=$('#quranHomeMeta');
   const progressEl=$('#quranHomeProgress');

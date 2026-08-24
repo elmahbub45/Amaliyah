@@ -21,6 +21,7 @@
         <span>MUSHAF MADINAH</span>
         <h1>بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</h1>
         <p id="lastReadSummary">604 halaman • Tampilan halaman mushaf</p>
+        <div class="directory-progress" aria-label="Progres membaca"><div class="directory-progress-label"><span id="quranProgressText">0 / 604 halaman</span><b id="quranProgressPercent">0%</b></div><div class="directory-progress-track"><i id="quranDirectoryProgress"></i></div></div>
       </div>
       <button id="continueQuran" type="button">Mulai Membaca <span>›</span></button>
     </section>
@@ -29,6 +30,7 @@
       <div class="directory-tabs" role="tablist" aria-label="Daftar Al-Qur'an">
         <button class="active" data-quran-tab="surah" type="button" role="tab">Surah</button>
         <button data-quran-tab="juz" type="button" role="tab">Juz</button>
+        <button data-quran-tab="page" type="button" role="tab">Halaman</button>
         <button data-quran-tab="bookmarks" type="button" role="tab">Penanda</button>
       </div>
       <label class="quran-search" id="quranSearchWrap">
@@ -47,9 +49,12 @@
     <header id="quranReaderHeader" class="reader-header reader-control">
       <button id="closeReader" type="button" aria-label="Kembali ke daftar">‹</button>
       <div><b id="readerSurah">Al-Qur'an Al-Karim</b><small id="readerMeta">Mushaf Madinah</small></div>
-      <button id="toggleQuranBookmark" type="button" aria-label="Tandai halaman">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/></svg>
-      </button>
+      <div class="reader-actions">
+        <button id="toggleNightMode" type="button" aria-label="Aktifkan mode malam"><span aria-hidden="true">☾</span></button>
+        <button id="toggleQuranBookmark" type="button" aria-label="Tandai halaman">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/></svg>
+        </button>
+      </div>
     </header>
 
     <div class="immersive-meta immersive-meta-top" aria-hidden="true"><span id="immersiveSurah">Al-Qur'an Al-Karim</span><span id="immersiveJuz">Juz 1</span></div>
