@@ -658,8 +658,18 @@ function initLibrarySwipe(){
   list.addEventListener('touchcancel',()=>{tracking=false;horizontal=false},{passive:true});
 }
 
+function syncLibraryCategoryState(category){
+  if(currentScreen!=='library')return;
+  const state=history.state;
+  if(state?.amaliyah && state.screen==='library'){
+    history.replaceState({...state,category},'',location.href);
+  }
+  saveScreenState('library',{category});
+}
+
 function renderLibrary(category=activeLibraryCategory||'Semua'){
   activeLibraryCategory=category;
+  syncLibraryCategoryState(category);
   renderChips(category);
   const list=$('#bookList');if(!list)return;
   initLibrarySwipe();
