@@ -13,6 +13,7 @@
 .top p{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;margin:auto}
 .notif-icon{display:grid;place-items:center}
+.notif-icon svg{width:18px;height:18px;stroke-width:1.65}
 
 .prayer-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
 .prayer-heading{min-width:0}
@@ -1585,3 +1586,7 @@ body{
 #bookList.swipe-category-prev{animation:librarySwipePrev .2s ease}
 @keyframes librarySwipeNext{0%{opacity:.72;transform:translateX(-10px)}100%{opacity:1;transform:translateX(0)}}
 @keyframes librarySwipePrev{0%{opacity:.72;transform:translateX(10px)}100%{opacity:1;transform:translateX(0)}}
+
+
+/* V2.45.3 — Header notif & settings icon polish */
+.settings-nav-icon{width:20px;height:20px;stroke-width:1.7}
