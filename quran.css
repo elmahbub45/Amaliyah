@@ -62,3 +62,249 @@
   .quran-offline-card{margin-left:14px;margin-right:14px;padding:14px}
   .quran-offline-actions button{flex:1 1 100%}
 }
+
+/* =========================================================
+   V2.51.2 — Quran Luxe Directory Refresh
+   ========================================================= */
+html,body{background:linear-gradient(180deg,#efe7d7 0%,#f7f2e9 24%,#f3ecdf 100%)}
+.quran-directory{
+  position:relative;
+  width:min(100%,720px);
+  padding:0 18px 42px;
+  background:
+    radial-gradient(circle at 50% -8%, rgba(15,107,88,.17) 0, rgba(15,107,88,.08) 20%, transparent 44%),
+    linear-gradient(180deg,#f7f1e7 0%,#f6efe3 42%,#f0e8db 100%);
+}
+.quran-directory::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto 0;
+  height:220px;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(214,170,76,.16), transparent 34%),
+    linear-gradient(180deg, rgba(11,87,68,.10), transparent 72%);
+}
+.directory-header{
+  position:sticky;
+  top:0;
+  margin:0 -18px 10px;
+  padding:calc(14px + env(safe-area-inset-top)) 18px 16px;
+  background:rgba(248,242,233,.86);
+  backdrop-filter:blur(18px) saturate(118%);
+  border-bottom:1px solid rgba(185,154,88,.18);
+  box-shadow:0 10px 24px rgba(73,59,33,.06);
+}
+.directory-header>div{position:relative;padding-bottom:8px}
+.directory-header>div::after{
+  content:"";
+  position:absolute;
+  left:50%;bottom:0;transform:translateX(-50%);
+  width:76px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(177,136,58,.85),transparent);
+}
+.directory-header span{font-size:9px;letter-spacing:.22em;color:#ad8233}
+.directory-header b{margin-top:4px;font-size:20px;color:#153a2f}
+.round-button{
+  width:46px;height:46px;border-radius:17px;
+  border:1px solid rgba(214,189,139,.74);
+  background:linear-gradient(180deg,rgba(255,252,246,.96),rgba(248,240,227,.96));
+  color:#0a5d49;
+  font-size:27px;
+  box-shadow:0 8px 18px rgba(81,62,30,.08), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.mushaf-intro{
+  position:relative;
+  grid-template-columns:84px minmax(0,1fr);
+  gap:18px;
+  margin-top:18px;
+  padding:24px 22px 22px;
+  border-radius:32px;
+  border:1px solid rgba(232,198,114,.16);
+  background:
+    radial-gradient(circle at 78% 18%, rgba(255,255,255,.08), transparent 20%),
+    radial-gradient(circle at 82% 22%, rgba(236,201,119,.12), transparent 36%),
+    linear-gradient(145deg,#0e6a54 0%,#084c3d 42%,#06392f 100%);
+  box-shadow:0 20px 44px rgba(7,69,55,.24), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.mushaf-intro::before{
+  content:"";
+  position:absolute;
+  inset:12px;
+  border-radius:24px;
+  border:1px solid rgba(237,206,131,.11);
+  pointer-events:none;
+}
+.mushaf-intro::after{
+  right:-34px;top:-54px;width:230px;height:230px;
+  border:1px solid rgba(236,201,119,.10);
+  box-shadow:0 0 0 26px rgba(236,201,119,.032),0 0 0 54px rgba(236,201,119,.022);
+}
+.mushaf-seal{
+  width:84px;height:104px;
+  border-radius:26px;
+  border:1px solid rgba(238,204,125,.58);
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+  color:#efcb73;
+  font-size:42px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.mushaf-intro-copy>span{font-size:10px;letter-spacing:.18em;color:#efc86c}
+.mushaf-intro h1{margin:10px 0 8px;font-size:28px;line-height:1.2;color:#fff4d4;text-shadow:0 2px 12px rgba(0,0,0,.18)}
+.mushaf-intro p{font-size:13px;color:rgba(255,255,255,.82)}
+.directory-progress{margin-top:13px}
+.directory-progress-label{font-size:10px;color:rgba(255,255,255,.72)}
+.directory-progress-label b{font-size:14px;color:#f2cc74}
+.directory-progress-track{height:6px;margin-top:8px;background:rgba(255,255,255,.12)}
+.directory-progress-track i{background:linear-gradient(90deg,#f3cf78,#c99a3c)}
+.mushaf-intro>button{
+  min-height:52px;
+  border:1px solid rgba(255,229,171,.18);
+  border-radius:17px;
+  background:linear-gradient(180deg,#e2bf6f 0%,#cc9b3a 100%);
+  color:#17392f;
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.01em;
+  box-shadow:0 10px 22px rgba(10,33,26,.2), inset 0 1px 0 rgba(255,245,220,.5);
+}
+.mushaf-intro>button span{margin-left:7px;color:#23483c;font-size:20px}
+.quran-offline-card{
+  position:relative;
+  overflow:hidden;
+  margin:18px 4px 20px;
+  padding:18px 18px 16px;
+  border:1px solid rgba(184,150,79,.22);
+  border-radius:24px;
+  background:linear-gradient(180deg,rgba(255,253,248,.97),rgba(252,247,239,.96));
+  box-shadow:0 12px 30px rgba(74,61,36,.08);
+}
+.quran-offline-card::before{
+  content:"AKSES TANPA INTERNET";
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  margin-bottom:10px;
+  padding:0 11px;
+  border-radius:999px;
+  background:rgba(214,170,76,.10);
+  color:#9a7638;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.14em;
+}
+.quran-offline-card-head{gap:16px}
+.quran-offline-card-head span{display:none}
+.quran-offline-card-head b{font-size:22px;font-family:Georgia,serif;color:#23443a}
+.quran-offline-card-head strong{font-size:28px;font-weight:900;color:#0f6b58}
+.quran-offline-card p{margin:8px 0 13px;font-size:13px;color:#6d756f}
+.quran-offline-progress{height:9px;background:#e7decd}
+.quran-offline-meta{margin-top:9px;font-size:11px}
+.quran-offline-actions{margin-top:14px;gap:10px}
+.quran-offline-actions button{min-height:46px;border-radius:15px;font-size:13px}
+.quran-offline-download{background:linear-gradient(180deg,#0f6b58,#0b5648);box-shadow:0 8px 18px rgba(7,69,55,.12)}
+.quran-offline-download.is-complete{background:linear-gradient(180deg,#276756,#234f45)}
+.quran-offline-clear{background:#fffcf6}
+.quran-offline-card small{margin-top:12px;font-size:11px}
+.quran-offline-card.is-complete{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px 14px;
+  align-items:center;
+  padding:16px 18px;
+  border-color:rgba(15,107,88,.22);
+  background:linear-gradient(135deg,rgba(247,252,249,.98),rgba(255,250,241,.98));
+}
+.quran-offline-card.is-complete::before{content:"OFFLINE AKTIF";margin-bottom:0;grid-column:1 / 2;justify-self:start}
+.quran-offline-card.is-complete .quran-offline-card-head{grid-column:1 / 2;display:block}
+.quran-offline-card.is-complete .quran-offline-card-head strong{display:none}
+.quran-offline-card.is-complete .quran-offline-card-head b{font-size:18px}
+.quran-offline-card.is-complete [data-quran-offline-status]{grid-column:1 / 2;margin:0;font-size:12px}
+.quran-offline-card.is-complete .quran-offline-progress,
+.quran-offline-card.is-complete .quran-offline-meta,
+.quran-offline-card.is-complete small,
+.quran-offline-card.is-complete .quran-offline-download{display:none!important}
+.quran-offline-card.is-complete .quran-offline-actions{grid-column:2 / 3;grid-row:1 / span 3;margin:0;align-self:center}
+.quran-offline-card.is-complete .quran-offline-clear{min-width:148px}
+.directory-card{
+  margin-top:20px;
+  padding:16px;
+  border:1px solid rgba(194,165,102,.16);
+  border-radius:30px;
+  background:linear-gradient(180deg,rgba(255,253,249,.97),rgba(255,250,244,.95));
+  box-shadow:0 14px 34px rgba(67,56,35,.06);
+}
+.directory-tabs{gap:6px;padding:6px;border-radius:18px;background:linear-gradient(180deg,#efe5d4,#f4ebde)}
+.directory-tabs button{min-height:44px;border-radius:14px;font-size:12px;color:#717875}
+.directory-tabs button.active{background:linear-gradient(180deg,#ffffff,#fff8ec);color:#0a5b48;box-shadow:0 6px 14px rgba(64,59,43,.08)}
+.quran-search{
+  margin:14px 1px 11px;
+  min-height:48px;
+  border-radius:17px;
+  border:1px solid rgba(219,205,181,.85);
+  background:linear-gradient(180deg,#ffffff,#fffcf6);
+}
+.quran-search span{font-size:14px;color:#aa8a50}
+.quran-search input{font-size:13px}
+.directory-list{gap:11px}
+.directory-item{
+  grid-template-columns:54px minmax(0,1fr) minmax(74px,auto);
+  min-height:86px;
+  padding:13px 14px;
+  border:1px solid rgba(232,222,204,.95);
+  border-radius:22px;
+  background:linear-gradient(135deg,#fffefa 0%,#fffaf0 100%);
+  box-shadow:0 7px 16px rgba(76,61,35,.045);
+}
+.directory-item:after{right:-20px;bottom:-24px;width:94px;height:94px;border-color:rgba(192,153,79,.09)}
+.directory-number{width:52px;height:52px;border-radius:18px;font-size:15px;background:linear-gradient(180deg,#fcf3e3,#f6ead5);color:#a37521}
+.directory-copy em{margin-bottom:5px;font-size:7px;letter-spacing:.15em}
+.directory-copy b{font-size:15px}
+.directory-copy small{margin-top:6px;font-size:9px}
+.directory-arabic{font-size:24px;color:#8e6724}
+.directory-arrow{width:38px;height:38px;border-radius:13px;background:#f6ecdd;font-size:22px}
+.directory-page-jump{
+  padding:18px;
+  border-radius:22px;
+  border-color:#e7dac5;
+  background:linear-gradient(135deg,#fffefa,#fff7ea);
+}
+.page-jump-icon{width:58px;height:58px;border-radius:18px;font-size:15px}
+.page-jump-copy b{font-size:16px}.page-jump-copy p{font-size:10px}
+.page-jump-form input{height:48px;border-radius:14px}.page-jump-form button{min-height:48px;border-radius:14px;font-size:12px}
+.quran-attribution{
+  margin-top:14px;
+  padding:16px 18px 0;
+  color:#8d8d86;
+  text-align:center;
+  font-size:9px;
+}
+@media(max-width:520px){
+  .directory-header b{font-size:18px}
+  .mushaf-intro{grid-template-columns:74px minmax(0,1fr);padding:20px 18px 18px}
+  .mushaf-seal{width:74px;height:96px;font-size:38px}
+  .mushaf-intro h1{font-size:23px}
+  .mushaf-intro p{font-size:11.5px}
+  .quran-offline-card{margin-left:0;margin-right:0}
+  .quran-offline-card-head b{font-size:20px}
+}
+@media(max-width:420px){
+  .quran-directory{padding:0 14px 34px}
+  .directory-header{margin:0 -14px 8px;padding-left:14px;padding-right:14px}
+  .directory-header b{font-size:17px}
+  .round-button{width:44px;height:44px;font-size:26px}
+  .mushaf-intro{gap:14px;padding:18px 16px 16px;border-radius:28px}
+  .mushaf-intro h1{font-size:21px}
+  .mushaf-intro>button{min-height:48px;font-size:14px}
+  .quran-offline-card{padding:15px;border-radius:20px}
+  .quran-offline-card::before{font-size:9px}
+  .quran-offline-card-head b{font-size:18px}
+  .quran-offline-card-head strong{font-size:24px}
+  .quran-offline-card.is-complete{grid-template-columns:1fr}
+  .quran-offline-card.is-complete .quran-offline-actions{grid-column:1;grid-row:auto;justify-content:flex-start}
+  .quran-offline-card.is-complete .quran-offline-clear{min-width:0;width:100%}
+  .directory-card{padding:14px;border-radius:24px}
+  .directory-tabs button{font-size:10.5px}
+  .directory-item{grid-template-columns:50px minmax(0,1fr) minmax(58px,auto);min-height:80px}
+  .directory-copy b{font-size:14px}
+}
