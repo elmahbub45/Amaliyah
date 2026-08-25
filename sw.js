@@ -1,4 +1,4 @@
-const C='amaliyah-v2-50-1-offline-shell-fix';
+const C='amaliyah-v2-50-2-true-offline-reader';
 const PDF_CACHE='amaliyah-offline-pdf-v1';
 const QURAN_CACHE='amaliyah-quran-pages-v1';
 const EXTERNAL_CACHE='amaliyah-external-v1';
@@ -29,21 +29,26 @@ self.addEventListener('activate',event=>{
   ]));
 });
 
-async function sameOriginNetworkFirst(request){
+async function sameOriginAppShell(request){
   const cache=await caches.open(C);
+
+  // Untuk navigasi dan file inti, cache dibaca lebih dulu agar offline terasa instan.
+  const cached=await cache.match(request,{ignoreSearch:request.mode==='navigate'});
+  if(cached){
+    // Saat koneksi tersedia, segarkan cache di background tanpa menahan UI.
+    fetch(request).then(response=>{
+      if(response?.ok)cache.put(request,response.clone()).catch(()=>{});
+    }).catch(()=>{});
+    return cached;
+  }
+
   try{
     const response=await fetch(request);
-    if(response && response.ok)cache.put(request,response.clone()).catch(()=>{});
+    if(response?.ok)cache.put(request,response.clone()).catch(()=>{});
     return response;
   }catch{
-    // Navigasi Reader/Qur'an membawa query (?book=... / ?page=...).
-    // ignoreSearch memastikan HTML shell yang sudah dicache tetap ditemukan.
-    const cached=await cache.match(request,{ignoreSearch:request.mode==='navigate'});
-    if(cached)return cached;
-
     if(request.mode==='navigate'){
-      const u=new URL(request.url);
-      const path=u.pathname;
+      const path=new URL(request.url).pathname;
       if(path.endsWith('/reader.html'))return cache.match('./reader.html');
       if(path.endsWith('/quran.html'))return cache.match('./quran.html');
       if(path.endsWith('/admin.html'))return cache.match('./admin.html')||cache.match('./index.html');
@@ -71,7 +76,7 @@ self.addEventListener('fetch',event=>{
   const url=new URL(request.url);
 
   if(url.origin===location.origin){
-    event.respondWith(sameOriginNetworkFirst(request));
+    event.respondWith(sameOriginAppShell(request));
     return;
   }
 

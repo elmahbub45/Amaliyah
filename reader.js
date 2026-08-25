@@ -1,7 +1,83 @@
-import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
-pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+const PDFJS_LIB_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
+const PDFJS_WORKER_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+const PDFJS_CACHE='amaliyah-external-v1';
+let pdfjsLib=null;
+let pdfJsBlobUrls=[];
 
-const catalog=await fetch('./books.json',{cache:'no-store'}).then(r=>r.json());
+async function cachedResponse(url){
+  if(!('caches' in window))return null;
+  try{
+    const cache=await caches.open(PDFJS_CACHE);
+    return await cache.match(url);
+  }catch{return null}
+}
+
+async function fetchAndCacheExternal(url){
+  let response=null;
+  if(navigator.onLine){
+    try{
+      response=await fetch(url,{mode:'cors',cache:'no-store'});
+      if(response?.ok && 'caches' in window){
+        const cache=await caches.open(PDFJS_CACHE);
+        await cache.put(url,response.clone());
+      }
+    }catch{}
+  }
+  return response || await cachedResponse(url);
+}
+
+async function loadPdfEngine(){
+  if(pdfjsLib)return pdfjsLib;
+
+  const [libResponse,workerResponse]=await Promise.all([
+    fetchAndCacheExternal(PDFJS_LIB_URL),
+    fetchAndCacheExternal(PDFJS_WORKER_URL)
+  ]);
+
+  if(!libResponse || !workerResponse){
+    throw new Error('OFFLINE_PDF_ENGINE_NOT_CACHED');
+  }
+
+  const [libSource,workerSource]=await Promise.all([
+    libResponse.text(),
+    workerResponse.text()
+  ]);
+
+  if(!libSource || !workerSource){
+    throw new Error('OFFLINE_PDF_ENGINE_NOT_CACHED');
+  }
+
+  const libBlobUrl=URL.createObjectURL(new Blob([libSource],{type:'text/javascript'}));
+  const workerBlobUrl=URL.createObjectURL(new Blob([workerSource],{type:'text/javascript'}));
+  pdfJsBlobUrls=[libBlobUrl,workerBlobUrl];
+
+  pdfjsLib=await import(libBlobUrl);
+  pdfjsLib.GlobalWorkerOptions.workerSrc=workerBlobUrl;
+  return pdfjsLib;
+}
+
+async function loadCatalog(){
+  const url=new URL('./books.json',location.href).href;
+  if(!navigator.onLine && 'caches' in window){
+    try{
+      const hit=await caches.match(url,{ignoreSearch:true});
+      if(hit)return hit.json();
+    }catch{}
+  }
+  try{
+    const response=await fetch('./books.json',{cache:navigator.onLine?'no-store':'force-cache'});
+    if(!response.ok)throw new Error('books.json gagal dimuat');
+    return response.json();
+  }catch(error){
+    if('caches' in window){
+      const hit=await caches.match(url,{ignoreSearch:true});
+      if(hit)return hit.json();
+    }
+    throw error;
+  }
+}
+
+const catalog=await loadCatalog();
 const items=catalog.items||[];
 
 // =========================================================
@@ -62,11 +138,18 @@ async function readOfflinePdf(part){
     const cache=await caches.open(OFFLINE_PDF_CACHE);
     const hit=await cache.match(offlinePdfRequest(part));
     if(!hit)return null;
-    return new Uint8Array(await hit.arrayBuffer());
+    const bytes=new Uint8Array(await hit.arrayBuffer());
+    return validPdfBytes(bytes)?bytes:null;
   }catch{return null}
 }
+function validPdfBytes(bytes){
+  if(!bytes || bytes.byteLength<8)return false;
+  const head=String.fromCharCode(...bytes.slice(0,5));
+  return head==='%PDF-';
+}
+
 async function saveOfflinePdf(part,bytes){
-  if(!('caches' in window)||!bytes?.byteLength)return;
+  if(!('caches' in window)||!validPdfBytes(bytes))return;
   try{
     const cache=await caches.open(OFFLINE_PDF_CACHE);
     const body=new Blob([bytes],{type:'application/pdf'});
@@ -118,6 +201,7 @@ async function requestPrivatePdf(part){
     if(!pdfRes.ok)throw new Error(`PDF private gagal dimuat (${pdfRes.status})`);
 
     const bytes=new Uint8Array(await pdfRes.arrayBuffer());
+    if(!validPdfBytes(bytes))throw new Error('PDF_DATA_INVALID');
     // Pastikan salinan offline benar-benar selesai ditulis sebelum Reader dianggap siap.
     await saveOfflinePdf(part,bytes);
     return bytes;
@@ -506,15 +590,16 @@ window.addEventListener('keydown',e=>{
   }
 });
 window.addEventListener('resize',()=>drawPage());
-window.addEventListener('pagehide',recordHistory);
+window.addEventListener('pagehide',()=>{recordHistory();pdfJsBlobUrls.forEach(url=>URL.revokeObjectURL(url));});
 
 try{
   showReaderLoading();
+  const engine=await loadPdfEngine();
   const privateData=await requestPrivatePdf(part);
 
   pdfDoc=privateData
-    ? await pdfjsLib.getDocument({data:privateData}).promise
-    : await pdfjsLib.getDocument(part.file).promise;
+    ? await engine.getDocument({data:privateData}).promise
+    : await engine.getDocument(part.file).promise;
 
   page=Math.min(page,pdfDoc.numPages);
   stage.scrollTop=0;
@@ -529,10 +614,10 @@ try{
 
   const box=document.createElement('div');
   box.className='private-pdf-error';
-  const offlineMissing=error?.message==='OFFLINE_NOT_CACHED'||!navigator.onLine;
+  const offlineMissing=['OFFLINE_NOT_CACHED','OFFLINE_PDF_ENGINE_NOT_CACHED'].includes(error?.message)||!navigator.onLine;
   box.innerHTML=offlineMissing
-    ? `<b>Bacaan belum tersedia offline</b>
-       <span>Sambungkan internet dan buka bacaan ini sekali. Setelah itu bacaan akan tersimpan di perangkat untuk dibaca tanpa internet.</span>
+    ? `<b>${error?.message==='OFFLINE_PDF_ENGINE_NOT_CACHED'?'Reader offline belum disiapkan':'Bacaan belum tersedia offline'}</b>
+       <span>${error?.message==='OFFLINE_PDF_ENGINE_NOT_CACHED'?'Sambungkan internet sekali setelah pembaruan aplikasi agar mesin PDF tersimpan di perangkat.':'Sambungkan internet dan buka bacaan ini sekali. Setelah itu bacaan akan tersimpan di perangkat untuk dibaca tanpa internet.'}</span>
        <button type="button">Kembali</button>`
     : `<b>PDF belum dapat dibuka</b>
        <span>Koneksi atau penyimpanan sedang bermasalah. Coba kembali beberapa saat lagi.</span>

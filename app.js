@@ -160,10 +160,31 @@ function appConfirm(message,options={}){
 }
 
 
-const catalog = await fetch('./books.json', {cache:'no-store'}).then(r=>{
-  if(!r.ok) throw new Error('books.json gagal dimuat');
-  return r.json();
-});
+async function loadCatalogOfflineFirst(){
+  const url=new URL('./books.json',location.href).href;
+
+  // Saat offline jangan menunggu request jaringan timeout. Katalog lokal dibaca langsung.
+  if(!navigator.onLine && 'caches' in window){
+    try{
+      const hit=await caches.match(url,{ignoreSearch:true});
+      if(hit)return hit.json();
+    }catch{}
+  }
+
+  try{
+    const r=await fetch('./books.json',{cache:navigator.onLine?'no-store':'force-cache'});
+    if(!r.ok)throw new Error('books.json gagal dimuat');
+    return r.json();
+  }catch(error){
+    if('caches' in window){
+      const hit=await caches.match(url,{ignoreSearch:true});
+      if(hit)return hit.json();
+    }
+    throw error;
+  }
+}
+
+const catalog = await loadCatalogOfflineFirst();
 const items = catalog.items || [];
 const categories = catalog.categories || ['Semua'];
 const categoryIcons = catalog.categoryIcons && typeof catalog.categoryIcons==='object'
