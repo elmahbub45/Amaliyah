@@ -375,8 +375,8 @@ function openPart(itemId,partId,page=null){
 
   if(!navigator.onLine){
     appNotice(
-      'Bacaan PDF membutuhkan koneksi internet. Untuk menjaga PDF tetap aman, file PDF tidak disimpan di perangkat.',
-      {title:'PDF Online',confirmText:'Mengerti'}
+      'Khazanah ini membutuhkan koneksi internet. Untuk menjaga konten tetap aman, khazanah tidak disimpan untuk offline.',
+      {title:'Koneksi Internet Diperlukan',confirmText:'Mengerti'}
     );
     return;
   }
@@ -530,8 +530,8 @@ function updateCategoryCounts(){
     const label=el.querySelector('small');
     if(label){
       label.textContent=isAll
-        ? (count?`${count} Bacaan`:'Semua Bacaan')
-        : (count?`${count} Bacaan`:'Segera');
+        ? (count?`${count} Khazanah`:'Semua Khazanah')
+        : (count?`${count} Khazanah`:'Segera');
     }
     const icon=el.querySelector('.category-icon');
     if(icon)icon.innerHTML=categoryVisualSvg(cat);
@@ -586,12 +586,12 @@ function renderCategoryIndex(){
     button.setAttribute('aria-label',`Buka kategori ${categoryDisplayName(category)}`);
     button.innerHTML=`<span class="category-directory-icon">${categoryVisualSvg(category)}</span><span class="category-directory-copy"><b></b><small></small></span><span class="category-directory-arrow" aria-hidden="true">›</span>`;
     button.querySelector('b').textContent=categoryDisplayName(category);
-    button.querySelector('small').textContent=count?`${count} bacaan`:'Belum tersedia';
+    button.querySelector('small').textContent=count?`${count} khazanah`:'Belum tersedia';
     button.onclick=()=>showLibrary(category);
     directory.appendChild(button);
   });
   const countLabel=$('#allBooksCollectionCount');
-  if(countLabel)countLabel.textContent=`${items.length} bacaan dari semua kategori`;
+  if(countLabel)countLabel.textContent=`${items.length} khazanah dari semua kategori`;
 }
 
 function libraryCategoriesOrdered(){
@@ -668,7 +668,7 @@ function renderLibrary(category=activeLibraryCategory||'Semua'){
   if(q) filtered=filtered.filter(item=>itemSearchText(item).includes(q));
 
   if(!filtered.length){
-    list.innerHTML=`<div class="empty-state"><b>${q?'Bacaan tidak ditemukan':'Belum ada bacaan'}</b><p>${q?'Coba kata kunci lain atau pilih kategori Semua.':'Belum ada bacaan pada kategori ini.'}</p></div>`;
+    list.innerHTML=`<div class="empty-state"><b>${q?'Khazanah tidak ditemukan':'Belum ada khazanah'}</b><p>${q?'Coba kata kunci lain atau pilih kategori Semua.':'Belum ada khazanah pada kategori ini.'}</p></div>`;
     return;
   }
 
@@ -703,7 +703,7 @@ function renderCollection(id){
   if(!item || item.type==='single')return;
   activeCollectionId=item.id;
   $('#collectionTitle').textContent=item.title;
-  $('#collectionMeta').innerHTML=`<b>${item.type==='collection'?'Koleksi berurutan':'Kelompok bacaan'}</b><span>${item.parts.length} bagian</span>`;
+  $('#collectionMeta').innerHTML=`<b>${item.type==='collection'?'Koleksi berurutan':'Kelompok khazanah'}</b><span>${item.parts.length} bagian</span>`;
   const wrap=$('#collectionList');
 
   wrap.innerHTML=item.parts.map((part,i)=>{
@@ -823,7 +823,7 @@ function renderFavoritesManager(){
   if(!wrap)return;
   const entries=getFavorites().map(resolveFavoriteEntry).filter(Boolean);
   if(!entries.length){
-    wrap.innerHTML=`<div class="favorites-manager-empty"><span>☆</span><b>Belum ada favorit</b><p>Tambahkan bacaan ke Favorit terlebih dahulu. Setelah itu urutannya bisa diatur di sini.</p></div>`;
+    wrap.innerHTML=`<div class="favorites-manager-empty"><span>☆</span><b>Belum ada favorit</b><p>Tambahkan khazanah ke Favorit terlebih dahulu. Setelah itu urutannya bisa diatur di sini.</p></div>`;
     return;
   }
   wrap.innerHTML=entries.map((entry,index)=>{
@@ -987,7 +987,7 @@ function renderBookmarks(){
         <span>TERSIMPAN UNTUK DIBACA KEMBALI</span>
         <b>${count} Bookmark</b>
         <small>${count
-          ? 'Buka kembali bacaan tepat dari halaman yang ditandai.'
+          ? 'Buka kembali khazanah tepat dari halaman yang ditandai.'
           : 'Halaman yang ditandai dari Reader akan tersimpan di sini.'}</small>
       </div>
     </section>
@@ -1012,7 +1012,7 @@ function renderBookmarks(){
     const isSingle=x.parent.type==='single';
     const icon=String(x.parent.icon||'ا');
     const partText=isSingle
-      ? 'Bacaan'
+      ? 'Khazanah'
       : String(x.part.title||'Bagian');
 
     return `
@@ -1020,7 +1020,7 @@ function renderBookmarks(){
         <span class="bookmark-card-icon" aria-hidden="true">${icon}</span>
 
         <span class="bookmark-card-copy">
-          <span class="bookmark-card-kicker">${isSingle?'BACAAN':'KOLEKSI'}</span>
+          <span class="bookmark-card-kicker">${isSingle?'KHAZANAH':'KOLEKSI'}</span>
           <b>${x.parent.title}</b>
           <small>${partText}</small>
         </span>
@@ -1058,7 +1058,7 @@ function renderQuranBookmarks(wrap){
       <div class="bookmark-overview-copy">
         <span>PENANDA MUSHAF AL-QUR'AN</span>
         <b>${pages.length} Halaman</b>
-        <small>Penanda ini tersimpan terpisah dari bookmark bacaan PDF.</small>
+        <small>Penanda ini tersimpan terpisah dari penanda Khazanah.</small>
       </div>
     </section>`;
 
@@ -1112,7 +1112,7 @@ function renderHistory(){
   $('#clearHistoryBtn')?.classList.toggle('hidden',!normalized.length);
 
   if(!normalized.length){
-    wrap.innerHTML='<div class="empty-state"><b>Belum ada riwayat</b><p>Bacaan yang dibuka akan tercatat otomatis di sini.</p></div>';return;
+    wrap.innerHTML='<div class="empty-state"><b>Belum ada riwayat</b><p>Khazanah yang dibuka akan tercatat otomatis di sini.</p></div>';return;
   }
 
   wrap.innerHTML=normalized.map((x,i)=>`<div class="history-row">
@@ -1153,7 +1153,7 @@ async function clearAllHistory(){
   if(!getHistoryEntries().length)return;
 
   const ok=await appConfirm(
-    'Hapus semua riwayat bacaan?\n\nProgres, bookmark, dan favorit tidak akan terhapus.'
+    'Hapus semua riwayat Khazanah?\n\nProgres, bookmark, dan favorit tidak akan terhapus.'
   );
 
   if(!ok)return;
@@ -1781,7 +1781,7 @@ async function updatePushStatus(error=null){
     }
     if(note)note.textContent=fcmStatus==='error'
       ? 'Notifikasi lokal aktif, tetapi Firebase belum tersambung. Buka ulang halaman ini dengan internet aktif untuk mencoba lagi.'
-      : 'APK memakai notifikasi Android native. Nama GitHub tidak ditampilkan pada notifikasi.';
+      : 'APK memakai notifikasi Android native. Nama pengirim ditampilkan sebagai Amaliyah.';
     return;
   }
 

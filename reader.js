@@ -28,7 +28,7 @@ function ensureLoadingOverlay(){
   box.className='reader-loading';
   box.innerHTML=`
     <div class="reader-loading-mark">ا</div>
-    <b id="readerLoadingTitle">Menyiapkan bacaan…</b>
+    <b id="readerLoadingTitle">Menyiapkan khazanah…</b>
     <span id="readerLoadingText">Mohon tunggu sebentar</span>
     <i class="reader-loading-line"></i>
   `;
@@ -36,7 +36,7 @@ function ensureLoadingOverlay(){
   return box;
 }
 
-function showReaderLoading(title='Menyiapkan bacaan…',text='Mohon tunggu sebentar'){
+function showReaderLoading(title='Menyiapkan khazanah…',text='Mohon tunggu sebentar'){
   const box=ensureLoadingOverlay();
   const t=box.querySelector('#readerLoadingTitle');
   const s=box.querySelector('#readerLoadingText');
@@ -60,7 +60,7 @@ async function requestPrivatePdf(part){
 
   if(!navigator.onLine)throw new Error('PDF_REQUIRES_INTERNET');
 
-  showReaderLoading('Mengambil bacaan aman…','Menyiapkan PDF dari penyimpanan privat');
+  showReaderLoading('Mengambil khazanah aman…','Menyiapkan khazanah dari penyimpanan aman');
 
   const tokenRes=await fetch(
     `${PRIVATE_PDF_WORKER}/token?key=${encodeURIComponent(key)}`,
@@ -68,13 +68,13 @@ async function requestPrivatePdf(part){
   );
 
   if(tokenRes.status===404 && R2_MIGRATION_FALLBACK)return null;
-  if(!tokenRes.ok)throw new Error(`Token PDF gagal (${tokenRes.status})`);
+  if(!tokenRes.ok)throw new Error(`Akses khazanah gagal (${tokenRes.status})`);
 
   const tokenData=await tokenRes.json();
-  if(!tokenData?.url)throw new Error('URL PDF sementara tidak diterima.');
+  if(!tokenData?.url)throw new Error('Tautan sementara khazanah tidak diterima.');
 
   const pdfRes=await fetch(tokenData.url,{method:'GET',cache:'no-store',credentials:'omit'});
-  if(!pdfRes.ok)throw new Error(`PDF private gagal dimuat (${pdfRes.status})`);
+  if(!pdfRes.ok)throw new Error(`Khazanah belum dapat dimuat (${pdfRes.status})`);
 
   return new Uint8Array(await pdfRes.arrayBuffer());
 }
@@ -82,7 +82,7 @@ async function requestPrivatePdf(part){
 const params=new URLSearchParams(location.search);
 const itemId=params.get('book')||items[0]?.id;
 const item=items.find(x=>x.id===itemId)||items[0];
-if(!item)throw new Error('Data bacaan tidak ditemukan.');
+if(!item)throw new Error('Data khazanah tidak ditemukan.');
 
 let part;
 if(item.type==='single'){
@@ -92,7 +92,7 @@ if(item.type==='single'){
   const saved=localStorage.getItem(`collection:${item.id}:lastPart`);
   part=item.parts.find(p=>p.id===requested) || item.parts.find(p=>p.id===saved) || item.parts[0];
 }
-if(!part)throw new Error('Bagian bacaan tidak ditemukan.');
+if(!part)throw new Error('Bagian khazanah tidak ditemukan.');
 
 const $=s=>document.querySelector(s);
 const canvas=$('#pdf');
@@ -322,8 +322,8 @@ async function shareReading(){
   const url=new URL(location.href);
   const data={title:document.title,text:`Baca ${document.title} di aplikasi Amaliyah`,url:url.toString()};
   if(navigator.share){try{await navigator.share(data);return}catch(e){if(e?.name==='AbortError')return}}
-  try{await navigator.clipboard.writeText(data.url);alert('Tautan bacaan sudah disalin.')}
-  catch{prompt('Salin tautan bacaan ini:',data.url)}
+  try{await navigator.clipboard.writeText(data.url);alert('Tautan khazanah sudah disalin.')}
+  catch{prompt('Salin tautan khazanah ini:',data.url)}
 }
 function openParts(){
   if(item.type!=='collection')return;
@@ -479,10 +479,10 @@ try{
   box.className='private-pdf-error';
   const offlineMissing=error?.message==='PDF_REQUIRES_INTERNET'||!navigator.onLine;
   box.innerHTML=offlineMissing
-    ? `<b>Bacaan PDF membutuhkan internet</b>
-       <span>Untuk menjaga PDF tetap aman, file PDF tidak disimpan untuk offline. Sambungkan internet lalu coba kembali.</span>
+    ? `<b>Khazanah ini membutuhkan internet</b>
+       <span>Khazanah ini tidak disimpan untuk offline. Sambungkan internet lalu coba kembali.</span>
        <button type="button">Kembali</button>`
-    : `<b>PDF belum dapat dibuka</b>
+    : `<b>Khazanah belum dapat dibuka</b>
        <span>Koneksi atau penyimpanan sedang bermasalah. Coba kembali beberapa saat lagi.</span>
        <button type="button">Coba lagi</button>`;
 

@@ -90,7 +90,7 @@
       html=juzPages.map((page,index)=>directoryItem(index+1,`Juz ${index+1}`,`Mulai halaman ${page}${hasProgress&&approximateJuz(lastPage)===index+1?` • Terakhir hal. ${lastPage}`:''}`,'›',page,{kind:'juz',last:hasProgress&&approximateJuz(lastPage)===index+1})).join('');
     }else if(activeTab==='page'){
       const percent=Math.round(progressPercent(lastPage));
-      html=`<div class="directory-page-jump"><div class="page-jump-icon">604</div><div class="page-jump-copy"><b>Langsung ke halaman</b><p>Masukkan nomor halaman 1–${total}. Bacaan terakhir: ${hasProgress?`halaman ${lastPage} (${percent}%)`:'belum ada'}.</p></div><div class="page-jump-form"><input id="directoryPageInput" type="number" min="1" max="${total}" inputmode="numeric" value="${hasProgress?lastPage:1}" aria-label="Nomor halaman"><button id="directoryPageOpen" type="button">Buka Halaman</button></div></div>`;
+      html=`<div class="directory-page-jump"><div class="page-jump-icon">604</div><div class="page-jump-copy"><b>Langsung ke halaman</b><p>Masukkan nomor halaman 1–${total}. Terakhir dibaca: ${hasProgress?`halaman ${lastPage} (${percent}%)`:'belum ada'}.</p></div><div class="page-jump-form"><input id="directoryPageInput" type="number" min="1" max="${total}" inputmode="numeric" value="${hasProgress?lastPage:1}" aria-label="Nomor halaman"><button id="directoryPageOpen" type="button">Buka Halaman</button></div></div>`;
     }else{
       const meta=pageMetadata(); const pages=bookmarks().sort((a,b)=>a-b);
       html=pages.map(page=>{const info=meta[page]||{};const detail=[info.surah?`Surah ${info.surah}`:'',info.juz?`Juz ${info.juz}`:''].filter(Boolean).join(' • ')||'Mushaf Madinah';return directoryItem('۞',`Halaman ${page}`,detail,'›',page,{kind:'bookmark'});}).join('');

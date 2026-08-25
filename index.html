@@ -18,7 +18,7 @@
   <header class="hero">
     <div class="top">
       <span class="top-spacer" aria-hidden="true"></span>
-      <div class="brand"><h1>Amaliyah</h1><p>Kumpulan Bacaan Harian</p></div>
+      <div class="brand"><h1>Amaliyah</h1><p>Khazanah Amaliyah Harian</p></div>
       <button class="icon notif-icon" id="notifBtn" type="button" aria-label="Pengaturan notifikasi" title="Pengaturan notifikasi">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
       </button>
@@ -45,7 +45,7 @@
     <section class="quran-home-section" aria-labelledby="quranHomeTitle">
       <div class="section-head quran-section-head">
         <b id="quranHomeTitle">MUSHAF AL-QUR'AN</b>
-        <span class="quran-separate-badge">Terpisah dari PDF</span>
+        <span class="quran-separate-badge">Mushaf Khusus</span>
       </div>
       <article class="quran-home-card">
         <div class="quran-home-ornament" aria-hidden="true">۞</div>
@@ -64,15 +64,15 @@
 
     <section id="favoritesSection" class="favorites-section hidden">
       <div class="section-head">
-        <b>BACAAN FAVORIT</b>
+        <b>KHAZANAH FAVORIT</b>
         <button class="link" type="button" onclick="showFavoritesManager()">Kelola <span aria-hidden="true">›</span></button>
       </div>
-      <div id="favoriteBooks" class="favorite-strip" aria-label="Bacaan favorit"></div>
+      <div id="favoriteBooks" class="favorite-strip" aria-label="Khazanah favorit"></div>
     </section>
 
     <section class="category-section">
       <div class="section-head">
-        <b>KATEGORI BACAAN</b>
+        <b>KATEGORI KHAZANAH</b>
         <button class="link" type="button" onclick="showCategories()">Lihat Semua <span aria-hidden="true">›</span></button>
       </div>
       <div class="categories">
@@ -98,7 +98,7 @@
         </button>
         <button data-category-card="Semua">
           <span class="category-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></span>
-          <b>Lihat Semua</b><small>Semua Bacaan</small>
+          <b>Lihat Semua</b><small>Semua Khazanah</small>
         </button>
       </div>
     </section>
@@ -133,14 +133,14 @@
     <span class="category-index-intro-icon" aria-hidden="true">
       <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
     </span>
-    <div><b>Jelajahi Kategori Bacaan</b><p>Pilih kategori untuk melihat bacaan yang tersedia.</p></div>
+    <div><b>Jelajahi Kategori Khazanah</b><p>Pilih kategori untuk melihat khazanah yang tersedia.</p></div>
   </div>
   <div id="categoryDirectory" class="category-directory" aria-label="Daftar semua kategori"></div>
   <button id="allBooksCollectionBtn" class="all-books-collection" type="button" onclick="showLibrary('Semua')">
     <span class="all-books-collection-icon" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H12v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M19 4.5A2.5 2.5 0 0 0 16.5 2H12v18h4.5A2.5 2.5 0 0 1 19 22z"/></svg>
     </span>
-    <span class="all-books-collection-copy"><b>Koleksi Semua Bacaan</b><small id="allBooksCollectionCount">Lihat seluruh bacaan</small></span>
+    <span class="all-books-collection-copy"><b>Koleksi Semua Khazanah</b><small id="allBooksCollectionCount">Lihat seluruh khazanah</small></span>
     <span class="all-books-collection-arrow" aria-hidden="true">›</span>
   </button>
 </div>
@@ -148,14 +148,14 @@
 <div id="library" class="screen hidden">
   <div class="screenbar">
     <button type="button" onclick="goBackInApp()">‹</button>
-    <b>Daftar Bacaan</b>
-    <button id="searchToggleBtn" class="icon-btn search-toggle" type="button" onclick="toggleSearch()" aria-label="Cari bacaan" title="Cari bacaan">
+    <b>Daftar Khazanah</b>
+    <button id="searchToggleBtn" class="icon-btn search-toggle" type="button" onclick="toggleSearch()" aria-label="Cari khazanah" title="Cari khazanah">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
     </button>
   </div>
   <div id="searchBox" class="search-box hidden">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
-    <input id="searchInput" type="search" autocomplete="off" placeholder="Cari judul bacaan atau tulisan Arab…" oninput="filterBooks()">
+    <input id="searchInput" type="search" autocomplete="off" placeholder="Cari judul khazanah atau tulisan Arab…" oninput="filterBooks()">
     <button id="clearSearchBtn" type="button" onclick="clearSearch()" aria-label="Hapus pencarian">×</button>
   </div>
   <div class="chips" id="categoryChips"></div>
@@ -172,7 +172,7 @@
   <section class="favorites-manager-intro">
     <div class="favorites-manager-mark" aria-hidden="true">★</div>
     <div>
-      <b>Atur Bacaan Favorit</b>
+      <b>Atur Khazanah Favorit</b>
       <p>Urutan di halaman ini juga menjadi urutan Favorit di beranda.</p>
     </div>
   </section>
@@ -195,7 +195,7 @@
 <div id="bookmarks" class="screen hidden">
   <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Bookmark</b><span></span></div>
   <div class="bookmark-kind-tabs" role="tablist" aria-label="Jenis bookmark">
-    <button class="active" id="bookmarkPdfTab" type="button" role="tab" aria-selected="true" onclick="showBookmarkKind('pdf')">Bacaan</button>
+    <button class="active" id="bookmarkPdfTab" type="button" role="tab" aria-selected="true" onclick="showBookmarkKind('pdf')">Khazanah</button>
     <button id="bookmarkQuranTab" type="button" role="tab" aria-selected="false" onclick="showBookmarkKind('quran')">Al-Qur'an</button>
   </div>
   <div id="bookmarkList" class="list-wrap"></div>
@@ -203,7 +203,7 @@
 <div id="history" class="screen hidden">
   <div class="screenbar history-screenbar">
     <button onclick="goBackScreen()">‹</button>
-    <b>Riwayat Bacaan</b>
+    <b>Riwayat Khazanah</b>
     <button id="clearHistoryBtn" class="screen-action-btn" type="button" onclick="clearAllHistory()" aria-label="Hapus semua riwayat" title="Hapus semua riwayat">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>
     </button>
@@ -269,7 +269,7 @@
     <button class="primary" data-quran-offline-download type="button">Unduh Al-Qur'an</button>
     <button class="secondary" data-quran-offline-clear type="button" hidden>Hapus Data Offline</button>
   </div>
-  <small class="quran-offline-policy">PDF tetap online-only dan tidak disimpan untuk offline.</small>
+  <small class="quran-offline-policy">Khazanah lainnya tetap menggunakan koneksi internet dan tidak disimpan untuk offline.</small>
 </div>
 
 <div class="settings-card about-app-card">
@@ -277,7 +277,7 @@
   <div class="about-app-copy">
     <span class="about-app-kicker">TENTANG APLIKASI</span>
     <h3>Amaliyah</h3>
-    <p>Aplikasi bacaan dan amaliyah harian.</p>
+    <p>Khazanah amaliyah harian.</p>
     <div class="developer-line">
       <span>Dikembangkan oleh</span>
       <strong>elmahbub.my.id</strong>
