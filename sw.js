@@ -1,4 +1,4 @@
-const C='amaliyah-v2-50-0-offline-comfort';
+const C='amaliyah-v2-50-1-offline-shell-fix';
 const PDF_CACHE='amaliyah-offline-pdf-v1';
 const QURAN_CACHE='amaliyah-quran-pages-v1';
 const EXTERNAL_CACHE='amaliyah-external-v1';
@@ -36,9 +36,19 @@ async function sameOriginNetworkFirst(request){
     if(response && response.ok)cache.put(request,response.clone()).catch(()=>{});
     return response;
   }catch{
-    const cached=await cache.match(request);
+    // Navigasi Reader/Qur'an membawa query (?book=... / ?page=...).
+    // ignoreSearch memastikan HTML shell yang sudah dicache tetap ditemukan.
+    const cached=await cache.match(request,{ignoreSearch:request.mode==='navigate'});
     if(cached)return cached;
-    if(request.mode==='navigate')return cache.match('./index.html');
+
+    if(request.mode==='navigate'){
+      const u=new URL(request.url);
+      const path=u.pathname;
+      if(path.endsWith('/reader.html'))return cache.match('./reader.html');
+      if(path.endsWith('/quran.html'))return cache.match('./quran.html');
+      if(path.endsWith('/admin.html'))return cache.match('./admin.html')||cache.match('./index.html');
+      return cache.match('./index.html')||cache.match('./');
+    }
     return Response.error();
   }
 }

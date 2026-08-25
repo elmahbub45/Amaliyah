@@ -2166,18 +2166,10 @@ syncSettingsLocation();
 syncNotificationUI();
 bootPrayer();
 if(nativeNotificationApp()){
-  // APK memakai Firebase dan notifikasi Android native. Service Worker PWA dapat
-  // mengganti app.js dengan versi browser saat aplikasi dibuka kembali.
-  if('serviceWorker'in navigator){
-    navigator.serviceWorker.getRegistrations()
-      .then(registrations=>Promise.all(registrations.map(reg=>reg.unregister())))
-      .catch(()=>{});
-  }
-  if('caches'in window){
-    // Cache bacaan offline jangan ikut dibersihkan hanya karena aplikasi berjalan
-    // di wrapper native. Cache shell lama tetap boleh dibuang.
-    const keepOffline=new Set(['amaliyah-offline-pdf-v1','amaliyah-quran-pages-v1','amaliyah-external-v1']);
-    caches.keys().then(keys=>Promise.all(keys.filter(key=>!keepOffline.has(key)).map(key=>caches.delete(key)))).catch(()=>{});
+  // V2.50.1: wrapper Android tetap mempertahankan Service Worker/cache shell.
+  // Tanpa ini aplikasi akan blank saat perangkat benar-benar offline.
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
   }
   try{window.AmaliyahAndroid.retryFcmRegistration?.();}catch{}
   startPrayerNotificationScheduler();

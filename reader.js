@@ -118,7 +118,8 @@ async function requestPrivatePdf(part){
     if(!pdfRes.ok)throw new Error(`PDF private gagal dimuat (${pdfRes.status})`);
 
     const bytes=new Uint8Array(await pdfRes.arrayBuffer());
-    saveOfflinePdf(part,bytes);
+    // Pastikan salinan offline benar-benar selesai ditulis sebelum Reader dianggap siap.
+    await saveOfflinePdf(part,bytes);
     return bytes;
   }catch(error){
     if(cached){
