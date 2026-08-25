@@ -599,8 +599,8 @@ function initLibrarySwipe(){
     const dx=lastX-startX,dy=lastY-startY;
     tracking=false;
     if(!horizontal||Math.abs(dx)<58||Math.abs(dx)<Math.abs(dy)*1.35)return;
-    // Sesuai arah yang diminta: geser ke kanan = kategori berikutnya.
-    moveLibraryCategory(dx>0?1:-1);
+    // Arah natural tab mobile: geser ke kiri = kategori berikutnya, geser ke kanan = sebelumnya.
+    moveLibraryCategory(dx<0?1:-1);
   },{passive:true});
   list.addEventListener('touchcancel',()=>{tracking=false;horizontal=false},{passive:true});
 }
