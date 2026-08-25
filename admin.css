@@ -3892,3 +3892,51 @@ dialog.health-check-dialog{
 .path-repair-row{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:start;padding:11px 12px;border:1px solid #e5dfd4;border-radius:13px;background:#fff}.path-repair-row-icon{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;font-weight:900}.path-repair-row b,.path-repair-row small,.path-repair-row code{display:block}.path-repair-row small{margin-top:3px;color:#6f7874;line-height:1.42}.path-repair-row code{margin-top:6px;padding:6px 7px;border-radius:7px;background:#f3f0e9;color:#625a4d;font-size:9px;overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}.path-repair-row.safe{border-color:#cfe4d9;background:#f7fcfa}.path-repair-row.safe .path-repair-row-icon{background:#e5f5ee;color:#117052}.path-repair-row.manual{border-color:#eadcb7;background:#fffbf0}.path-repair-row.manual .path-repair-row-icon{background:#f7e9bf;color:#9b6a12}.path-repair-row.clean .path-repair-row-icon{background:#edf0ee;color:#66736d}.path-repair-empty{padding:34px 16px;text-align:center;color:#75807b}.path-repair-empty b,.path-repair-empty small{display:block}.path-repair-empty small{margin-top:5px}.path-repair-note{margin-top:11px;padding:11px 13px;border-radius:12px;background:#f5f2eb;color:#66716c;font-size:10px;line-height:1.5}.path-repair-note b{display:block;margin-bottom:3px;color:#30473e}.path-repair-note strong{color:#3f5149}.path-repair-actions{justify-content:flex-end}.path-repair-actions #downloadPathRepairBtn{margin-right:auto}
 @media(max-width:760px){.path-repair-card{width:96vw}.path-repair-summary{grid-template-columns:repeat(2,1fr)}.path-repair-summary span:nth-child(2){border-right:0}.path-repair-summary span:nth-child(-n+2){border-bottom:1px solid #eee8dd}.path-repair-actions{flex-wrap:wrap}.path-repair-actions button{flex:1 1 160px}.path-repair-actions #downloadPathRepairBtn{margin-right:0}}
 @media(max-width:520px){.path-repair-actions button{flex:1 1 100%;width:100%}}
+
+
+/* =========================================================
+   V2.48.1 — Path Repair dialog responsive fix
+   ========================================================= */
+dialog.path-repair-dialog{
+  width:min(900px,calc(100% - 28px));
+  max-width:none;
+  max-height:calc(100dvh - 28px);
+  overflow:hidden;
+}
+.path-repair-card{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  max-height:calc(100dvh - 28px);
+  box-sizing:border-box;
+  overflow-x:hidden;
+  overflow-y:auto;
+}
+.path-repair-card>*{min-width:0;max-width:100%}
+.path-repair-intro{min-width:0}
+.path-repair-intro>span:last-child{min-width:0;overflow:hidden}
+.path-repair-intro small,
+.path-repair-intro code,
+.path-repair-note{overflow-wrap:anywhere;word-break:break-word}
+.path-repair-summary{min-width:0;width:100%;grid-template-columns:repeat(4,minmax(0,1fr))}
+.path-repair-summary>*{min-width:0}
+.path-repair-list{min-width:0;width:100%}
+.path-repair-row{min-width:0}
+.path-repair-row>span:last-child{min-width:0;overflow:hidden}
+.path-repair-row code{max-width:100%;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+.path-repair-actions{min-width:0;flex-wrap:wrap;gap:8px}
+.path-repair-actions button{max-width:100%}
+@media(max-width:760px){
+  dialog.path-repair-dialog{width:calc(100% - 18px);max-height:calc(100dvh - 18px)}
+  .path-repair-card{width:100%;max-height:calc(100dvh - 18px);padding:14px}
+  .path-repair-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .path-repair-summary span:nth-child(2){border-right:0}
+  .path-repair-summary span:nth-child(-n+2){border-bottom:1px solid #eee8dd}
+  .path-repair-actions button{flex:1 1 150px}
+  .path-repair-actions #downloadPathRepairBtn{margin-right:0}
+}
+@media(max-width:420px){
+  .path-repair-actions button{flex:1 1 100%;width:100%}
+  .path-repair-intro{padding:11px 12px;gap:9px}
+  .path-repair-intro-icon{flex-basis:28px;width:28px;height:28px}
+}
