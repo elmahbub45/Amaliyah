@@ -1,4 +1,4 @@
-const C='amaliyah-v2-48-1-path-repair-dialog-fix';
+const C='amaliyah-v2-49-0-rc1';
 const A=['./','./index.html','./style.css','./app.js','./icon-library.js','./reader.html','./reader.css','./reader.js','./quran.html','./quran.css','./quran.js','./quran-config.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
 
 self.addEventListener('install',e=>{
@@ -29,19 +29,6 @@ self.addEventListener('fetch',e=>{
 });
 
 
-self.addEventListener('notificationclick',event=>{
-  event.notification.close();
-  event.waitUntil(
-    clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{
-      for(const client of list){
-        if('focus' in client)return client.focus();
-      }
-      if(clients.openWindow)return clients.openWindow('./');
-    })
-  );
-});
-
-
 /* =========================================================
    V2.28 — Web Push Receiver
    ========================================================= */
@@ -68,7 +55,7 @@ self.addEventListener('push',event=>{
   event.waitUntil(self.registration.showNotification(title,options));
 });
 
-/* Override/augment click behavior with URL from push payload. */
+/* Satu handler klik notifikasi: buka URL payload atau kembali ke aplikasi. */
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
   const target=event.notification.data?.url||'./';

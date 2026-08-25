@@ -3473,7 +3473,7 @@ function buildRebuildPlan(entries,rootName){
     });
 
   const books={...clone(data)};
-  books.version='2.40.2-category-rename-routing';
+  books.version='2.49.0-rc1';
   books.categories=['Semua',...categories];
   books.items=items;
 
@@ -4396,7 +4396,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.40.2-category-rename-routing';
+  data.version='2.49.0-rc1';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);
