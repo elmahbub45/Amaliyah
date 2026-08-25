@@ -4,6 +4,7 @@ const PDFJS_CACHE='amaliyah-external-v1';
 let pdfjsLib=null;
 let pdfEnginePromise=null;
 let pdfJsBlobUrls=[];
+let offlinePdfBlobUrls=[];
 
 async function cachedResponse(url){
   if(!('caches' in window))return null;
@@ -153,8 +154,18 @@ async function readOfflinePdf(part){
     const cache=await caches.open(OFFLINE_PDF_CACHE);
     const hit=await cache.match(offlinePdfRequest(part));
     if(!hit)return null;
-    const bytes=new Uint8Array(await hit.arrayBuffer());
-    return validPdfBytes(bytes)?bytes:null;
+
+    // V2.50.4: jangan salin seluruh PDF menjadi ArrayBuffer/Uint8Array.
+    // Ambil Blob langsung dari Cache Storage lalu berikan URL lokal ke PDF.js.
+    // Validasi hanya 5 byte awal agar pembukaan PDF besar tetap cepat.
+    const blob=await hit.blob();
+    if(!blob || blob.size<8)return null;
+    const headBytes=new Uint8Array(await blob.slice(0,5).arrayBuffer());
+    if(String.fromCharCode(...headBytes)!=='%PDF-')return null;
+
+    const localUrl=URL.createObjectURL(blob);
+    offlinePdfBlobUrls.push(localUrl);
+    return {offlineUrl:localUrl,size:blob.size};
   }catch{return null}
 }
 function validPdfBytes(bytes){
@@ -608,7 +619,7 @@ window.addEventListener('keydown',e=>{
   }
 });
 window.addEventListener('resize',()=>drawPage());
-window.addEventListener('pagehide',()=>{recordHistory();pdfJsBlobUrls.forEach(url=>URL.revokeObjectURL(url));});
+window.addEventListener('pagehide',()=>{recordHistory();pdfJsBlobUrls.forEach(url=>URL.revokeObjectURL(url));offlinePdfBlobUrls.forEach(url=>URL.revokeObjectURL(url));});
 
 try{
   showReaderLoading();
@@ -618,9 +629,11 @@ try{
   const pdfDataPromise=requestPrivatePdf(part);
   const [engine,privateData]=await Promise.all([enginePromise,pdfDataPromise]);
 
-  pdfDoc=privateData
-    ? await engine.getDocument({data:privateData}).promise
-    : await engine.getDocument(part.file).promise;
+  pdfDoc=privateData?.offlineUrl
+    ? await engine.getDocument({url:privateData.offlineUrl}).promise
+    : privateData
+      ? await engine.getDocument({data:privateData}).promise
+      : await engine.getDocument(part.file).promise;
 
   page=Math.min(page,pdfDoc.numPages);
   stage.scrollTop=0;

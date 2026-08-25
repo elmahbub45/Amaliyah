@@ -1,4 +1,4 @@
-const C='amaliyah-v2-50-3-offline-reader-fast-start';
+const C='amaliyah-v2-50-4-offline-blob-fast-open';
 const PDF_CACHE='amaliyah-offline-pdf-v1';
 const QURAN_CACHE='amaliyah-quran-pages-v1';
 const EXTERNAL_CACHE='amaliyah-external-v1';
