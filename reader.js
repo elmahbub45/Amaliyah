@@ -13,14 +13,8 @@ const items=catalog.items||[];
 const PRIVATE_PDF_WORKER='https://amaliyah-pdf.elmahbub45.workers.dev';
 const R2_MIGRATION_FALLBACK=false;
 
-// Wirdul Latif masih memakai nama object uji lama sampai file
-// versi path final ikut di-upload ke R2.
-const R2_LEGACY_KEYS={
-  'wirdul-latif':'05 Wirdul Latif.pdf'
-};
-
+// Semua PDF sekarang mengikuti path final dari books.json.
 function r2KeyForPart(part){
-  if(R2_LEGACY_KEYS[part.id])return R2_LEGACY_KEYS[part.id];
   const file=String(part.file||'').replace(/^\.?\//,'');
   return file.replace(/^assets\/pdf-v2\//,'');
 }

@@ -3045,8 +3045,6 @@ function healthFlattenPdf(catalog){
   return rows;
 }
 function healthR2Key(row){
-  // Legacy ini sengaja sama dengan reader.js agar hasil pemeriksaan sesuai aplikasi yang benar-benar berjalan.
-  if(row.id==='wirdul-latif')return '05 Wirdul Latif.pdf';
   return String(row.file||'').replace(/^\.?\//,'').replace(/^assets\/pdf-v2\//,'');
 }
 function healthAddResult(list,status,title,detail='',key=''){
@@ -3135,7 +3133,6 @@ async function runHealthCheck(){
       else seenFiles.set(row.file,row.title);
     }
     if(!results.some(x=>x.status==='error' && /duplikat|kosong/i.test(x.detail)))healthAddResult(results,'ok','Struktur katalog','Tidak ditemukan ID/path duplikat atau data wajib yang kosong.');
-    if(pdfs.some(x=>x.id==='wirdul-latif'))healthAddResult(results,'warn','Wirdul Latif memakai key R2 lama','Aplikasi masih memakai object “05 Wirdul Latif.pdf”. Aman untuk saat ini, tetapi sebaiknya dimigrasikan ke struktur R2 final.','05 Wirdul Latif.pdf');
 
     // File inti yang harus satu origin dengan Admin.
     const coreFiles=['./index.html','./style.css','./app.js','./reader.html','./reader.js','./reader.css','./quran.html','./quran.js','./quran.css','./quran-config.js','./manifest.webmanifest','./sw.js'];
