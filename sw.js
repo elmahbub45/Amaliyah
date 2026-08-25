@@ -1,4 +1,4 @@
-const C='amaliyah-v2-47-0-pre-release-health-check';
+const C='amaliyah-v2-47-1-health-dialog-responsive-fix';
 const A=['./','./index.html','./style.css','./app.js','./icon-library.js','./reader.html','./reader.css','./reader.js','./quran.html','./quran.css','./quran.js','./quran-config.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
 
 self.addEventListener('install',e=>{
