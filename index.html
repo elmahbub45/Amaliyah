@@ -65,7 +65,7 @@
     <section id="favoritesSection" class="favorites-section hidden">
       <div class="section-head">
         <b>BACAAN FAVORIT</b>
-        <button class="link" type="button" onclick="showLibrary()">Kelola <span aria-hidden="true">›</span></button>
+        <button class="link" type="button" onclick="showFavoritesManager()">Kelola <span aria-hidden="true">›</span></button>
       </div>
       <div id="favoriteBooks" class="favorite-strip" aria-label="Bacaan favorit"></div>
     </section>
@@ -160,6 +160,24 @@
   </div>
   <div class="chips" id="categoryChips"></div>
   <div id="bookList" class="book-list"></div>
+</div>
+
+
+<div id="favoritesManager" class="screen favorites-manager-screen hidden">
+  <div class="screenbar favorites-manager-bar">
+    <button type="button" onclick="goBackInApp()" aria-label="Kembali">‹</button>
+    <b>Kelola Favorit</b>
+    <span></span>
+  </div>
+  <section class="favorites-manager-intro">
+    <div class="favorites-manager-mark" aria-hidden="true">★</div>
+    <div>
+      <b>Atur Bacaan Favorit</b>
+      <p>Urutan di halaman ini juga menjadi urutan Favorit di beranda.</p>
+    </div>
+  </section>
+  <div id="favoritesManagerList" class="favorites-manager-list" aria-live="polite"></div>
+  <p class="favorites-manager-help">Tekan dan geser pada komputer. Di HP, gunakan tombol ↑ dan ↓ untuk mengatur urutan dengan pasti.</p>
 </div>
 
 <div id="collection" class="screen hidden">

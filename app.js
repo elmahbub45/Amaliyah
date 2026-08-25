@@ -181,7 +181,7 @@ let librarySearchQuery='';
 let activeCollectionId=null;
 
 const SCREEN_TO_ID={
-  home:'#app', categories:'#categoryIndex', library:'#library', collection:'#collection',
+  home:'#app', categories:'#categoryIndex', library:'#library', favorites:'#favoritesManager', collection:'#collection',
   settings:'#settings', monthly:'#monthly', bookmarks:'#bookmarks', history:'#history'
 };
 let currentScreen='home';
@@ -254,6 +254,7 @@ function navigateScreen(screen='home',opts={}){
   if(screen==='home')updateHome();
   if(screen==='categories')renderCategoryIndex();
   if(screen==='library')renderLibrary(category);
+  if(screen==='favorites')renderFavoritesManager();
   if(screen==='collection')renderCollection(itemId||activeCollectionId);
   if(screen==='settings'){
     syncSettingsLocation();
@@ -269,6 +270,7 @@ function navigateScreen(screen='home',opts={}){
 function showHome(){navigateScreen('home')}
 function showCategories(){navigateScreen('categories')}
 function showLibrary(category='Semua'){navigateScreen('library',{category})}
+function showFavoritesManager(){navigateScreen('favorites')}
 function showCollection(id){activeCollectionId=id;navigateScreen('collection',{itemId:id})}
 function showSettings(focusNotifications=false){navigateScreen('settings',{focusNotifications})}
 function showMonthly(){navigateScreen('monthly')}
@@ -539,22 +541,75 @@ function renderCategoryIndex(){
   if(countLabel)countLabel.textContent=`${items.length} bacaan dari semua kategori`;
 }
 
-function renderChips(active='Semua'){
-  activeLibraryCategory=active;
-  const wrap=$('#categoryChips');if(!wrap)return;
-  const orderedCategories=[
+function libraryCategoriesOrdered(){
+  return [
     'Semua',
     ...[...new Set(categories.filter(cat=>String(cat).toLocaleLowerCase('id-ID')!=='semua'))]
       .sort((a,b)=>String(a).localeCompare(String(b),'id',{sensitivity:'base',numeric:true}))
   ];
+}
+
+function renderChips(active='Semua'){
+  activeLibraryCategory=active;
+  const wrap=$('#categoryChips');if(!wrap)return;
+  const orderedCategories=libraryCategoriesOrdered();
   wrap.innerHTML=orderedCategories.map(cat=>`<button class="chip ${cat===active?'active':''}" data-cat="${cat}">${cat}</button>`).join('');
   wrap.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>renderLibrary(btn.dataset.cat));
+  requestAnimationFrame(()=>{
+    const activeChip=wrap.querySelector('.chip.active');
+    if(activeChip)activeChip.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  });
+}
+
+function moveLibraryCategory(direction){
+  if(librarySearchQuery)return;
+  const ordered=libraryCategoriesOrdered();
+  const current=Math.max(0,ordered.indexOf(activeLibraryCategory));
+  const next=Math.max(0,Math.min(ordered.length-1,current+direction));
+  if(next===current)return;
+  const list=$('#bookList');
+  if(list){
+    list.classList.remove('swipe-category-next','swipe-category-prev');
+    void list.offsetWidth;
+    list.classList.add(direction>0?'swipe-category-next':'swipe-category-prev');
+  }
+  renderLibrary(ordered[next]);
+  setTimeout(()=>list?.classList.remove('swipe-category-next','swipe-category-prev'),220);
+}
+
+function initLibrarySwipe(){
+  const list=$('#bookList');
+  if(!list||list.dataset.swipeReady==='1')return;
+  list.dataset.swipeReady='1';
+  let startX=0,startY=0,lastX=0,lastY=0,tracking=false,horizontal=false;
+  list.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1)return;
+    const t=event.touches[0];
+    startX=lastX=t.clientX;startY=lastY=t.clientY;tracking=true;horizontal=false;
+  },{passive:true});
+  list.addEventListener('touchmove',event=>{
+    if(!tracking||event.touches.length!==1)return;
+    const t=event.touches[0];lastX=t.clientX;lastY=t.clientY;
+    const dx=lastX-startX,dy=lastY-startY;
+    if(!horizontal&&Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.25)horizontal=true;
+    if(horizontal&&Math.abs(dx)>18)event.preventDefault();
+  },{passive:false});
+  list.addEventListener('touchend',()=>{
+    if(!tracking)return;
+    const dx=lastX-startX,dy=lastY-startY;
+    tracking=false;
+    if(!horizontal||Math.abs(dx)<58||Math.abs(dx)<Math.abs(dy)*1.35)return;
+    // Sesuai arah yang diminta: geser ke kanan = kategori berikutnya.
+    moveLibraryCategory(dx>0?1:-1);
+  },{passive:true});
+  list.addEventListener('touchcancel',()=>{tracking=false;horizontal=false},{passive:true});
 }
 
 function renderLibrary(category=activeLibraryCategory||'Semua'){
   activeLibraryCategory=category;
   renderChips(category);
   const list=$('#bookList');if(!list)return;
+  initLibrarySwipe();
   const q=(librarySearchQuery||'').trim().toLocaleLowerCase('id-ID');
   let filtered=category==='Semua'?items:items.filter(x=>x.category===category);
   if(q) filtered=filtered.filter(item=>itemSearchText(item).includes(q));
@@ -684,6 +739,7 @@ function toggleFavoriteKey(key){
   saveFavorites(keys);
   renderLibrary(activeLibraryCategory);
   renderHomeFavorites();
+  if(currentScreen==='favorites')renderFavoritesManager();
 }
 function toggleFavorite(id){toggleFavoriteKey(favoriteItemKey(id))}
 function togglePartFavorite(itemId,partId){toggleFavoriteKey(favoritePartKey(itemId,partId))}
@@ -702,6 +758,95 @@ function resolveFavoriteEntry(key){
     return item&&part?{key,kind:'part',item,part}:null;
   }
   return null;
+}
+
+function favoriteDisplayMeta(entry){
+  if(entry.kind==='part')return `${entry.item.title} • Bagian`;
+  return entry.item.type==='collection'?'Koleksi':entry.item.type==='group'?'Kelompok':entry.item.category;
+}
+
+function renderFavoritesManager(){
+  const wrap=$('#favoritesManagerList');
+  if(!wrap)return;
+  const entries=getFavorites().map(resolveFavoriteEntry).filter(Boolean);
+  if(!entries.length){
+    wrap.innerHTML=`<div class="favorites-manager-empty"><span>☆</span><b>Belum ada favorit</b><p>Tambahkan bacaan ke Favorit terlebih dahulu. Setelah itu urutannya bisa diatur di sini.</p></div>`;
+    return;
+  }
+  wrap.innerHTML=entries.map((entry,index)=>{
+    const title=entry.kind==='part'?entry.part.title:entry.item.title;
+    return `<article class="favorite-manage-row" draggable="true" data-manage-fav="${entry.key}">
+      <span class="favorite-drag-handle" aria-hidden="true">≡</span>
+      <span class="favorite-manage-icon">${entry.item.icon||'◈'}</span>
+      <span class="favorite-manage-copy"><b>${title}</b><small>${favoriteDisplayMeta(entry)}</small></span>
+      <span class="favorite-order-actions">
+        <button type="button" data-fav-up="${entry.key}" ${index===0?'disabled':''} aria-label="Naikkan urutan">↑</button>
+        <button type="button" data-fav-down="${entry.key}" ${index===entries.length-1?'disabled':''} aria-label="Turunkan urutan">↓</button>
+      </span>
+      <button class="favorite-remove-button" type="button" data-fav-remove="${entry.key}" aria-label="Hapus dari favorit">×</button>
+    </article>`;
+  }).join('');
+
+  wrap.querySelectorAll('[data-fav-up]').forEach(btn=>btn.onclick=()=>moveFavoriteKey(btn.dataset.favUp,-1));
+  wrap.querySelectorAll('[data-fav-down]').forEach(btn=>btn.onclick=()=>moveFavoriteKey(btn.dataset.favDown,1));
+  wrap.querySelectorAll('[data-fav-remove]').forEach(btn=>btn.onclick=()=>removeFavoriteKey(btn.dataset.favRemove));
+  setupFavoriteDrag(wrap);
+}
+
+function moveFavoriteKey(key,delta){
+  const keys=getFavorites();
+  const from=keys.indexOf(key);
+  if(from<0)return;
+  const to=Math.max(0,Math.min(keys.length-1,from+delta));
+  if(to===from)return;
+  const [picked]=keys.splice(from,1);
+  keys.splice(to,0,picked);
+  saveFavorites(keys);
+  renderFavoritesManager();
+  renderHomeFavorites();
+}
+
+function removeFavoriteKey(key){
+  saveFavorites(getFavorites().filter(x=>x!==key));
+  renderFavoritesManager();
+  renderHomeFavorites();
+  renderLibrary(activeLibraryCategory);
+}
+
+function setupFavoriteDrag(wrap){
+  let draggingKey=null;
+  wrap.querySelectorAll('[data-manage-fav]').forEach(row=>{
+    row.addEventListener('dragstart',event=>{
+      draggingKey=row.dataset.manageFav;
+      row.classList.add('is-dragging');
+      try{event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',draggingKey)}catch{}
+    });
+    row.addEventListener('dragend',()=>{
+      draggingKey=null;
+      wrap.querySelectorAll('.favorite-manage-row').forEach(x=>x.classList.remove('is-dragging','drag-over'));
+    });
+    row.addEventListener('dragover',event=>{
+      event.preventDefault();
+      if(!draggingKey||draggingKey===row.dataset.manageFav)return;
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+    row.addEventListener('drop',event=>{
+      event.preventDefault();
+      row.classList.remove('drag-over');
+      const source=draggingKey||event.dataTransfer?.getData('text/plain');
+      const target=row.dataset.manageFav;
+      if(!source||!target||source===target)return;
+      const keys=getFavorites();
+      const from=keys.indexOf(source),to=keys.indexOf(target);
+      if(from<0||to<0)return;
+      const [picked]=keys.splice(from,1);
+      keys.splice(to,0,picked);
+      saveFavorites(keys);
+      renderFavoritesManager();
+      renderHomeFavorites();
+    });
+  });
 }
 
 function renderHomeFavorites(){
@@ -1923,6 +2068,7 @@ async function bootPrayer(){
 function refreshActiveScreen(){
   if(currentScreen==='bookmarks')renderBookmarks();
   if(currentScreen==='history')renderHistory();
+  if(currentScreen==='favorites')renderFavoritesManager();
   if(currentScreen==='home')updateHome();
   if(currentScreen==='settings')syncNotificationUI();
 }
@@ -1935,6 +2081,7 @@ document.addEventListener('visibilitychange',()=>{
 window.showHome=showHome;
 window.showCategories=showCategories;
 window.showLibrary=showLibrary;
+window.showFavoritesManager=showFavoritesManager;
 window.showCollection=showCollection;
 window.showSettings=showSettings;
 window.showMonthly=showMonthly;
