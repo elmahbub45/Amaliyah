@@ -1,74 +1,9 @@
-const PDFJS_LIB_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
-const PDFJS_WORKER_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
-const PDFJS_CACHE='amaliyah-external-v1';
-let pdfjsLib=null;
-let pdfEnginePromise=null;
-let pdfJsBlobUrls=[];
-let offlinePdfBlobUrls=[];
+import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
 
-async function cachedResponse(url){
-  if(!('caches' in window))return null;
-  try{
-    const cache=await caches.open(PDFJS_CACHE);
-    return await cache.match(url);
-  }catch{return null}
-}
-
-async function fetchAndCacheExternal(url){
-  let response=null;
-  if(navigator.onLine){
-    try{
-      response=await fetch(url,{mode:'cors',cache:'no-store'});
-      if(response?.ok && 'caches' in window){
-        const cache=await caches.open(PDFJS_CACHE);
-        await cache.put(url,response.clone());
-      }
-    }catch{}
-  }
-  return response || await cachedResponse(url);
-}
-
-async function loadPdfEngine(){
-  if(pdfjsLib)return pdfjsLib;
-  if(pdfEnginePromise)return pdfEnginePromise;
-
-  pdfEnginePromise=(async()=>{
-    const [libResponse,workerResponse]=await Promise.all([
-      fetchAndCacheExternal(PDFJS_LIB_URL),
-      fetchAndCacheExternal(PDFJS_WORKER_URL)
-    ]);
-
-    if(!libResponse || !workerResponse){
-      throw new Error('OFFLINE_PDF_ENGINE_NOT_CACHED');
-    }
-
-    // V2.50.3: gunakan Blob response langsung. Hindari decode text + encode ulang
-    // terhadap ±1.7 MB source PDF.js setiap Reader dibuka.
-    const [libBlob,workerBlob]=await Promise.all([
-      libResponse.blob(),
-      workerResponse.blob()
-    ]);
-
-    if(!libBlob.size || !workerBlob.size){
-      throw new Error('OFFLINE_PDF_ENGINE_NOT_CACHED');
-    }
-
-    const libBlobUrl=URL.createObjectURL(libBlob);
-    const workerBlobUrl=URL.createObjectURL(workerBlob);
-    pdfJsBlobUrls=[libBlobUrl,workerBlobUrl];
-
-    pdfjsLib=await import(libBlobUrl);
-    pdfjsLib.GlobalWorkerOptions.workerSrc=workerBlobUrl;
-    return pdfjsLib;
-  })();
-
-  try{
-    return await pdfEnginePromise;
-  }catch(error){
-    pdfEnginePromise=null;
-    throw error;
-  }
-}
+// V2.50.5: PDF.js kembali dimuat sebagai module/worker normal.
+// Saat offline, Service Worker melayani dua URL CDN ini dari cache eksternal.
+// Ini menghindari pembuatan Blob module + Blob worker setiap Reader dibuka.
 
 async function loadCatalog(){
   const url=new URL('./books.json',location.href).href;
@@ -91,8 +26,6 @@ async function loadCatalog(){
   }
 }
 
-// Mulai menyiapkan engine sedini mungkin sambil katalog dibaca.
-const pdfEngineWarmup=loadPdfEngine().catch(()=>null);
 const catalog=await loadCatalog();
 const items=catalog.items||[];
 
@@ -619,21 +552,19 @@ window.addEventListener('keydown',e=>{
   }
 });
 window.addEventListener('resize',()=>drawPage());
-window.addEventListener('pagehide',()=>{recordHistory();pdfJsBlobUrls.forEach(url=>URL.revokeObjectURL(url));offlinePdfBlobUrls.forEach(url=>URL.revokeObjectURL(url));});
+window.addEventListener('pagehide',()=>{recordHistory();offlinePdfBlobUrls.forEach(url=>URL.revokeObjectURL(url));});
 
 try{
   showReaderLoading();
-  // Engine dan data PDF disiapkan bersamaan. Pada offline ini memangkas waktu
-  // tunggu karena Cache Storage tidak lagi dibaca secara berurutan.
-  const enginePromise=pdfEngineWarmup.then(engine=>engine||loadPdfEngine());
-  const pdfDataPromise=requestPrivatePdf(part);
-  const [engine,privateData]=await Promise.all([enginePromise,pdfDataPromise]);
+  // PDF.js sudah di-load oleh module import di atas. Saat offline, module dan
+  // worker berasal dari cache Service Worker, jadi tidak perlu membuat Blob engine.
+  const privateData=await requestPrivatePdf(part);
 
   pdfDoc=privateData?.offlineUrl
-    ? await engine.getDocument({url:privateData.offlineUrl}).promise
+    ? await pdfjsLib.getDocument({url:privateData.offlineUrl}).promise
     : privateData
-      ? await engine.getDocument({data:privateData}).promise
-      : await engine.getDocument(part.file).promise;
+      ? await pdfjsLib.getDocument({data:privateData}).promise
+      : await pdfjsLib.getDocument(part.file).promise;
 
   page=Math.min(page,pdfDoc.numPages);
   stage.scrollTop=0;
