@@ -180,6 +180,35 @@ let activeLibraryCategory='Semua';
 let librarySearchQuery='';
 let activeCollectionId=null;
 
+// =========================================================
+// V2.50.0 — OFFLINE COMFORT
+// Aplikasi shell + data lokal tetap nyaman saat jaringan putus.
+// =========================================================
+function ensureOfflineBanner(){
+  let banner=document.querySelector('#appOfflineBanner');
+  if(banner)return banner;
+  banner=document.createElement('div');
+  banner.id='appOfflineBanner';
+  banner.className='app-offline-banner hidden';
+  banner.setAttribute('role','status');
+  banner.innerHTML='<b>Mode Offline</b><span>Data tersimpan tetap dapat digunakan</span>';
+  document.body.appendChild(banner);
+  return banner;
+}
+function syncOfflineBanner(){
+  const banner=ensureOfflineBanner();
+  banner.classList.toggle('hidden',navigator.onLine);
+  document.documentElement.classList.toggle('is-offline',!navigator.onLine);
+}
+window.addEventListener('online',()=>{
+  syncOfflineBanner();
+  refreshActiveScreen();
+  if(currentScreen==='home')bootPrayer();
+});
+window.addEventListener('offline',syncOfflineBanner);
+syncOfflineBanner();
+if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{});
+
 const SCREEN_TO_ID={
   home:'#app', categories:'#categoryIndex', library:'#library', favorites:'#favoritesManager', collection:'#collection',
   settings:'#settings', monthly:'#monthly', bookmarks:'#bookmarks', history:'#history'
@@ -1342,6 +1371,11 @@ function compactPrayerError(message='Jadwal belum dapat diperbarui.'){
 async function getPrayerTimes(){
   if(prayerRefreshInFlight)return;
 
+  if(!navigator.onLine){
+    await appNotice('Tidak ada koneksi internet. Jadwal yang sudah tersimpan tetap dapat dilihat. Sambungkan internet untuk memperbarui lokasi atau jadwal.');
+    return;
+  }
+
   if(!navigator.geolocation){
     $('#location').textContent='Lokasi tidak didukung perangkat';
     return;
@@ -2059,8 +2093,13 @@ async function bootPrayer(){
     }catch{}
   }
 
-  $('#prayerTimes').innerHTML=
-    '<span>Izinkan lokasi untuk menampilkan jadwal sholat.</span>';
+  if(!navigator.onLine){
+    if(loc)setLocationLabel(loc.label||'Lokasi tersimpan');
+    compactPrayerError('Mode offline. Jadwal hari ini belum tersimpan. Sambungkan internet sekali untuk memperbarui jadwal.');
+  }else{
+    $('#prayerTimes').innerHTML=
+      '<span>Izinkan lokasi untuk menampilkan jadwal sholat.</span>';
+  }
 }
 
 
@@ -2135,7 +2174,10 @@ if(nativeNotificationApp()){
       .catch(()=>{});
   }
   if('caches'in window){
-    caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{});
+    // Cache bacaan offline jangan ikut dibersihkan hanya karena aplikasi berjalan
+    // di wrapper native. Cache shell lama tetap boleh dibuang.
+    const keepOffline=new Set(['amaliyah-offline-pdf-v1','amaliyah-quran-pages-v1','amaliyah-external-v1']);
+    caches.keys().then(keys=>Promise.all(keys.filter(key=>!keepOffline.has(key)).map(key=>caches.delete(key)))).catch(()=>{});
   }
   try{window.AmaliyahAndroid.retryFcmRegistration?.();}catch{}
   startPrayerNotificationScheduler();

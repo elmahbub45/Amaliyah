@@ -24,3 +24,7 @@
 
 /* V2.44.3 — Mushaf Frame Polish */
 @media(max-width:420px){.quran-page-shell{padding:5px}.quran-page-shell img{padding:3px;border-radius:12px}.quran-reader.controls-hidden .quran-page-shell img{border-radius:10px}}
+
+
+/* V2.50.0 — Offline Comfort */
+.quran-offline-notice{position:fixed;z-index:30;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:calc(100vw - 28px);padding:7px 11px;border:1px solid rgba(190,151,73,.2);border-radius:999px;background:rgba(48,57,51,.91);color:#f7d98b;box-shadow:0 6px 18px rgba(40,34,24,.14);font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}.quran-offline-notice.hidden{display:none!important}

@@ -18,6 +18,21 @@
   let touchStartY=0;
   let readerOpen=false;
 
+  function ensureOfflineNotice(){
+    let notice=$('#quranOfflineNotice');
+    if(notice)return notice;
+    notice=document.createElement('div');
+    notice.id='quranOfflineNotice';
+    notice.className='quran-offline-notice hidden';
+    notice.textContent='Mode offline • halaman yang pernah dibuka tetap tersedia';
+    document.body.appendChild(notice);
+    return notice;
+  }
+  function syncOfflineNotice(){ensureOfflineNotice().classList.toggle('hidden',navigator.onLine)}
+  window.addEventListener('online',syncOfflineNotice);
+  window.addEventListener('offline',syncOfflineNotice);
+  syncOfflineNotice();
+
   const clampPage=value=>Math.min(total,Math.max(1,Number(value)||1));
   const pad=value=>String(value).padStart(Number(config.pageDigits)||3,'0');
   const pageUrl=page=>`${config.pageBase||''}${config.pagePrefix||'page'}${pad(page)}${config.pageExtension||'.png'}`;
@@ -90,7 +105,7 @@
     const reader=$('#quranReader');
     const wasImmersive=preserveImmersive&&reader.classList.contains('controls-hidden');
     currentPage=clampPage(value);const image=$('#quranPageImage');image.classList.remove('loaded');$('#quranLoading').classList.remove('hidden');$('#quranImageError').classList.add('hidden');
-    image.onload=()=>{image.classList.add('loaded');$('#quranLoading').classList.add('hidden');prefetch(currentPage)};image.onerror=()=>{$('#quranLoading').classList.add('hidden');$('#quranImageError').classList.remove('hidden')};image.src=pageUrl(currentPage);image.alt=`Halaman ${currentPage} Mushaf Al-Qur'an`;
+    image.onload=()=>{image.classList.add('loaded');$('#quranLoading').classList.add('hidden');$('#quranImageError').classList.add('hidden');prefetch(currentPage)};image.onerror=()=>{$('#quranLoading').classList.add('hidden');const box=$('#quranImageError');box.classList.remove('hidden');const title=box.querySelector('b');const text=box.querySelector('p');if(!navigator.onLine){if(title)title.textContent='Halaman belum tersimpan offline';if(text)text.textContent="Halaman Qur'an yang pernah dibuka dapat dibaca tanpa internet. Sambungkan internet untuk membuka halaman ini pertama kali.";}else{if(title)title.textContent='Halaman belum dapat dimuat';if(text)text.textContent='Periksa koneksi internet lalu coba kembali.';}};image.src=pageUrl(currentPage);image.alt=`Halaman ${currentPage} Mushaf Al-Qur'an`;
     $('#pageCounter b').textContent=`${currentPage} / ${total}`;$('#previousQuranPage').disabled=currentPage<=1;$('#nextQuranPage').disabled=currentPage>=total;if(recordLast||readerOpen)commitLastRead(currentPage);if(replaceUrl&&readerOpen)history.replaceState({quranReader:true,page:currentPage},'',`quran.html?page=${currentPage}`);updateBookmarkButton();loadMetadata(currentPage);
     if(wasImmersive){clearTimeout(controlsTimer);reader.classList.add('controls-hidden');}else showControls();
   }

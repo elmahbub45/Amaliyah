@@ -1886,3 +1886,19 @@ body{
   #app .hero{padding-left:24px;padding-right:24px}
   #app > main{padding-left:18px;padding-right:18px}
 }
+
+
+/* =========================================================
+   V2.50.0 — Offline Comfort
+   ========================================================= */
+.app-offline-banner{
+  position:fixed;z-index:1500;left:50%;bottom:calc(82px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);display:flex;align-items:center;gap:7px;
+  max-width:calc(100vw - 28px);padding:8px 12px;border:1px solid rgba(236,205,133,.24);
+  border-radius:999px;background:rgba(39,53,47,.96);color:#fff8e8;
+  box-shadow:0 8px 24px rgba(20,31,27,.22);backdrop-filter:blur(12px);
+  white-space:nowrap;font-size:9px;line-height:1.2;
+}
+.app-offline-banner b{color:#efc86f;font-size:9.5px}.app-offline-banner span{opacity:.82;overflow:hidden;text-overflow:ellipsis}
+.app-offline-banner.hidden{display:none!important}
+@media(max-width:390px){.app-offline-banner{bottom:calc(78px + env(safe-area-inset-bottom));padding:7px 10px;font-size:8.4px}.app-offline-banner b{font-size:8.8px}}

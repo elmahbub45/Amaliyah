@@ -1,33 +1,79 @@
-const C='amaliyah-v2-49-0-rc1';
+const C='amaliyah-v2-50-0-offline-comfort';
+const PDF_CACHE='amaliyah-offline-pdf-v1';
+const QURAN_CACHE='amaliyah-quran-pages-v1';
+const EXTERNAL_CACHE='amaliyah-external-v1';
 const A=['./','./index.html','./style.css','./app.js','./icon-library.js','./reader.html','./reader.css','./reader.js','./quran.html','./quran.css','./quran.js','./quran-config.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
+const PDFJS=[
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs'
+];
 
-self.addEventListener('install',e=>{
+self.addEventListener('install',event=>{
   self.skipWaiting();
-  e.waitUntil(caches.open(C).then(c=>c.addAll(A)));
+  event.waitUntil((async()=>{
+    const core=await caches.open(C);
+    await core.addAll(A);
+    const external=await caches.open(EXTERNAL_CACHE);
+    await Promise.allSettled(PDFJS.map(async url=>{
+      const response=await fetch(url,{mode:'cors'});
+      if(response.ok)await external.put(url,response.clone());
+    }));
+  })());
 });
 
-self.addEventListener('activate',e=>{
-  e.waitUntil(Promise.all([
+self.addEventListener('activate',event=>{
+  const keep=new Set([C,PDF_CACHE,QURAN_CACHE,EXTERNAL_CACHE]);
+  event.waitUntil(Promise.all([
     self.clients.claim(),
-    caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k))))
+    caches.keys().then(keys=>Promise.all(keys.filter(key=>!keep.has(key)).map(key=>caches.delete(key))))
   ]));
 });
 
-self.addEventListener('fetch',e=>{
-  const req=e.request;
-  const u=new URL(req.url);
-  if(u.origin!==location.origin || req.method!=='GET')return;
+async function sameOriginNetworkFirst(request){
+  const cache=await caches.open(C);
+  try{
+    const response=await fetch(request);
+    if(response && response.ok)cache.put(request,response.clone()).catch(()=>{});
+    return response;
+  }catch{
+    const cached=await cache.match(request);
+    if(cached)return cached;
+    if(request.mode==='navigate')return cache.match('./index.html');
+    return Response.error();
+  }
+}
 
-  // V2.12: network-first so updates from GitHub Pages are preferred.
-  e.respondWith(
-    fetch(req).then(resp=>{
-      const copy=resp.clone();
-      caches.open(C).then(c=>c.put(req,copy));
-      return resp;
-    }).catch(()=>caches.match(req).then(r=>r||caches.match('./index.html')))
-  );
+async function externalCacheFirst(request,cacheName){
+  const cache=await caches.open(cacheName);
+  const cached=await cache.match(request);
+  if(cached)return cached;
+  try{
+    const response=await fetch(request);
+    // Cache juga response opaque gambar lintas-domain.
+    if(response && (response.ok||response.type==='opaque'))cache.put(request,response.clone()).catch(()=>{});
+    return response;
+  }catch{return Response.error()}
+}
+
+self.addEventListener('fetch',event=>{
+  const request=event.request;
+  if(request.method!=='GET')return;
+  const url=new URL(request.url);
+
+  if(url.origin===location.origin){
+    event.respondWith(sameOriginNetworkFirst(request));
+    return;
+  }
+
+  if(url.hostname==='cdnjs.cloudflare.com' && url.pathname.includes('/pdf.js/4.10.38/')){
+    event.respondWith(externalCacheFirst(request,EXTERNAL_CACHE));
+    return;
+  }
+
+  if(url.hostname==='quran.islam-db.com' && url.pathname.includes('/quranpages_1024/images/')){
+    event.respondWith(externalCacheFirst(request,QURAN_CACHE));
+  }
 });
-
 
 /* =========================================================
    V2.28 — Web Push Receiver

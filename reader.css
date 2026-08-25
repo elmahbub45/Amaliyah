@@ -682,3 +682,8 @@ body.controls-off #stage{
   scroll-padding-top:0;
 }
 
+
+
+/* V2.50.0 — Offline Comfort */
+.reader-offline-badge{position:fixed;z-index:40;top:calc(68px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:calc(100vw - 28px);padding:7px 10px;border-radius:999px;background:rgba(35,53,46,.9);color:#f7d987;border:1px solid rgba(241,211,139,.2);box-shadow:0 6px 18px rgba(0,0,0,.15);font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}.reader-offline-badge.hidden{display:none}
+body.controls-off .reader-offline-badge{opacity:.55}

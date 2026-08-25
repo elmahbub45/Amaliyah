@@ -52,38 +52,82 @@ function hideReaderLoading(){
   setTimeout(()=>box.classList.add('hidden'),220);
 }
 
+const OFFLINE_PDF_CACHE='amaliyah-offline-pdf-v1';
+function offlinePdfRequest(part){
+  return new Request(new URL(`./offline-pdf/${encodeURIComponent(part.id)}.pdf`,location.href),{method:'GET'});
+}
+async function readOfflinePdf(part){
+  if(!('caches' in window))return null;
+  try{
+    const cache=await caches.open(OFFLINE_PDF_CACHE);
+    const hit=await cache.match(offlinePdfRequest(part));
+    if(!hit)return null;
+    return new Uint8Array(await hit.arrayBuffer());
+  }catch{return null}
+}
+async function saveOfflinePdf(part,bytes){
+  if(!('caches' in window)||!bytes?.byteLength)return;
+  try{
+    const cache=await caches.open(OFFLINE_PDF_CACHE);
+    const body=new Blob([bytes],{type:'application/pdf'});
+    await cache.put(offlinePdfRequest(part),new Response(body,{headers:{'Content-Type':'application/pdf','X-Amaliyah-Offline':'1'}}));
+    localStorage.setItem(`amaliyah:offline-pdf:${part.id}`,String(Date.now()));
+  }catch(error){console.warn('PDF offline cache gagal',error)}
+}
+function showReaderOfflineBadge(text='Mode offline • bacaan tersimpan di perangkat'){
+  let badge=document.querySelector('#readerOfflineBadge');
+  if(!badge){
+    badge=document.createElement('div');
+    badge.id='readerOfflineBadge';
+    badge.className='reader-offline-badge';
+    document.body.appendChild(badge);
+  }
+  badge.textContent=text;
+  badge.classList.remove('hidden');
+}
+
 async function requestPrivatePdf(part){
   const key=r2KeyForPart(part);
   if(!key)return null;
 
+  const cached=await readOfflinePdf(part);
+  if(!navigator.onLine){
+    if(cached){
+      showReaderLoading('Membuka bacaan offline…','Menggunakan salinan yang tersimpan di perangkat');
+      showReaderOfflineBadge();
+      return cached;
+    }
+    throw new Error('OFFLINE_NOT_CACHED');
+  }
+
   showReaderLoading('Mengambil bacaan aman…','Menyiapkan PDF dari penyimpanan privat');
 
-  const tokenRes=await fetch(
-    `${PRIVATE_PDF_WORKER}/token?key=${encodeURIComponent(key)}`,
-    {method:'GET',cache:'no-store',credentials:'omit'}
-  );
+  try{
+    const tokenRes=await fetch(
+      `${PRIVATE_PDF_WORKER}/token?key=${encodeURIComponent(key)}`,
+      {method:'GET',cache:'no-store',credentials:'omit'}
+    );
 
-  if(tokenRes.status===404 && R2_MIGRATION_FALLBACK){
-    return null;
+    if(tokenRes.status===404 && R2_MIGRATION_FALLBACK)return null;
+    if(!tokenRes.ok)throw new Error(`Token PDF gagal (${tokenRes.status})`);
+
+    const tokenData=await tokenRes.json();
+    if(!tokenData?.url)throw new Error('URL PDF sementara tidak diterima.');
+
+    const pdfRes=await fetch(tokenData.url,{method:'GET',cache:'no-store',credentials:'omit'});
+    if(!pdfRes.ok)throw new Error(`PDF private gagal dimuat (${pdfRes.status})`);
+
+    const bytes=new Uint8Array(await pdfRes.arrayBuffer());
+    saveOfflinePdf(part,bytes);
+    return bytes;
+  }catch(error){
+    if(cached){
+      showReaderLoading('Koneksi terganggu…','Membuka salinan yang tersimpan di perangkat');
+      showReaderOfflineBadge('Salinan offline • koneksi sedang tidak stabil');
+      return cached;
+    }
+    throw error;
   }
-  if(!tokenRes.ok){
-    throw new Error(`Token PDF gagal (${tokenRes.status})`);
-  }
-
-  const tokenData=await tokenRes.json();
-  if(!tokenData?.url)throw new Error('URL PDF sementara tidak diterima.');
-
-  const pdfRes=await fetch(tokenData.url,{
-    method:'GET',
-    cache:'no-store',
-    credentials:'omit'
-  });
-
-  if(!pdfRes.ok){
-    throw new Error(`PDF private gagal dimuat (${pdfRes.status})`);
-  }
-
-  return new Uint8Array(await pdfRes.arrayBuffer());
 }
 
 const params=new URLSearchParams(location.search);
@@ -484,10 +528,17 @@ try{
 
   const box=document.createElement('div');
   box.className='private-pdf-error';
-  box.innerHTML=`<b>PDF belum dapat dibuka</b>
-    <span>Periksa koneksi lalu coba lagi.</span>
-    <button type="button">Coba lagi</button>`;
+  const offlineMissing=error?.message==='OFFLINE_NOT_CACHED'||!navigator.onLine;
+  box.innerHTML=offlineMissing
+    ? `<b>Bacaan belum tersedia offline</b>
+       <span>Sambungkan internet dan buka bacaan ini sekali. Setelah itu bacaan akan tersimpan di perangkat untuk dibaca tanpa internet.</span>
+       <button type="button">Kembali</button>`
+    : `<b>PDF belum dapat dibuka</b>
+       <span>Koneksi atau penyimpanan sedang bermasalah. Coba kembali beberapa saat lagi.</span>
+       <button type="button">Coba lagi</button>`;
 
-  box.querySelector('button').onclick=()=>location.reload();
+  box.querySelector('button').onclick=()=>offlineMissing
+    ? (history.length>1?history.back():location.assign('index.html'))
+    : location.reload();
   stage.appendChild(box);
 }
