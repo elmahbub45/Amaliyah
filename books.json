@@ -1,5 +1,5 @@
 {
-  "version": "2.51.1",
+  "version": "2.51.7",
   "categories": [
     "Semua",
     "Wirid",
@@ -8,7 +8,7 @@
     "Doa",
     "Sholat",
     "Khutbah",
-    "Surah Pilihan",
+    "Al-Qur'an",
     "Syair"
   ],
   "items": [
@@ -1170,7 +1170,7 @@
     {
       "id": "surah-yasin-a18b09",
       "title": "Surah Yasin",
-      "category": "Surah Pilihan",
+      "category": "Al-Qur'an",
       "type": "collection",
       "parts": [
         {
@@ -1192,13 +1192,13 @@
       "title": "Surah Al Mulk (Tabarak)",
       "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-mulk-tabarak.pdf",
       "pages": 6,
-      "category": "Surah Pilihan",
+      "category": "Al-Qur'an",
       "type": "single"
     },
     {
       "id": "surah-al-waqiah-2b58bd",
       "title": "Surah Al Waqiah",
-      "category": "Surah Pilihan",
+      "category": "Al-Qur'an",
       "type": "collection",
       "parts": [
         {
@@ -1226,7 +1226,7 @@
       "title": "Surah Al Fath",
       "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-fath.pdf",
       "pages": 10,
-      "category": "Surah Pilihan",
+      "category": "Al-Qur'an",
       "type": "single"
     },
     {
@@ -1234,7 +1234,7 @@
       "title": "Surah Ar-Rahman",
       "file": "assets/pdf-v2/quran/surah-pilihan/surah-ar-rahman.pdf",
       "pages": 6,
-      "category": "Surah Pilihan",
+      "category": "Al-Qur'an",
       "type": "single"
     },
     {
@@ -1242,12 +1242,12 @@
       "title": "Surah Al Kahfi",
       "file": "assets/pdf-v2/quran/surah-pilihan/surah-al-kahfi.pdf",
       "pages": 24,
-      "category": "Surah Pilihan",
+      "category": "Al-Qur'an",
       "type": "single"
     },
     {
       "id": "bacaan-85915f",
-      "title": "Asyroqot Anwar Nabina",
+      "title": "أَشْرَقَتْ أَنْوَارْ نَبِيْنَا",
       "file": "assets/pdf-v2/syair/syair/bacaan.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1255,7 +1255,7 @@
     },
     {
       "id": "bacaan-41d967",
-      "title": "Ilahi Ya Sami'",
+      "title": "إِلٰهِى يَا سَمِيعُ",
       "file": "assets/pdf-v2/syair/syair/bacaan-2.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1263,7 +1263,7 @@
     },
     {
       "id": "bacaan-87e305",
-      "title": "Allaha Arju Arju",
+      "title": "اللهُ اَرْجُوْ اَرْجُوْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-3.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1271,7 +1271,7 @@
     },
     {
       "id": "bacaan-3480bc",
-      "title": "Ahbabuna Fillah",
+      "title": "اَحْبَابُنَا فِىْ اللهِ قَوْمٌ بَقَوْا بِالله",
       "file": "assets/pdf-v2/syair/syair/bacaan-4.pdf",
       "pages": 5,
       "category": "Syair",
@@ -1279,7 +1279,7 @@
     },
     {
       "id": "bacaan-5a4d3c",
-      "title": "Asyroqol Badru 'Alaina",
+      "title": "اَشْرَقَ الْبَدْرُ عَلَيْنَا",
       "file": "assets/pdf-v2/syair/syair/bacaan-5.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1287,7 +1287,7 @@
     },
     {
       "id": "bacaan-2ca784",
-      "title": "Assalamu 'Alaika Zainal",
+      "title": "اَلسَّلَامُ عَلَيْكَ زَيْنَ الْاَنْبِيَاءْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-6.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1295,7 +1295,7 @@
     },
     {
       "id": "bacaan-732347",
-      "title": "Allah Allah Al Madad",
+      "title": "اَللهُ اَللهُ الْمَدَدْ يَا رَسُوْلَ اللهْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-7.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1303,7 +1303,7 @@
     },
     {
       "id": "bacaan-f71574",
-      "title": "Allah Allah Lamma Nadani",
+      "title": "اَللهُ اَللهْ لَمَّا نَادَانِىْ هُوَ",
       "file": "assets/pdf-v2/syair/syair/bacaan-8.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1311,7 +1311,7 @@
     },
     {
       "id": "bacaan-aa0670",
-      "title": "Allah Allah Maa Lana Maulan Siwallah",
+      "title": "اَللهْ اَللهْ اَللهْ اَللهْ مَالَنَا مَوْلًى سِوَى اللهْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-9.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1319,7 +1319,7 @@
     },
     {
       "id": "bacaan-f5d237",
-      "title": "Allahumma Sholli 'Ala Muhammad",
+      "title": "اَللّٰهُمَّ صَلِّ عَلَی مُحَمَّدْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-10.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1327,7 +1327,7 @@
     },
     {
       "id": "bacaan-af33f1",
-      "title": "Inna FIl Jannati",
+      "title": "اِنَّ فِى الْجَنَّةِ نَهْرًا مِنْ لَّبَنْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-11.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1335,7 +1335,7 @@
     },
     {
       "id": "bacaan-d1ba0b",
-      "title": "Ins Syi'ta In",
+      "title": "اِنْ شِئْتَ اَنْ تَدْرِىْ مَقَامَ مُحَمَّدٍ",
       "file": "assets/pdf-v2/syair/syair/bacaan-12.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1343,7 +1343,7 @@
     },
     {
       "id": "bacaan-2cfa67",
-      "title": "Busyra Lana",
+      "title": "بُشْرٰی لَنَا نِلْنَا الْمُنٰی",
       "file": "assets/pdf-v2/syair/syair/bacaan-13.pdf",
       "pages": 3,
       "category": "Syair",
@@ -1351,7 +1351,7 @@
     },
     {
       "id": "bacaan-828773",
-      "title": "Birosulillahi Wal Badawi",
+      "title": "بِرَسُوْلِ اللهِ وَالْبَدَوِىْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-14.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1359,7 +1359,7 @@
     },
     {
       "id": "bacaan-ceccae",
-      "title": "Hayyul Hadi Bi Ajmala Dzikra",
+      "title": "حَيُّوا الْهَادِي بِاَجْمَلِ ذِكْرٰى",
       "file": "assets/pdf-v2/syair/syair/bacaan-15.pdf",
       "pages": 3,
       "category": "Syair",
@@ -1367,7 +1367,7 @@
     },
     {
       "id": "bacaan-582578",
-      "title": "Hubbu Ahmadin",
+      "title": "حُبُّ اَحْمَدٍ",
       "file": "assets/pdf-v2/syair/syair/bacaan-16.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1375,7 +1375,7 @@
     },
     {
       "id": "bacaan-44ff21",
-      "title": "Khobbiri",
+      "title": "خَبِّرِىْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-17.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1383,7 +1383,7 @@
     },
     {
       "id": "bacaan-86bedc",
-      "title": "Da'uni",
+      "title": "دَعُوْنِىْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-18.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1391,7 +1391,7 @@
     },
     {
       "id": "bacaan-17e036",
-      "title": "Robbi Fanfa'naa Bibarkatihim",
+      "title": "رَبِّ فَانْــفَعْـنَا بِــبَرْكَتِهِمْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-19.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1399,7 +1399,7 @@
     },
     {
       "id": "bacaan-001af6",
-      "title": "Rabbi Kholaq",
+      "title": "رَبِّى خَلَقْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-20.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1407,7 +1407,7 @@
     },
     {
       "id": "bacaan-a48a66",
-      "title": "Syailillah Syailillah",
+      "title": "شَيْ لِلّٰهْ شَيْ لِلّٰه",
       "file": "assets/pdf-v2/syair/syair/bacaan-21.pdf",
       "pages": 3,
       "category": "Syair",
@@ -1415,7 +1415,7 @@
     },
     {
       "id": "bacaan-52ddce",
-      "title": "Shoilawatullahi Tagsya",
+      "title": "صَـــلَوَاتُ اللهِ تَغْشَى",
       "file": "assets/pdf-v2/syair/syair/bacaan-22.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1423,7 +1423,7 @@
     },
     {
       "id": "bacaan-9ae767",
-      "title": "Sholatullahi Malahat",
+      "title": "صَلَاةُ اللهِ مَا لَاحَتْ كَوَاكِبْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-23.pdf",
       "pages": 3,
       "category": "Syair",
@@ -1431,7 +1431,7 @@
     },
     {
       "id": "bacaan-653a53",
-      "title": "Shollu 'Ala Nuril Ladzi",
+      "title": "صَلُّوْا عَلَى النُّوْرِ الَّذِيْ عَرَجَ السَّمَاءْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-24.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1439,7 +1439,7 @@
     },
     {
       "id": "bacaan-33a4a1",
-      "title": "Sholli Wasallim Ya Salam",
+      "title": "صَلِّ وَسَلِّمْ يَا سَلَامْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-25.pdf",
       "pages": 3,
       "category": "Syair",
@@ -1447,7 +1447,7 @@
     },
     {
       "id": "bacaan-b2992a",
-      "title": "Shil Ya Nabi",
+      "title": "صِلْ يَانَبِيْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-26.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1455,7 +1455,7 @@
     },
     {
       "id": "bacaan-94ce5a",
-      "title": "Tholama Asyku",
+      "title": "طَالَمَا اَشْكُوْ غَرَامِىْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-27.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1463,7 +1463,7 @@
     },
     {
       "id": "bacaan-ab1bdf",
-      "title": "Thola'al Badru",
+      "title": "طَلَعَ الْبَدْرُ عَلَيْنَا",
       "file": "assets/pdf-v2/syair/syair/bacaan-28.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1471,7 +1471,7 @@
     },
     {
       "id": "bacaan-6b7187",
-      "title": "Fii Hawa Khoiril 'Ibad",
+      "title": "فِى هَوٰى خَيْرِ الْعِبَادْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-29.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1479,7 +1479,7 @@
     },
     {
       "id": "bacaan-7dd0a4",
-      "title": "Qif Was Tami'",
+      "title": "قِفْ وَاسْـتَمِعْ لِىْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-30.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1487,7 +1487,7 @@
     },
     {
       "id": "bacaan-a67d45",
-      "title": "Lailahaillah Allah Allah Ya Maulana ",
+      "title": "لَا إِلٰهَ إِلَّا اللهْ اَللَّهْ اَللهْ يَامَوْلَانَا",
       "file": "assets/pdf-v2/syair/syair/bacaan-31.pdf",
       "pages": 1,
       "category": "Syair",
@@ -1495,7 +1495,7 @@
     },
     {
       "id": "bacaan-889587",
-      "title": "Lakal Hamdu Ya Robbi",
+      "title": "لَكَ الْحَمْدُ يَا رَبِّىْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-32.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1503,7 +1503,7 @@
     },
     {
       "id": "bacaan-f224da",
-      "title": "Ludz Fi Hima",
+      "title": "لُذْ فِى حِمٰى",
       "file": "assets/pdf-v2/syair/syair/bacaan-33.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1511,7 +1511,7 @@
     },
     {
       "id": "bacaan-e4a1ec",
-      "title": "Mabrokal Yaum",
+      "title": "مَبْرَكَ الْيَوْم ذَا جِيْنَا",
       "file": "assets/pdf-v2/syair/syair/bacaan-34.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1519,7 +1519,7 @@
     },
     {
       "id": "bacaan-ff2b5a",
-      "title": "Marhaban Ya Romadhon",
+      "title": "مَرْحَبًا يَا رَمَضَانْ",
       "file": "assets/pdf-v2/syair/syair/bacaan-35.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1527,7 +1527,7 @@
     },
     {
       "id": "bacaan-f64913",
-      "title": "Nurul Musthofa",
+      "title": "نُورُ الْمُصْطَفٰى",
       "file": "assets/pdf-v2/syair/syair/bacaan-36.pdf",
       "pages": 2,
       "category": "Syair",
@@ -1776,8 +1776,5 @@
   ],
   "categoryIcons": {
     "Sholat": "kaaba"
-  },
-  "categoryAliases": {
-    "Al-Qur'an": "Surah Pilihan"
   }
 }

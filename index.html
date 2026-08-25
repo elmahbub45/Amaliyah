@@ -111,7 +111,7 @@
     <button type="button" onclick="showCategories()" aria-label="Kategori">
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>Kategori</span>
     </button>
-    <button type="button" onclick="showBookmarks()" aria-label="Bookmark">
+    <button type="button" onclick="showBookmarks()" aria-label="Penanda">
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/></svg><span>Penanda</span>
     </button>
     <button type="button" onclick="showHistory()" aria-label="Riwayat">
@@ -194,7 +194,7 @@
 
 <div id="bookmarks" class="screen hidden">
   <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Penanda</b><span></span></div>
-  <div class="bookmark-kind-tabs" role="tablist" aria-label="Jenis bookmark">
+  <div class="bookmark-kind-tabs" role="tablist" aria-label="Jenis penanda">
     <button class="active" id="bookmarkPdfTab" type="button" role="tab" aria-selected="true" onclick="showBookmarkKind('pdf')">Khazanah</button>
     <button id="bookmarkQuranTab" type="button" role="tab" aria-selected="false" onclick="showBookmarkKind('quran')">Al-Qur'an</button>
   </div>

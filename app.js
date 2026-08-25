@@ -367,7 +367,7 @@ function itemProgress(item){
   return {...pr,part};
 }
 
-function openPart(itemId,partId,page=null){
+function openPart(itemId,partId,options={}){
   const item=getItem(itemId);
   if(!item)return;
   const part=item.type==='single' ? item : (item.parts||[]).find(p=>p.id===partId);
@@ -381,13 +381,22 @@ function openPart(itemId,partId,page=null){
     return;
   }
 
-  if(page) store.setItem(pageKey(part.id),String(page));
+  const resume=!!options?.resume;
+  const explicitPage=Number(options?.page)>0?Math.max(1,Number(options.page)):null;
+  const savedPage=Math.max(1,+(store.getItem(pageKey(part.id))||1));
+  const openingPage=explicitPage || (resume?savedPage:1);
+
   store.setItem('amaliyah:lastItem',item.id);
   store.setItem('amaliyah:lastBook',part.id); // kompatibilitas lama
   if(item.type!=='single') store.setItem(lastPartKey(item.id),part.id);
 
-  recordHistoryEntry(item.id,part.id,Math.max(1,+(store.getItem(pageKey(part.id))||1)));
-  location.href=`reader.html?book=${encodeURIComponent(item.id)}${item.type!=='single'?`&part=${encodeURIComponent(part.id)}`:''}`;
+  recordHistoryEntry(item.id,part.id,openingPage);
+
+  const query=new URLSearchParams({book:item.id});
+  if(item.type!=='single')query.set('part',part.id);
+  if(resume)query.set('resume','1');
+  if(explicitPage)query.set('page',String(explicitPage));
+  location.href=`reader.html?${query.toString()}`;
 }
 
 function openItem(id){
@@ -400,9 +409,9 @@ function openItem(id){
 function continueItem(id){
   const item=getItem(id);
   if(!item)return;
-  if(item.type==='single') return openPart(item.id,item.id);
+  if(item.type==='single') return openPart(item.id,item.id,{resume:true});
   const partId=store.getItem(lastPartKey(item.id)) || item.parts?.[0]?.id;
-  openPart(item.id,partId);
+  openPart(item.id,partId,{resume:true});
 }
 
 function itemSearchText(item){
@@ -951,7 +960,7 @@ function recordHistoryEntry(itemId,partId,page=1){
 function openBookAt(partId,page){
   const found=resolvePart(partId);
   if(!found)return;
-  openPart(found.parent.id,found.part.id,page);
+  openPart(found.parent.id,found.part.id,{page});
 }
 
 function renderBookmarks(){
@@ -1052,7 +1061,7 @@ function renderBookmarks(){
     const x=entries.find(e=>e.part.id===id);
 
     btn.onclick=()=>{
-      if(x)openPart(x.parent.id,x.part.id,x.page);
+      if(x)openPart(x.parent.id,x.part.id,{page:x.page});
     };
   });
 }
@@ -1140,7 +1149,7 @@ function renderHistory(){
 
   wrap.querySelectorAll('[data-history]').forEach(btn=>{
     const x=normalized[+btn.dataset.history];
-    btn.onclick=()=>openPart(x.parent.id,x.part.id,x.page);
+    btn.onclick=()=>openPart(x.parent.id,x.part.id);
   });
   wrap.querySelectorAll('[data-history-delete]').forEach(btn=>{
     btn.onclick=e=>{

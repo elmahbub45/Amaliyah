@@ -80,9 +80,25 @@ async function requestPrivatePdf(part){
 }
 
 const params=new URLSearchParams(location.search);
-const itemId=params.get('book')||items[0]?.id;
-const item=items.find(x=>x.id===itemId)||items[0];
-if(!item)throw new Error('Data khazanah tidak ditemukan.');
+
+function failReaderStartup(title,text){
+  const counterEl=document.querySelector('#counter');
+  const stageEl=document.querySelector('#stage');
+  if(counterEl)counterEl.textContent='Tidak tersedia';
+  if(stageEl){
+    stageEl.classList.add('reader-error');
+    const box=document.createElement('div');
+    box.className='private-pdf-error';
+    box.innerHTML=`<b>${title}</b><span>${text}</span><button type="button">Kembali</button>`;
+    box.querySelector('button').onclick=()=>history.length>1?history.back():location.assign('index.html');
+    stageEl.appendChild(box);
+  }
+  throw new Error('READER_DATA_NOT_FOUND');
+}
+
+const itemId=params.get('book');
+const item=itemId?items.find(x=>x.id===itemId):null;
+if(!item)failReaderStartup('Khazanah tidak ditemukan','Khazanah yang ingin dibuka sudah tidak tersedia atau tautannya tidak sesuai.');
 
 let part;
 if(item.type==='single'){
@@ -90,9 +106,14 @@ if(item.type==='single'){
 }else{
   const requested=params.get('part');
   const saved=localStorage.getItem(`collection:${item.id}:lastPart`);
-  part=item.parts.find(p=>p.id===requested) || item.parts.find(p=>p.id===saved) || item.parts[0];
+  if(requested){
+    part=item.parts.find(p=>p.id===requested);
+    if(!part)failReaderStartup('Bagian tidak ditemukan','Bagian khazanah yang ingin dibuka sudah tidak tersedia atau tautannya tidak sesuai.');
+  }else{
+    part=item.parts.find(p=>p.id===saved) || item.parts[0];
+  }
 }
-if(!part)throw new Error('Bagian khazanah tidak ditemukan.');
+if(!part)failReaderStartup('Bagian tidak ditemukan','Bagian khazanah ini belum tersedia.');
 
 const $=s=>document.querySelector(s);
 const canvas=$('#pdf');
@@ -128,7 +149,12 @@ const bookmarkKey=`amaliyah_bookmark_${part.id}`;
 const legacyBookmarkKey=`book:${part.id}:bookmark`;
 
 let pdfDoc=null;
-let page=Math.max(1,+(localStorage.getItem(pageKey)||1));
+const resumeMode=params.get('resume')==='1';
+const requestedPage=Math.max(0,Number(params.get('page'))||0);
+const savedPage=Math.max(1,+(localStorage.getItem(pageKey)||1));
+// Pembukaan normal selalu dari halaman 1. Hanya Continue memakai resume=1.
+// Penanda dapat mengirim page=... untuk membuka halaman yang memang ditandai.
+let page=requestedPage || (resumeMode?savedPage:1);
 let scale=1,rendering=false,renderQueued=false;
 let startX=0,startY=0,swiped=false,sheetOpen=false;
 
@@ -238,7 +264,7 @@ function openPreviousPart(prev){
   const targetPage=Math.max(1,Number(prev.pages||1));
   localStorage.setItem(`collection:${item.id}:lastPart`,prev.id);
   localStorage.setItem(`book:${prev.id}:page`,String(targetPage));
-  const url=`reader.html?book=${encodeURIComponent(item.id)}&part=${encodeURIComponent(prev.id)}`;
+  const url=`reader.html?book=${encodeURIComponent(item.id)}&part=${encodeURIComponent(prev.id)}&page=${targetPage}`;
   location.replace(url);
 }
 

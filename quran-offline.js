@@ -99,10 +99,12 @@
       let completed=available.size;
       let cursor=1;
       const failed=[];
+      let failureStreak=0;
+      let stopReason='';
       setState({count:completed,running:true,error:''});
 
       const worker=async()=>{
-        while(!cancelRequested){
+        while(!cancelRequested && !stopReason){
           let page=null;
           while(cursor<=total){
             const candidate=cursor++;
@@ -112,8 +114,22 @@
           try{
             const saved=await fetchAndStore(cache,page);
             if(!saved && cancelRequested)return;
-            if(saved){available.add(page);completed++;setState({count:completed,running:true,error:''});}
-          }catch{failed.push(page);}
+            if(saved){
+              available.add(page);completed++;failureStreak=0;
+              setState({count:completed,running:true,error:''});
+            }
+          }catch(error){
+            failed.push(page);
+            failureStreak++;
+            const quota=error?.name==='QuotaExceededError'||/quota|storage|space|penyimpanan/i.test(String(error?.message||''));
+            if(!navigator.onLine){
+              stopReason='Koneksi internet terputus. Unduhan dihentikan dan dapat dilanjutkan nanti.';
+            }else if(quota){
+              stopReason='Penyimpanan perangkat tidak mencukupi. Kosongkan sebagian ruang lalu lanjutkan unduhan.';
+            }else if(failureStreak>=6){
+              stopReason='Beberapa halaman gagal diunduh berturut-turut. Unduhan dihentikan agar tidak terus mencoba; silakan lanjutkan kembali nanti.';
+            }
+          }
         }
       };
 
@@ -125,6 +141,9 @@
       }
 
       running=false;
+      if(stopReason){
+        return setState({count:completed,running:false,error:stopReason,cancelled:false});
+      }
       if(failed.length){
         return setState({count:completed,running:false,error:`${failed.length} halaman belum berhasil diunduh. Tekan Lanjutkan Unduhan untuk mencoba lagi.`,cancelled:false});
       }

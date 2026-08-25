@@ -3406,7 +3406,7 @@ async function runHealthCheck(){
     else healthAddResult(results,'ok','Status editor Admin','Tidak ada perubahan lokal yang belum diekspor.');
 
     // File inti yang harus satu origin dengan Admin.
-    const coreFiles=['./index.html','./style.css','./app.js','./reader.html','./reader.js','./reader.css','./quran.html','./quran.js','./quran.css','./quran-config.js','./manifest.webmanifest','./sw.js'];
+    const coreFiles=['./index.html','./style.css','./app.js','./icon-library.js','./reader.html','./reader.js','./reader.css','./quran.html','./quran.js','./quran.css','./quran-config.js','./quran-offline.js','./manifest.webmanifest','./sw.js','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
     let coreOk=true;
     for(const file of coreFiles){
       try{const r=await fetch(file,{cache:'no-store',signal});if(!r.ok){coreOk=false;healthAddResult(results,'error',file,`File inti tidak dapat dibuka (HTTP ${r.status}).`);}}
@@ -3665,7 +3665,7 @@ function buildRebuildPlan(entries,rootName){
     });
 
   const books={...clone(data)};
-  books.version='2.51.1';
+  books.version='2.51.7';
   books.categories=['Semua',...categories];
   books.items=items;
 
@@ -4588,7 +4588,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.51.1';
+  data.version='2.51.7';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);
