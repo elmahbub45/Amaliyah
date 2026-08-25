@@ -1,32 +1,7 @@
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
 
-// V2.50.5: PDF.js kembali dimuat sebagai module/worker normal.
-// Saat offline, Service Worker melayani dua URL CDN ini dari cache eksternal.
-// Ini menghindari pembuatan Blob module + Blob worker setiap Reader dibuka.
-
-async function loadCatalog(){
-  const url=new URL('./books.json',location.href).href;
-  if(!navigator.onLine && 'caches' in window){
-    try{
-      const hit=await caches.match(url,{ignoreSearch:true});
-      if(hit)return hit.json();
-    }catch{}
-  }
-  try{
-    const response=await fetch('./books.json',{cache:navigator.onLine?'no-store':'force-cache'});
-    if(!response.ok)throw new Error('books.json gagal dimuat');
-    return response.json();
-  }catch(error){
-    if('caches' in window){
-      const hit=await caches.match(url,{ignoreSearch:true});
-      if(hit)return hit.json();
-    }
-    throw error;
-  }
-}
-
-const catalog=await loadCatalog();
+const catalog=await fetch('./books.json',{cache:'no-store'}).then(r=>r.json());
 const items=catalog.items||[];
 
 // =========================================================
@@ -77,104 +52,31 @@ function hideReaderLoading(){
   setTimeout(()=>box.classList.add('hidden'),220);
 }
 
-const OFFLINE_PDF_CACHE='amaliyah-offline-pdf-v1';
-function offlinePdfRequest(part){
-  return new Request(new URL(`./offline-pdf/${encodeURIComponent(part.id)}.pdf`,location.href),{method:'GET'});
-}
-async function readOfflinePdf(part){
-  if(!('caches' in window))return null;
-  try{
-    const cache=await caches.open(OFFLINE_PDF_CACHE);
-    const hit=await cache.match(offlinePdfRequest(part));
-    if(!hit)return null;
-
-    // V2.50.4: jangan salin seluruh PDF menjadi ArrayBuffer/Uint8Array.
-    // Ambil Blob langsung dari Cache Storage lalu berikan URL lokal ke PDF.js.
-    // Validasi hanya 5 byte awal agar pembukaan PDF besar tetap cepat.
-    const blob=await hit.blob();
-    if(!blob || blob.size<8)return null;
-    const headBytes=new Uint8Array(await blob.slice(0,5).arrayBuffer());
-    if(String.fromCharCode(...headBytes)!=='%PDF-')return null;
-
-    const localUrl=URL.createObjectURL(blob);
-    offlinePdfBlobUrls.push(localUrl);
-    return {offlineUrl:localUrl,size:blob.size};
-  }catch{return null}
-}
-function validPdfBytes(bytes){
-  if(!bytes || bytes.byteLength<8)return false;
-  const head=String.fromCharCode(...bytes.slice(0,5));
-  return head==='%PDF-';
-}
-
-async function saveOfflinePdf(part,bytes){
-  if(!('caches' in window)||!validPdfBytes(bytes))return;
-  try{
-    const cache=await caches.open(OFFLINE_PDF_CACHE);
-    const body=new Blob([bytes],{type:'application/pdf'});
-    await cache.put(offlinePdfRequest(part),new Response(body,{headers:{'Content-Type':'application/pdf','X-Amaliyah-Offline':'1'}}));
-    localStorage.setItem(`amaliyah:offline-pdf:${part.id}`,String(Date.now()));
-  }catch(error){console.warn('PDF offline cache gagal',error)}
-}
-function showReaderOfflineBadge(text='Mode offline • bacaan tersimpan di perangkat'){
-  let badge=document.querySelector('#readerOfflineBadge');
-  if(!badge){
-    badge=document.createElement('div');
-    badge.id='readerOfflineBadge';
-    badge.className='reader-offline-badge';
-    document.body.appendChild(badge);
-  }
-  badge.textContent=text;
-  badge.classList.remove('hidden');
-}
-
+// V2.51.0 — PDF tetap online-only.
+// Tidak ada salinan PDF yang disimpan ke Cache Storage / IndexedDB.
 async function requestPrivatePdf(part){
   const key=r2KeyForPart(part);
   if(!key)return null;
 
-  // Offline: langsung ke salinan lokal, tanpa mencoba jaringan sama sekali.
-  if(!navigator.onLine){
-    const cached=await readOfflinePdf(part);
-    if(cached){
-      showReaderLoading('Membuka bacaan offline…','Menggunakan salinan yang tersimpan di perangkat');
-      showReaderOfflineBadge();
-      return cached;
-    }
-    throw new Error('OFFLINE_NOT_CACHED');
-  }
+  if(!navigator.onLine)throw new Error('PDF_REQUIRES_INTERNET');
 
   showReaderLoading('Mengambil bacaan aman…','Menyiapkan PDF dari penyimpanan privat');
 
-  try{
-    const tokenRes=await fetch(
-      `${PRIVATE_PDF_WORKER}/token?key=${encodeURIComponent(key)}`,
-      {method:'GET',cache:'no-store',credentials:'omit'}
-    );
+  const tokenRes=await fetch(
+    `${PRIVATE_PDF_WORKER}/token?key=${encodeURIComponent(key)}`,
+    {method:'GET',cache:'no-store',credentials:'omit'}
+  );
 
-    if(tokenRes.status===404 && R2_MIGRATION_FALLBACK)return null;
-    if(!tokenRes.ok)throw new Error(`Token PDF gagal (${tokenRes.status})`);
+  if(tokenRes.status===404 && R2_MIGRATION_FALLBACK)return null;
+  if(!tokenRes.ok)throw new Error(`Token PDF gagal (${tokenRes.status})`);
 
-    const tokenData=await tokenRes.json();
-    if(!tokenData?.url)throw new Error('URL PDF sementara tidak diterima.');
+  const tokenData=await tokenRes.json();
+  if(!tokenData?.url)throw new Error('URL PDF sementara tidak diterima.');
 
-    const pdfRes=await fetch(tokenData.url,{method:'GET',cache:'no-store',credentials:'omit'});
-    if(!pdfRes.ok)throw new Error(`PDF private gagal dimuat (${pdfRes.status})`);
+  const pdfRes=await fetch(tokenData.url,{method:'GET',cache:'no-store',credentials:'omit'});
+  if(!pdfRes.ok)throw new Error(`PDF private gagal dimuat (${pdfRes.status})`);
 
-    const bytes=new Uint8Array(await pdfRes.arrayBuffer());
-    if(!validPdfBytes(bytes))throw new Error('PDF_DATA_INVALID');
-    await saveOfflinePdf(part,bytes);
-    return bytes;
-  }catch(error){
-    // Jangan membaca seluruh PDF cache di awal saat online. Hanya lakukan bila
-    // jaringan benar-benar gagal, agar pembukaan normal juga lebih cepat.
-    const cached=await readOfflinePdf(part);
-    if(cached){
-      showReaderLoading('Koneksi terganggu…','Membuka salinan yang tersimpan di perangkat');
-      showReaderOfflineBadge('Salinan offline • koneksi sedang tidak stabil');
-      return cached;
-    }
-    throw error;
-  }
+  return new Uint8Array(await pdfRes.arrayBuffer());
 }
 
 const params=new URLSearchParams(location.search);
@@ -552,19 +454,15 @@ window.addEventListener('keydown',e=>{
   }
 });
 window.addEventListener('resize',()=>drawPage());
-window.addEventListener('pagehide',()=>{recordHistory();offlinePdfBlobUrls.forEach(url=>URL.revokeObjectURL(url));});
+window.addEventListener('pagehide',recordHistory);
 
 try{
   showReaderLoading();
-  // PDF.js sudah di-load oleh module import di atas. Saat offline, module dan
-  // worker berasal dari cache Service Worker, jadi tidak perlu membuat Blob engine.
   const privateData=await requestPrivatePdf(part);
 
-  pdfDoc=privateData?.offlineUrl
-    ? await pdfjsLib.getDocument({url:privateData.offlineUrl}).promise
-    : privateData
-      ? await pdfjsLib.getDocument({data:privateData}).promise
-      : await pdfjsLib.getDocument(part.file).promise;
+  pdfDoc=privateData
+    ? await pdfjsLib.getDocument({data:privateData}).promise
+    : await pdfjsLib.getDocument(part.file).promise;
 
   page=Math.min(page,pdfDoc.numPages);
   stage.scrollTop=0;
@@ -579,10 +477,10 @@ try{
 
   const box=document.createElement('div');
   box.className='private-pdf-error';
-  const offlineMissing=['OFFLINE_NOT_CACHED','OFFLINE_PDF_ENGINE_NOT_CACHED'].includes(error?.message)||!navigator.onLine;
+  const offlineMissing=error?.message==='PDF_REQUIRES_INTERNET'||!navigator.onLine;
   box.innerHTML=offlineMissing
-    ? `<b>${error?.message==='OFFLINE_PDF_ENGINE_NOT_CACHED'?'Reader offline belum disiapkan':'Bacaan belum tersedia offline'}</b>
-       <span>${error?.message==='OFFLINE_PDF_ENGINE_NOT_CACHED'?'Sambungkan internet sekali setelah pembaruan aplikasi agar mesin PDF tersimpan di perangkat.':'Sambungkan internet dan buka bacaan ini sekali. Setelah itu bacaan akan tersimpan di perangkat untuk dibaca tanpa internet.'}</span>
+    ? `<b>Bacaan PDF membutuhkan internet</b>
+       <span>Untuk menjaga PDF tetap aman, file PDF tidak disimpan untuk offline. Sambungkan internet lalu coba kembali.</span>
        <button type="button">Kembali</button>`
     : `<b>PDF belum dapat dibuka</b>
        <span>Koneksi atau penyimpanan sedang bermasalah. Coba kembali beberapa saat lagi.</span>

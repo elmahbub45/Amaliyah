@@ -1902,3 +1902,19 @@ body{
 .app-offline-banner b{color:#efc86f;font-size:9.5px}.app-offline-banner span{opacity:.82;overflow:hidden;text-overflow:ellipsis}
 .app-offline-banner.hidden{display:none!important}
 @media(max-width:390px){.app-offline-banner{bottom:calc(78px + env(safe-area-inset-bottom));padding:7px 10px;font-size:8.4px}.app-offline-banner b{font-size:8.8px}}
+
+/* =========================================================
+   V2.51.0 — Pengaturan Al-Qur'an Offline
+   ========================================================= */
+.quran-offline-settings-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.quran-offline-settings-head h3{margin:0 0 5px}
+.quran-offline-settings-head p{margin:0;line-height:1.45}
+.quran-offline-settings-head strong{flex:0 0 auto;display:grid;place-items:center;min-width:48px;height:34px;padding:0 9px;border-radius:999px;background:#f2ecdf;color:#0f6b58;font-size:12px}
+.settings-offline-progress{height:7px;margin-top:14px;border-radius:999px;background:#e8e3d8;overflow:hidden}
+.settings-offline-progress i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#9c7b43,#0f6b58);transition:width .22s ease}
+.settings-offline-count{display:flex;justify-content:space-between;gap:12px;margin-top:7px;font-size:11px;color:#7d817c}
+.settings-offline-actions{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+.settings-offline-actions button{flex:1 1 150px;margin:0}
+.settings-offline-actions button:disabled{opacity:.55;cursor:default}
+.quran-offline-policy{display:block;margin-top:10px;color:#858982;line-height:1.45}
+.quran-offline-settings.is-complete .quran-offline-settings-head strong{background:#e8f3ee;color:#155f4e}

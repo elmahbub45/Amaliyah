@@ -255,6 +255,23 @@
   <button class="primary" type="button" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button>
 </div>
 
+<div class="settings-card quran-offline-settings" data-quran-offline-ui>
+  <div class="quran-offline-settings-head">
+    <div>
+      <h3>Al-Qur'an Offline</h3>
+      <p data-quran-offline-status>Memeriksa penyimpanan Al-Qur'an…</p>
+    </div>
+    <strong data-quran-offline-percent>0%</strong>
+  </div>
+  <div class="settings-offline-progress"><i data-quran-offline-progress></i></div>
+  <div class="settings-offline-count"><span data-quran-offline-count>0 / 604 halaman</span><span>Hanya Mushaf</span></div>
+  <div class="settings-offline-actions">
+    <button class="primary" data-quran-offline-download type="button">Unduh Al-Qur'an</button>
+    <button class="secondary" data-quran-offline-clear type="button" hidden>Hapus Data Offline</button>
+  </div>
+  <small class="quran-offline-policy">PDF tetap online-only dan tidak disimpan untuk offline.</small>
+</div>
+
 <div class="settings-card about-app-card">
   <div class="about-app-mark" aria-label="Logo Amaliyah"><span class="about-app-fallback">A</span><img src="assets/icons/icon-192.png" alt="" onerror="this.remove()"></div>
   <div class="about-app-copy">
@@ -271,6 +288,8 @@
 </div>
 
 <script src="icon-library.js"></script>
+<script src="quran-config.js"></script>
+<script src="quran-offline.js"></script>
 <script type="module" src="app.js"></script>
 <script>
 /* V2.38.7 — ikon Bacaan Terakhir/Favorit mengikuti kategori.

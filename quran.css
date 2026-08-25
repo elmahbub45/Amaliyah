@@ -28,3 +28,37 @@
 
 /* V2.50.0 — Offline Comfort */
 .quran-offline-notice{position:fixed;z-index:30;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:calc(100vw - 28px);padding:7px 11px;border:1px solid rgba(190,151,73,.2);border-radius:999px;background:rgba(48,57,51,.91);color:#f7d98b;box-shadow:0 6px 18px rgba(40,34,24,.14);font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}.quran-offline-notice.hidden{display:none!important}
+
+/* =========================================================
+   V2.51.0 — Al-Qur'an Offline
+   ========================================================= */
+.quran-offline-card{
+  margin:14px 18px 18px;
+  padding:16px;
+  border:1px solid rgba(155,119,54,.22);
+  border-radius:18px;
+  background:rgba(255,252,244,.94);
+  box-shadow:0 8px 24px rgba(50,39,23,.06);
+  color:#3f493f;
+}
+.quran-offline-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.quran-offline-card-head div{display:grid;gap:2px}
+.quran-offline-card-head span{font-size:10px;font-weight:800;letter-spacing:.12em;color:#9a7a3f}
+.quran-offline-card-head b{font-size:17px;color:#29483d}
+.quran-offline-card-head strong{font-size:15px;color:#0f6b58}
+.quran-offline-card p{margin:9px 0 11px;font-size:12.5px;line-height:1.45;color:#6d756f}
+.quran-offline-progress{height:7px;border-radius:999px;background:#e9e4d8;overflow:hidden}
+.quran-offline-progress i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#96743e,#1b735f);transition:width .22s ease}
+.quran-offline-meta{display:flex;justify-content:space-between;gap:12px;margin-top:7px;font-size:10.5px;color:#85867f}
+.quran-offline-actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap}
+.quran-offline-actions button{min-height:40px;border-radius:12px;padding:0 14px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.quran-offline-download{border:0;background:#0f6b58;color:#fff;flex:1 1 170px}
+.quran-offline-download.is-complete{background:#315e51}
+.quran-offline-download:disabled{opacity:.55;cursor:default}
+.quran-offline-clear{border:1px solid #d7cec0;background:#fffaf1;color:#765f3e;flex:0 1 auto}
+.quran-offline-card small{display:block;margin-top:10px;font-size:10.5px;line-height:1.45;color:#8a887f}
+.quran-offline-card.is-complete{border-color:rgba(15,107,88,.28)}
+@media(max-width:420px){
+  .quran-offline-card{margin-left:14px;margin-right:14px;padding:14px}
+  .quran-offline-actions button{flex:1 1 100%}
+}

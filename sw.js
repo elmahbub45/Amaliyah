@@ -1,8 +1,7 @@
-const C='amaliyah-v2-50-5-offline-direct-pdfjs';
-const PDF_CACHE='amaliyah-offline-pdf-v1';
+const C='amaliyah-v2-51-0-quran-offline';
 const QURAN_CACHE='amaliyah-quran-pages-v1';
 const EXTERNAL_CACHE='amaliyah-external-v1';
-const A=['./','./index.html','./style.css','./app.js','./icon-library.js','./reader.html','./reader.css','./reader.js','./quran.html','./quran.css','./quran.js','./quran-config.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
+const A=['./','./index.html','./style.css','./app.js','./icon-library.js','./reader.html','./reader.css','./reader.js','./quran.html','./quran.css','./quran.js','./quran-config.js','./quran-offline.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
 const PDFJS=[
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs'
@@ -22,33 +21,28 @@ self.addEventListener('install',event=>{
 });
 
 self.addEventListener('activate',event=>{
-  const keep=new Set([C,PDF_CACHE,QURAN_CACHE,EXTERNAL_CACHE]);
+  const keep=new Set([C,QURAN_CACHE,EXTERNAL_CACHE]);
   event.waitUntil(Promise.all([
     self.clients.claim(),
     caches.keys().then(keys=>Promise.all(keys.filter(key=>!keep.has(key)).map(key=>caches.delete(key))))
   ]));
 });
 
-async function sameOriginAppShell(request){
+async function sameOriginNetworkFirst(request){
   const cache=await caches.open(C);
-
-  // Untuk navigasi dan file inti, cache dibaca lebih dulu agar offline terasa instan.
-  const cached=await cache.match(request,{ignoreSearch:request.mode==='navigate'});
-  if(cached){
-    // Saat koneksi tersedia, segarkan cache di background tanpa menahan UI.
-    fetch(request).then(response=>{
-      if(response?.ok)cache.put(request,response.clone()).catch(()=>{});
-    }).catch(()=>{});
-    return cached;
-  }
-
   try{
     const response=await fetch(request);
-    if(response?.ok)cache.put(request,response.clone()).catch(()=>{});
+    if(response && response.ok)cache.put(request,response.clone()).catch(()=>{});
     return response;
   }catch{
+    // Navigasi Reader/Qur'an membawa query (?book=... / ?page=...).
+    // ignoreSearch memastikan HTML shell yang sudah dicache tetap ditemukan.
+    const cached=await cache.match(request,{ignoreSearch:request.mode==='navigate'});
+    if(cached)return cached;
+
     if(request.mode==='navigate'){
-      const path=new URL(request.url).pathname;
+      const u=new URL(request.url);
+      const path=u.pathname;
       if(path.endsWith('/reader.html'))return cache.match('./reader.html');
       if(path.endsWith('/quran.html'))return cache.match('./quran.html');
       if(path.endsWith('/admin.html'))return cache.match('./admin.html')||cache.match('./index.html');
@@ -76,7 +70,7 @@ self.addEventListener('fetch',event=>{
   const url=new URL(request.url);
 
   if(url.origin===location.origin){
-    event.respondWith(sameOriginAppShell(request));
+    event.respondWith(sameOriginNetworkFirst(request));
     return;
   }
 

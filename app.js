@@ -160,31 +160,10 @@ function appConfirm(message,options={}){
 }
 
 
-async function loadCatalogOfflineFirst(){
-  const url=new URL('./books.json',location.href).href;
-
-  // Saat offline jangan menunggu request jaringan timeout. Katalog lokal dibaca langsung.
-  if(!navigator.onLine && 'caches' in window){
-    try{
-      const hit=await caches.match(url,{ignoreSearch:true});
-      if(hit)return hit.json();
-    }catch{}
-  }
-
-  try{
-    const r=await fetch('./books.json',{cache:navigator.onLine?'no-store':'force-cache'});
-    if(!r.ok)throw new Error('books.json gagal dimuat');
-    return r.json();
-  }catch(error){
-    if('caches' in window){
-      const hit=await caches.match(url,{ignoreSearch:true});
-      if(hit)return hit.json();
-    }
-    throw error;
-  }
-}
-
-const catalog = await loadCatalogOfflineFirst();
+const catalog = await fetch('./books.json', {cache:'no-store'}).then(r=>{
+  if(!r.ok) throw new Error('books.json gagal dimuat');
+  return r.json();
+});
 const items = catalog.items || [];
 const categories = catalog.categories || ['Semua'];
 const categoryIcons = catalog.categoryIcons && typeof catalog.categoryIcons==='object'
@@ -229,6 +208,22 @@ window.addEventListener('online',()=>{
 window.addEventListener('offline',syncOfflineBanner);
 syncOfflineBanner();
 if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{});
+
+// V2.51.0 — kebijakan final PDF: online-only.
+// Bersihkan salinan lokal yang mungkin sempat dibuat oleh eksperimen V2.50.x.
+function cleanupLegacyOfflinePdfStorage(){
+  if('caches' in window)caches.delete('amaliyah-offline-pdf-v1').catch(()=>{});
+  if('indexedDB' in window){
+    try{indexedDB.deleteDatabase('amaliyah-offline-reader-v1')}catch{}
+  }
+  try{
+    for(let i=localStorage.length-1;i>=0;i--){
+      const key=localStorage.key(i);
+      if(key?.startsWith('amaliyah:offline-pdf:'))localStorage.removeItem(key);
+    }
+  }catch{}
+}
+cleanupLegacyOfflinePdfStorage();
 
 const SCREEN_TO_ID={
   home:'#app', categories:'#categoryIndex', library:'#library', favorites:'#favoritesManager', collection:'#collection',
@@ -377,6 +372,14 @@ function openPart(itemId,partId,page=null){
   if(!item)return;
   const part=item.type==='single' ? item : (item.parts||[]).find(p=>p.id===partId);
   if(!part)return;
+
+  if(!navigator.onLine){
+    appNotice(
+      'Bacaan PDF membutuhkan koneksi internet. Untuk menjaga PDF tetap aman, file PDF tidak disimpan di perangkat.',
+      {title:'PDF Online',confirmText:'Mengerti'}
+    );
+    return;
+  }
 
   if(page) store.setItem(pageKey(part.id),String(page));
   store.setItem('amaliyah:lastItem',item.id);

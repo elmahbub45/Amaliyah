@@ -28,9 +28,23 @@
     document.body.appendChild(notice);
     return notice;
   }
-  function syncOfflineNotice(){ensureOfflineNotice().classList.toggle('hidden',navigator.onLine)}
+  async function syncOfflineNotice(){
+    const notice=ensureOfflineNotice();
+    notice.classList.toggle('hidden',navigator.onLine);
+    if(navigator.onLine)return;
+    const offline=window.AmaliyahQuranOffline;
+    if(offline){
+      const status=offline.state;
+      notice.textContent=status.complete
+        ? 'Mode offline • Al-Qur’an lengkap tersedia'
+        : `Mode offline • ${status.count||0} halaman tersimpan`;
+    }else{
+      notice.textContent='Mode offline • halaman tersimpan tetap tersedia';
+    }
+  }
   window.addEventListener('online',syncOfflineNotice);
   window.addEventListener('offline',syncOfflineNotice);
+  window.addEventListener('amaliyah:quran-offline-status',syncOfflineNotice);
   syncOfflineNotice();
 
   const clampPage=value=>Math.min(total,Math.max(1,Number(value)||1));

@@ -3473,7 +3473,7 @@ function buildRebuildPlan(entries,rootName){
     });
 
   const books={...clone(data)};
-  books.version='2.50.0';
+  books.version='2.51.0';
   books.categories=['Semua',...categories];
   books.items=items;
 
@@ -4396,7 +4396,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.50.0';
+  data.version='2.51.0';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);
