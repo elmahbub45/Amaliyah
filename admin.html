@@ -31,21 +31,21 @@
     </div>
 
     <div class="top-actions">
-      <button id="rebuildCatalogBtn" class="top-btn rebuild-action" type="button" title="Bangun ulang katalog dari folder utama">
-        <span class="ui-icon i-folder" aria-hidden="true"></span><b>Rebuild Folder</b>
-      </button>
-      <button id="pathRepairBtn" class="top-btn path-repair-action" type="button" title="Periksa dan rapikan alamat/path PDF dengan aman">
-        <span class="path-repair-btn-icon" aria-hidden="true">↗</span><b>Perbaiki Path</b>
-      </button>
-      <button id="healthCheckBtn" class="top-btn health-action" type="button" title="Periksa aplikasi sebelum dipublikasikan">
-        <span class="health-btn-icon" aria-hidden="true">✓</span><b>Cek Sebelum Publish</b>
-      </button>
-      <button id="backupBtn" class="top-btn" type="button" title="Backup & pemulihan">
-        <span class="ui-icon i-backup" aria-hidden="true"></span><b>Backup</b>
+      <button id="maintenanceBtn" class="top-btn maintenance-action" type="button" title="Buka pusat perawatan Admin">
+        <span class="maintenance-btn-icon" aria-hidden="true">⚙</span><b>Perawatan</b>
       </button>
       <button id="saveDraftBtn" class="top-btn primary-soft" type="button" title="Simpan draft lokal">
         <span class="ui-icon i-save" aria-hidden="true"></span><b>Simpan Draft</b>
       </button>
+
+      <!-- Shortcut lama tetap dipertahankan di DOM agar fungsi lama tidak berubah.
+           Semua alat sekarang diakses dari Pusat Perawatan. -->
+      <span class="legacy-maintenance-shortcuts" aria-hidden="true">
+        <button id="rebuildCatalogBtn" type="button" tabindex="-1"></button>
+        <button id="pathRepairBtn" type="button" tabindex="-1"></button>
+        <button id="healthCheckBtn" type="button" tabindex="-1"></button>
+        <button id="backupBtn" type="button" tabindex="-1"></button>
+      </span>
     </div>
   </header>
 
@@ -592,6 +592,72 @@
   </dialog>
 
 
+  <!-- V2.51.1 — Admin Maintenance Pack -->
+  <dialog id="maintenanceDialog" class="wide-dialog maintenance-dialog">
+    <div class="dialog-card maintenance-card">
+      <div class="dialog-head">
+        <div>
+          <small>PUSAT PERAWATAN</small>
+          <h3>Rawat Aplikasi dari Satu Tempat</h3>
+        </div>
+        <button id="closeMaintenanceBtn" class="icon-btn dark" type="button" aria-label="Tutup">✕</button>
+      </div>
+
+      <div id="maintenanceStatus" class="maintenance-status good">
+        <span id="maintenanceStatusIcon">✓</span>
+        <span>
+          <b id="maintenanceStatusTitle">Aman</b>
+          <small id="maintenanceStatusText">Katalog siap dirawat. Tindakan berisiko tetap meminta konfirmasi.</small>
+        </span>
+      </div>
+
+      <div class="maintenance-summary">
+        <span><b id="maintenanceItemCount">0</b><small>Bacaan</small></span>
+        <span><b id="maintenancePdfCount">0</b><small>PDF</small></span>
+        <span><b id="maintenanceBackupCount">0</b><small>Backup Lokal</small></span>
+        <span><b id="maintenanceDraftState">Aman</b><small>Status Editor</small></span>
+      </div>
+
+      <div class="maintenance-grid">
+        <button type="button" class="maintenance-tool primary-tool" data-maintenance-action="health">
+          <span class="maintenance-tool-icon">✓</span>
+          <span><b>Cek Sebelum Publish</b><small>Periksa katalog, R2, Qur'an, dan file inti sebelum rilis.</small></span>
+          <i>Disarankan</i>
+        </button>
+        <button type="button" class="maintenance-tool" data-maintenance-action="backup">
+          <span class="maintenance-tool-icon">↺</span>
+          <span><b>Backup & Pulihkan</b><small>Download cadangan, simpan snapshot lokal, atau pulihkan dari file.</small></span>
+          <i>Aman</i>
+        </button>
+        <button type="button" class="maintenance-tool" data-maintenance-action="path">
+          <span class="maintenance-tool-icon">↗</span>
+          <span><b>Perbaiki Path PDF</b><small>Rapikan path katalog tanpa memindahkan atau menghapus file R2.</small></span>
+          <i>Aman</i>
+        </button>
+        <button type="button" class="maintenance-tool caution-tool" data-maintenance-action="rebuild">
+          <span class="maintenance-tool-icon">▣</span>
+          <span><b>Rebuild dari Folder</b><small>Gunakan bila struktur katalog memang ingin dibangun ulang dari folder lokal.</small></span>
+          <i>Perubahan besar</i>
+        </button>
+        <button type="button" class="maintenance-tool" data-maintenance-action="validate">
+          <span class="maintenance-tool-icon">☑</span>
+          <span><b>Validasi books.json</b><small>Cek error dan peringatan pada data editor tanpa mengubah apa pun.</small></span>
+          <i>Tidak mengubah data</i>
+        </button>
+        <button type="button" class="maintenance-tool" data-maintenance-action="reload">
+          <span class="maintenance-tool-icon">↻</span>
+          <span><b>Muat Ulang dari Server</b><small>Ambil books.json terbaru dari GitHub. Draft sekarang dibackup lebih dulu.</small></span>
+          <i>Dengan konfirmasi</i>
+        </button>
+      </div>
+
+      <div class="maintenance-safety-note">
+        <b>Pengaman tetap aktif</b>
+        <span>Backup otomatis dibuat sebelum perubahan besar. Pusat Perawatan tidak pernah memindahkan, mengunggah, atau menghapus object R2 secara diam-diam.</span>
+      </div>
+    </div>
+  </dialog>
+
   <!-- V2.48.0 — Friendly Path Repair -->
   <dialog id="pathRepairDialog" class="wide-dialog path-repair-dialog">
     <div class="dialog-card path-repair-card">
@@ -832,19 +898,61 @@
     </div>
   </dialog>
 
-  <!-- Backup -->
-  <dialog id="backupDialog" class="wide-dialog">
+  <!-- V2.51.1 — Backup & Restore -->
+  <dialog id="backupDialog" class="wide-dialog backup-dialog">
     <div class="dialog-card backup-dialog-card">
       <div class="dialog-head">
         <div>
-          <small>PEMULIHAN</small>
-          <h3>Backup Lokal</h3>
+          <small>BACKUP & PEMULIHAN</small>
+          <h3>Cadangan Katalog</h3>
         </div>
-        <button id="closeBackupBtn" class="icon-btn dark" type="button">✕</button>
+        <button id="closeBackupBtn" class="icon-btn dark" type="button" aria-label="Tutup">✕</button>
       </div>
 
-      <p class="dialog-note">Admin menyimpan beberapa snapshot lokal sebelum perubahan besar. Backup hanya tersimpan di browser/perangkat ini.</p>
-      <div id="backupList" class="backup-list"></div>
+      <div class="backup-intro">
+        <span class="backup-intro-icon">✓</span>
+        <span><b>Backup tidak menyentuh R2.</b><small>Cadangan berisi data katalog/Admin saja. PDF private tetap berada di Cloudflare R2 dan tidak ikut diunduh.</small></span>
+      </div>
+
+      <div class="backup-current-summary">
+        <span><b id="backupCurrentItems">0</b><small>Bacaan Sekarang</small></span>
+        <span><b id="backupCurrentPdf">0</b><small>PDF di Katalog</small></span>
+        <span><b id="backupCurrentVersion">—</b><small>Versi Katalog</small></span>
+      </div>
+
+      <section class="backup-main-actions">
+        <div>
+          <small>CADANGAN FILE</small>
+          <b>Simpan backup ke komputer</b>
+          <p>Ini pilihan paling aman sebelum perubahan besar atau sebelum publish.</p>
+        </div>
+        <div class="backup-action-buttons">
+          <button id="downloadBackupNowBtn" class="primary" type="button">Download Backup Sekarang</button>
+          <button id="createLocalBackupBtn" class="ghost" type="button">Simpan Snapshot Lokal</button>
+        </div>
+      </section>
+
+      <section class="backup-restore-section">
+        <div class="backup-section-head">
+          <div><small>PULIHKAN DARI FILE</small><b>Pilih file backup atau books.json lama</b></div>
+          <button id="chooseBackupFileBtn" class="ghost" type="button">Pilih File</button>
+          <input id="backupRestoreFile" type="file" accept=".json,application/json" hidden>
+        </div>
+        <div id="backupRestorePreview" class="backup-restore-preview empty">
+          <b>Belum ada file dipilih</b>
+          <small>Admin akan memeriksa isi file terlebih dahulu sebelum tombol Pulihkan diaktifkan.</small>
+        </div>
+        <div class="backup-restore-actions">
+          <button id="applyBackupFileBtn" class="primary" type="button" disabled>Pulihkan File Ini</button>
+        </div>
+      </section>
+
+      <section class="backup-local-section">
+        <div class="backup-section-head">
+          <div><small>SNAPSHOT OTOMATIS</small><b>Backup lokal perangkat ini</b><p>Admin otomatis membuat snapshot sebelum perubahan besar. Maksimal 10 snapshot terbaru.</p></div>
+        </div>
+        <div id="backupList" class="backup-list"></div>
+      </section>
     </div>
   </dialog>
 

@@ -48,6 +48,9 @@ let healthLastReport=null;
 // V2.48.0 — Friendly Path Repair
 let pathRepairLastScan=null;
 
+// V2.51.1 — Admin Maintenance Pack
+let pendingBackupRestore=null;
+
 async function boot(){
   original=await fetchBooks();
   data=clone(original);
@@ -212,9 +215,20 @@ function bind(){
     openPartDialog(ref.index);
   };
 
+  $('#maintenanceBtn').onclick=openMaintenanceDialog;
+  $('#closeMaintenanceBtn').onclick=()=>$('#maintenanceDialog').close();
+  $$('[data-maintenance-action]').forEach(btn=>{
+    btn.onclick=()=>runMaintenanceAction(btn.dataset.maintenanceAction);
+  });
+
   $('#saveDraftBtn').onclick=()=>saveDraft('Draft disimpan manual');
   $('#backupBtn').onclick=openBackupDialog;
   $('#closeBackupBtn').onclick=()=>$('#backupDialog').close();
+  $('#downloadBackupNowBtn').onclick=downloadPortableBackup;
+  $('#createLocalBackupBtn').onclick=createManualLocalBackup;
+  $('#chooseBackupFileBtn').onclick=()=>$('#backupRestoreFile').click();
+  $('#backupRestoreFile').onchange=handleBackupRestoreFile;
+  $('#applyBackupFileBtn').onclick=applyBackupRestoreFile;
 
   $('#undoStepBtn').onclick=undoStep;
   $('#redoStepBtn').onclick=redoStep;
@@ -778,23 +792,194 @@ function writeBackups(arr){
   localStorage.setItem(BACKUP_KEY,JSON.stringify(arr.slice(0,MAX_BACKUPS)));
 }
 
+function backupStats(snapshot=data){
+  const items=Array.isArray(snapshot?.items)?snapshot.items:[];
+  const pdf=items.reduce((n,x)=>{
+    if(x.type==='single')return n+(x.file?1:0);
+    return n+(x.parts||[]).filter(p=>!p.itemId&&p.file).length;
+  },0);
+  return {items:items.length,pdf};
+}
+
 function createBackup(reason='Backup otomatis',snapshot=data){
   if(!snapshot?.items)return;
   const backups=readBackups();
+  const stats=backupStats(snapshot);
   backups.unshift({
     id:`b-${Date.now()}-${Math.random().toString(16).slice(2,7)}`,
     at:new Date().toISOString(),
     reason,
-    items:snapshot.items.length,
-    pdf:snapshot.items.reduce((n,x)=>n+(x.type==='single'?(x.file?1:0):(x.parts||[]).filter(p=>!p.itemId&&p.file).length),0),
+    items:stats.items,
+    pdf:stats.pdf,
     data:clone(snapshot)
   });
   writeBackups(backups);
 }
 
+/* ===================== V2.51.1 — MAINTENANCE HUB ===================== */
+function openMaintenanceDialog(){
+  renderMaintenanceHub();
+  $('#maintenanceDialog').showModal();
+}
+
+function renderMaintenanceHub(){
+  const check=validateAll();
+  const stats=backupStats(data);
+  const backups=readBackups();
+  const status=$('#maintenanceStatus');
+  const icon=$('#maintenanceStatusIcon');
+  const title=$('#maintenanceStatusTitle');
+  const text=$('#maintenanceStatusText');
+
+  let level='good';
+  let heading='Aman';
+  let message='Katalog tidak memiliki error struktur. Kamu bisa memilih alat perawatan yang diperlukan.';
+  let mark='✓';
+
+  if(check.errors.length){
+    level='bad';heading='Jangan dilanjutkan';mark='×';
+    message=`Ada ${check.errors.length} error katalog. Buka Validasi books.json dan perbaiki terlebih dahulu.`;
+  }else if(dirty || check.warnings.length){
+    level='warn';heading='Perlu dicek';mark='!';
+    const notes=[];
+    if(dirty)notes.push('ada perubahan editor yang belum diekspor');
+    if(check.warnings.length)notes.push(`${check.warnings.length} peringatan katalog`);
+    message=`Katalog masih dapat dirawat, tetapi ${notes.join(' dan ')}.`;
+  }
+
+  status.className=`maintenance-status ${level}`;
+  icon.textContent=mark;
+  title.textContent=heading;
+  text.textContent=message;
+  $('#maintenanceItemCount').textContent=String(stats.items);
+  $('#maintenancePdfCount').textContent=String(stats.pdf);
+  $('#maintenanceBackupCount').textContent=String(backups.length);
+  $('#maintenanceDraftState').textContent=dirty?'Belum Diekspor':'Aman';
+}
+
+function runMaintenanceAction(action){
+  $('#maintenanceDialog').close();
+  if(action==='health')return openHealthCheckDialog();
+  if(action==='backup')return openBackupDialog();
+  if(action==='path')return openPathRepairDialog();
+  if(action==='rebuild')return openRebuildDialog();
+  if(action==='validate')return openValidationDialog(false);
+  if(action==='reload')return reloadServer();
+}
+
+/* ===================== V2.51.1 — BACKUP & RESTORE ===================== */
+function resetBackupRestorePreview(){
+  pendingBackupRestore=null;
+  const input=$('#backupRestoreFile');
+  if(input)input.value='';
+  $('#applyBackupFileBtn').disabled=true;
+  $('#backupRestorePreview').className='backup-restore-preview empty';
+  $('#backupRestorePreview').innerHTML='<b>Belum ada file dipilih</b><small>Admin akan memeriksa isi file terlebih dahulu sebelum tombol Pulihkan diaktifkan.</small>';
+}
+
+function renderBackupCurrentSummary(){
+  const stats=backupStats(data);
+  $('#backupCurrentItems').textContent=String(stats.items);
+  $('#backupCurrentPdf').textContent=String(stats.pdf);
+  $('#backupCurrentVersion').textContent=String(data?.version||'—');
+}
+
 function openBackupDialog(){
+  resetBackupRestorePreview();
+  renderBackupCurrentSummary();
   renderBackups();
   $('#backupDialog').showModal();
+}
+
+function portableBackupPayload(reason='Backup manual'){
+  return {
+    backupFormat:'amaliyah-admin-backup',
+    backupVersion:1,
+    createdAt:new Date().toISOString(),
+    reason,
+    catalogVersion:String(data?.version||''),
+    catalog:clone(data)
+  };
+}
+
+function downloadPortableBackup(){
+  if(!data?.items)return toast('Data katalog belum siap dibackup.','error');
+  createBackup('Backup manual');
+  renderBackups();
+  const stamp=safeDateStamp(new Date());
+  downloadJson(portableBackupPayload('Backup manual dari Admin'),`AMALIYAH-BACKUP-${stamp}.json`);
+  toast('Backup berhasil didownload. Simpan file ini di tempat aman.','ok');
+}
+
+function createManualLocalBackup(){
+  if(!data?.items)return toast('Data katalog belum siap dibackup.','error');
+  createBackup('Snapshot manual');
+  renderBackups();
+  toast('Snapshot lokal berhasil disimpan.','ok');
+}
+
+async function handleBackupRestoreFile(e){
+  const file=e.target.files?.[0];
+  if(!file)return;
+
+  try{
+    const parsed=JSON.parse(await file.text());
+    const catalog=parsed?.backupFormat==='amaliyah-admin-backup' ? parsed.catalog : parsed;
+    assertBooksShape(catalog);
+    const stats=backupStats(catalog);
+    const source=parsed?.backupFormat==='amaliyah-admin-backup'?'Backup Admin':'books.json';
+    const created=parsed?.createdAt?new Date(parsed.createdAt):null;
+    const when=created&&!Number.isNaN(created.getTime())?created.toLocaleString('id-ID'):'—';
+
+    pendingBackupRestore={
+      filename:file.name,
+      source,
+      catalog:clone(catalog),
+      stats,
+      createdAt:when
+    };
+
+    $('#backupRestorePreview').className='backup-restore-preview ready';
+    $('#backupRestorePreview').innerHTML=`
+      <span class="backup-file-ok">✓</span>
+      <span>
+        <b>${esc(file.name)}</b>
+        <small>${esc(source)} • ${stats.items} bacaan • ${stats.pdf} PDF • versi ${esc(String(catalog.version||'—'))}</small>
+        ${source==='Backup Admin'?`<small>Dibuat: ${esc(when)}</small>`:''}
+      </span>`;
+    $('#applyBackupFileBtn').disabled=false;
+  }catch(err){
+    pendingBackupRestore=null;
+    $('#applyBackupFileBtn').disabled=true;
+    $('#backupRestorePreview').className='backup-restore-preview bad';
+    $('#backupRestorePreview').innerHTML=`<b>File tidak dapat dipakai</b><small>${esc(err.message||'Format backup tidak valid.')}</small>`;
+  }
+}
+
+async function applyBackupRestoreFile(){
+  const pending=pendingBackupRestore;
+  if(!pending)return;
+
+  const ok=await confirmInternal(
+    'Pulihkan katalog dari file?',
+    `Editor saat ini akan diganti dengan “${pending.filename}”.\n\n${pending.stats.items} bacaan • ${pending.stats.pdf} PDF.\nBackup kondisi sekarang dibuat otomatis sebelum pemulihan.`,
+    'Pulihkan',
+    'Batal'
+  );
+  if(!ok)return;
+
+  createBackup('Sebelum pulihkan dari file');
+  data=clone(pending.catalog);
+  trackHistoryChange();
+  selectedId=null;
+  dirty=true;
+  refreshCategoryUI();
+  renderList();
+  showEmptyEditor();
+  saveDraft('File backup dipulihkan ke draft');
+  updateAllStatus(true,'Backup berhasil dipulihkan');
+  $('#backupDialog').close();
+  toast('Katalog berhasil dipulihkan. Periksa dulu sebelum Download books.json.','ok');
 }
 
 function renderBackups(){
@@ -829,7 +1014,14 @@ function renderBackups(){
   $$('[data-backup-download]',list).forEach(btn=>{
     btn.onclick=()=>{
       const b=backups.find(x=>x.id===btn.dataset.backupDownload);
-      if(b)downloadJson(b.data,`books-backup-${safeDateStamp(new Date(b.at))}.json`);
+      if(b)downloadJson({
+        backupFormat:'amaliyah-admin-backup',
+        backupVersion:1,
+        createdAt:b.at,
+        reason:b.reason,
+        catalogVersion:String(b.data?.version||''),
+        catalog:b.data
+      },`AMALIYAH-BACKUP-${safeDateStamp(new Date(b.at))}.json`);
     };
   });
 
@@ -839,14 +1031,14 @@ function renderBackups(){
       if(!b)return;
 
       const ok=await confirmInternal(
-        'Pulihkan backup?',
-        `Data editor saat ini akan diganti dengan backup:\n${b.reason}`,
+        'Pulihkan backup lokal?',
+        `Data editor saat ini akan diganti dengan backup:\n${b.reason}\n\nBackup kondisi sekarang dibuat terlebih dahulu.`,
         'Pulihkan',
         'Batal'
       );
       if(!ok)return;
 
-      createBackup('Sebelum memulihkan backup');
+      createBackup('Sebelum memulihkan backup lokal');
       data=clone(b.data);
       trackHistoryChange();
       selectedId=null;
@@ -3473,7 +3665,7 @@ function buildRebuildPlan(entries,rootName){
     });
 
   const books={...clone(data)};
-  books.version='2.51.0';
+  books.version='2.51.1';
   books.categories=['Semua',...categories];
   books.items=items;
 
@@ -4396,7 +4588,7 @@ function exportJson(){
 
   createBackup('Sebelum export books.json');
   normalizeExport();
-  data.version='2.51.0';
+  data.version='2.51.1';
 
   downloadJson(data,'books.json');
   localStorage.removeItem(DRAFT_KEY);
