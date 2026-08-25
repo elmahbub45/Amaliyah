@@ -43,14 +43,14 @@
   }
 
   async function scan(){
-    if(!('caches' in window))return setState({count:0,complete:false,error:'Penyimpanan offline tidak tersedia di perangkat ini.'});
+    if(!('caches' in window))return setState({count:0,complete:false,error:'Penyimpanan tanpa internet tidak tersedia di perangkat ini.'});
     try{
       const cache=await caches.open(CACHE_NAME);
       const keys=await cache.keys();
       const pages=new Set(keys.map(key=>matchingPageNumber(key.url)).filter(Boolean));
       return setState({count:pages.size,complete:pages.size>=total,error:'',cancelled:false});
     }catch(error){
-      return setState({error:'Status penyimpanan offline belum dapat diperiksa.'});
+      return setState({error:'Status penyimpanan Al-Qur’an belum dapat diperiksa.'});
     }
   }
 
@@ -84,7 +84,7 @@
       return setState({error:'Sambungkan internet untuk mengunduh Al-Qur’an.',cancelled:false});
     }
     if(!('caches' in window)){
-      return setState({error:'Penyimpanan offline tidak tersedia di perangkat ini.'});
+      return setState({error:'Penyimpanan tanpa internet tidak tersedia di perangkat ini.'});
     }
 
     running=true;
@@ -141,7 +141,7 @@
       await caches.delete(CACHE_NAME);
       return setState({count:0,complete:false,running:false,error:'',cancelled:false});
     }catch{
-      return setState({error:'Data Al-Qur’an offline belum dapat dihapus.'});
+      return setState({error:'Data Al-Qur’an yang tersimpan belum dapat dihapus.'});
     }
   }
 
@@ -157,10 +157,10 @@
     if(s.running)return `Mengunduh Al-Qur’an… ${s.count} dari ${s.total} halaman.`;
     if(s.complete)return 'Al-Qur’an lengkap dan siap dibaca tanpa internet.';
     if(s.error)return s.error;
-    if(!navigator.onLine && s.count>0)return `${s.count} halaman tersedia offline. Sambungkan internet untuk melengkapi.`;
-    if(!navigator.onLine)return 'Belum ada halaman lengkap untuk offline. Sambungkan internet untuk mengunduh.';
+    if(!navigator.onLine && s.count>0)return `${s.count} halaman sudah tersimpan. Sambungkan internet untuk melengkapinya.`;
+    if(!navigator.onLine)return 'Belum ada halaman yang tersimpan lengkap. Sambungkan internet untuk mengunduh.';
     if(s.count>0)return `${s.count} dari ${s.total} halaman sudah tersimpan. Unduhan dapat dilanjutkan kapan saja.`;
-    return 'Unduh 604 halaman mushaf sekali saat online agar Al-Qur’an dapat dibaca tanpa internet.';
+    return 'Unduh 604 halaman mushaf sekali saat internet aktif agar Al-Qur’an dapat dibaca tanpa internet.';
   }
 
   function renderContainer(box){
@@ -182,7 +182,7 @@
       download.textContent=state.running
         ? 'Batalkan Unduhan'
         : state.complete
-          ? 'Sudah Siap Offline ✓'
+          ? 'Siap Tanpa Internet ✓'
           : state.count>0
             ? 'Lanjutkan Unduhan'
             : 'Unduh Al-Qur’an';
@@ -190,7 +190,7 @@
     }
     if(clear){
       clear.hidden=state.count<=0 && !state.complete;
-      if(Date.now()>clearConfirmUntil)clear.textContent='Hapus Data Offline';
+      if(Date.now()>clearConfirmUntil)clear.textContent='Hapus Data Tersimpan';
     }
     box.classList.toggle('is-complete',state.complete);
     box.classList.toggle('is-downloading',state.running);

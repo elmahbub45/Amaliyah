@@ -480,7 +480,7 @@ try{
   const offlineMissing=error?.message==='PDF_REQUIRES_INTERNET'||!navigator.onLine;
   box.innerHTML=offlineMissing
     ? `<b>Khazanah ini membutuhkan internet</b>
-       <span>Khazanah ini tidak disimpan untuk offline. Sambungkan internet lalu coba kembali.</span>
+       <span>Khazanah ini tidak disimpan di perangkat. Sambungkan internet lalu coba kembali.</span>
        <button type="button">Kembali</button>`
     : `<b>Khazanah belum dapat dibuka</b>
        <span>Koneksi atau penyimpanan sedang bermasalah. Coba kembali beberapa saat lagi.</span>

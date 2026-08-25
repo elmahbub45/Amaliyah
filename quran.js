@@ -24,7 +24,7 @@
     notice=document.createElement('div');
     notice.id='quranOfflineNotice';
     notice.className='quran-offline-notice hidden';
-    notice.textContent='Mode offline • halaman yang pernah dibuka tetap tersedia';
+    notice.textContent='Tanpa internet • halaman yang tersimpan tetap tersedia';
     document.body.appendChild(notice);
     return notice;
   }
@@ -36,10 +36,10 @@
     if(offline){
       const status=offline.state;
       notice.textContent=status.complete
-        ? 'Mode offline • Al-Qur’an lengkap tersedia'
-        : `Mode offline • ${status.count||0} halaman tersimpan`;
+        ? 'Tanpa internet • Al-Qur’an lengkap tersedia'
+        : `Tanpa internet • ${status.count||0} halaman tersimpan`;
     }else{
-      notice.textContent='Mode offline • halaman tersimpan tetap tersedia';
+      notice.textContent='Tanpa internet • halaman tersimpan tetap tersedia';
     }
   }
   window.addEventListener('online',syncOfflineNotice);
@@ -119,7 +119,7 @@
     const reader=$('#quranReader');
     const wasImmersive=preserveImmersive&&reader.classList.contains('controls-hidden');
     currentPage=clampPage(value);const image=$('#quranPageImage');image.classList.remove('loaded');$('#quranLoading').classList.remove('hidden');$('#quranImageError').classList.add('hidden');
-    image.onload=()=>{image.classList.add('loaded');$('#quranLoading').classList.add('hidden');$('#quranImageError').classList.add('hidden');prefetch(currentPage)};image.onerror=()=>{$('#quranLoading').classList.add('hidden');const box=$('#quranImageError');box.classList.remove('hidden');const title=box.querySelector('b');const text=box.querySelector('p');if(!navigator.onLine){if(title)title.textContent='Halaman belum tersimpan offline';if(text)text.textContent="Halaman Qur'an yang pernah dibuka dapat dibaca tanpa internet. Sambungkan internet untuk membuka halaman ini pertama kali.";}else{if(title)title.textContent='Halaman belum dapat dimuat';if(text)text.textContent='Periksa koneksi internet lalu coba kembali.';}};image.src=pageUrl(currentPage);image.alt=`Halaman ${currentPage} Mushaf Al-Qur'an`;
+    image.onload=()=>{image.classList.add('loaded');$('#quranLoading').classList.add('hidden');$('#quranImageError').classList.add('hidden');prefetch(currentPage)};image.onerror=()=>{$('#quranLoading').classList.add('hidden');const box=$('#quranImageError');box.classList.remove('hidden');const title=box.querySelector('b');const text=box.querySelector('p');if(!navigator.onLine){if(title)title.textContent='Halaman belum tersimpan di perangkat';if(text)text.textContent="Halaman ini belum tersimpan di perangkat. Sambungkan internet untuk membukanya pertama kali.";}else{if(title)title.textContent='Halaman belum dapat dimuat';if(text)text.textContent='Periksa koneksi internet lalu coba kembali.';}};image.src=pageUrl(currentPage);image.alt=`Halaman ${currentPage} Mushaf Al-Qur'an`;
     $('#pageCounter b').textContent=`${currentPage} / ${total}`;$('#previousQuranPage').disabled=currentPage<=1;$('#nextQuranPage').disabled=currentPage>=total;if(recordLast||readerOpen)commitLastRead(currentPage);if(replaceUrl&&readerOpen)history.replaceState({quranReader:true,page:currentPage},'',`quran.html?page=${currentPage}`);updateBookmarkButton();loadMetadata(currentPage);
     if(wasImmersive){clearTimeout(controlsTimer);reader.classList.add('controls-hidden');}else showControls();
   }

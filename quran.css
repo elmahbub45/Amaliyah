@@ -215,7 +215,7 @@ html,body{background:linear-gradient(180deg,#efe7d7 0%,#f7f2e9 24%,#f3ecdf 100%)
   border-color:rgba(15,107,88,.22);
   background:linear-gradient(135deg,rgba(247,252,249,.98),rgba(255,250,241,.98));
 }
-.quran-offline-card.is-complete::before{content:"OFFLINE AKTIF";margin-bottom:0;grid-column:1 / 2;justify-self:start}
+.quran-offline-card.is-complete::before{content:"SIAP TANPA INTERNET";margin-bottom:0;grid-column:1 / 2;justify-self:start}
 .quran-offline-card.is-complete .quran-offline-card-head{grid-column:1 / 2;display:block}
 .quran-offline-card.is-complete .quran-offline-card-head strong{display:none}
 .quran-offline-card.is-complete .quran-offline-card-head b{font-size:18px}

@@ -112,7 +112,7 @@
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>Kategori</span>
     </button>
     <button type="button" onclick="showBookmarks()" aria-label="Bookmark">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/></svg><span>Bookmark</span>
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/></svg><span>Penanda</span>
     </button>
     <button type="button" onclick="showHistory()" aria-label="Riwayat">
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7.5V12l3 2"/></svg><span>Riwayat</span>
@@ -193,7 +193,7 @@
 <div id="monthly" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Jadwal Sholat Bulanan</b><span></span></div><div class="month-switch"><button type="button" onclick="changeMonth(-1)">‹</button><b id="monthlyTitle"></b><button type="button" onclick="changeMonth(1)">›</button></div><div id="monthlyTable"></div></div>
 
 <div id="bookmarks" class="screen hidden">
-  <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Bookmark</b><span></span></div>
+  <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Penanda</b><span></span></div>
   <div class="bookmark-kind-tabs" role="tablist" aria-label="Jenis bookmark">
     <button class="active" id="bookmarkPdfTab" type="button" role="tab" aria-selected="true" onclick="showBookmarkKind('pdf')">Khazanah</button>
     <button id="bookmarkQuranTab" type="button" role="tab" aria-selected="false" onclick="showBookmarkKind('quran')">Al-Qur'an</button>
@@ -246,7 +246,7 @@
     <button id="notificationPermissionBtn" class="primary notification-permission-btn" type="button" onclick="requestNotifications()">Aktifkan Izin Notifikasi</button>
     <button id="notificationTestBtn" class="secondary notification-test-btn" type="button" onclick="testPushNotification()">Tes Notifikasi</button>
   </div>
-  <small class="notification-note" id="notificationPushNote">Web Push akan menghubungkan perangkat ini ke layanan notifikasi Amaliyah. Setelah tes berhasil, tahap berikutnya adalah menjadwalkan pengiriman sholat dari server.</small>
+  <small class="notification-note" id="notificationPushNote">Perangkat ini akan dihubungkan ke layanan notifikasi Amaliyah agar pengingat sholat tetap dapat diterima saat aplikasi ditutup.</small>
 </div>
 
 <div class="settings-card">
@@ -258,7 +258,7 @@
 <div class="settings-card quran-offline-settings" data-quran-offline-ui>
   <div class="quran-offline-settings-head">
     <div>
-      <h3>Al-Qur'an Offline</h3>
+      <h3>Al-Qur'an Tanpa Internet</h3>
       <p data-quran-offline-status>Memeriksa penyimpanan Al-Qur'an…</p>
     </div>
     <strong data-quran-offline-percent>0%</strong>
@@ -267,9 +267,9 @@
   <div class="settings-offline-count"><span data-quran-offline-count>0 / 604 halaman</span><span>Hanya Mushaf</span></div>
   <div class="settings-offline-actions">
     <button class="primary" data-quran-offline-download type="button">Unduh Al-Qur'an</button>
-    <button class="secondary" data-quran-offline-clear type="button" hidden>Hapus Data Offline</button>
+    <button class="secondary" data-quran-offline-clear type="button" hidden>Hapus Data Tersimpan</button>
   </div>
-  <small class="quran-offline-policy">Khazanah lainnya tetap menggunakan koneksi internet dan tidak disimpan untuk offline.</small>
+  <small class="quran-offline-policy">Khazanah lainnya tetap membutuhkan koneksi internet dan tidak disimpan di perangkat.</small>
 </div>
 
 <div class="settings-card about-app-card">

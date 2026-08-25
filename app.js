@@ -191,7 +191,7 @@ function ensureOfflineBanner(){
   banner.id='appOfflineBanner';
   banner.className='app-offline-banner hidden';
   banner.setAttribute('role','status');
-  banner.innerHTML='<b>Mode Offline</b><span>Data tersimpan tetap dapat digunakan</span>';
+  banner.innerHTML='<b>Tanpa Internet</b><span>Data yang sudah tersimpan tetap dapat digunakan</span>';
   document.body.appendChild(banner);
   return banner;
 }
@@ -375,7 +375,7 @@ function openPart(itemId,partId,page=null){
 
   if(!navigator.onLine){
     appNotice(
-      'Khazanah ini membutuhkan koneksi internet. Untuk menjaga konten tetap aman, khazanah tidak disimpan untuk offline.',
+      'Khazanah ini membutuhkan koneksi internet. Untuk menjaga konten tetap aman, khazanah tidak disimpan di perangkat.',
       {title:'Koneksi Internet Diperlukan',confirmText:'Mengerti'}
     );
     return;
@@ -977,7 +977,7 @@ function renderBookmarks(){
   const count=entries.length;
 
   const overview=`
-    <section class="bookmark-overview" aria-label="Ringkasan bookmark">
+    <section class="bookmark-overview" aria-label="Ringkasan penanda">
       <div class="bookmark-overview-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24">
           <path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/>
@@ -985,10 +985,10 @@ function renderBookmarks(){
       </div>
       <div class="bookmark-overview-copy">
         <span>TERSIMPAN UNTUK DIBACA KEMBALI</span>
-        <b>${count} Bookmark</b>
+        <b>${count} Penanda</b>
         <small>${count
           ? 'Buka kembali khazanah tepat dari halaman yang ditandai.'
-          : 'Halaman yang ditandai dari Reader akan tersimpan di sini.'}</small>
+          : 'Halaman yang ditandai saat membaca akan tersimpan di sini.'}</small>
       </div>
     </section>
   `;
@@ -1001,7 +1001,7 @@ function renderBookmarks(){
             <path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/>
           </svg>
         </div>
-        <b>Belum ada bookmark</b>
+        <b>Belum ada penanda</b>
         <p>Tandai halaman penting saat membaca. Amaliyah akan membawamu kembali tepat ke halaman itu.</p>
       </div>
     `;
@@ -1153,7 +1153,7 @@ async function clearAllHistory(){
   if(!getHistoryEntries().length)return;
 
   const ok=await appConfirm(
-    'Hapus semua riwayat Khazanah?\n\nProgres, bookmark, dan favorit tidak akan terhapus.'
+    'Hapus semua riwayat Khazanah?\n\nProgres, penanda, dan favorit tidak akan terhapus.'
   );
 
   if(!ok)return;
@@ -1645,9 +1645,9 @@ function urlBase64ToUint8Array(base64String){
   return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)));
 }
 async function getPushRegistration(){
-  if(!pushSupported())throw new Error('Web Push tidak didukung browser ini.');
+  if(!pushSupported())throw new Error('Perangkat belum mendukung layanan notifikasi.');
   const registration=await navigator.serviceWorker.ready;
-  if(!registration)throw new Error('Service Worker belum siap.');
+  if(!registration)throw new Error('Layanan aplikasi belum siap.');
   return registration;
 }
 async function getPushSubscription(){
@@ -1665,7 +1665,7 @@ async function getVapidPublicKey(){
   return j.publicKey;
 }
 async function ensurePushSubscription(){
-  if(!pushSupported())throw new Error('Browser ini tidak mendukung Web Push.');
+  if(!pushSupported())throw new Error('Perangkat ini belum mendukung notifikasi Amaliyah.');
   if(Notification.permission!=='granted')throw new Error('Izin notifikasi belum diberikan.');
 
   const reg=await getPushRegistration();
@@ -1733,7 +1733,7 @@ async function syncPushSubscription({silent=true}={}){
       body:JSON.stringify(payload)
     });
     const j=await r.json().catch(()=>({}));
-    if(!r.ok || !j.ok)throw new Error(j.error||'Subscription gagal disimpan.');
+    if(!r.ok || !j.ok)throw new Error('Layanan notifikasi belum siap. Coba lagi saat internet stabil.');
 
     await updatePushStatus();
     return sub;
@@ -1776,12 +1776,12 @@ async function updatePushStatus(error=null){
       status.classList.toggle('notification-push-error',fcmStatus==='error');
       status.classList.toggle('notification-push-live',notificationPermission()==='granted'&&s.enabled);
       status.textContent=notificationPermission()==='granted'&&s.enabled
-        ? `Notifikasi Native Aktif • Firebase ${fcmStatus==='ready'?'tersambung':fcmStatus==='error'?'perlu disambungkan ulang':'sedang disambungkan'}`
-        : 'Notifikasi native belum diaktifkan';
+        ? `Notifikasi Aktif • ${fcmStatus==='ready'?'perangkat siap menerima pengingat':fcmStatus==='error'?'layanan perlu disambungkan ulang':'sedang menyiapkan layanan'}`
+        : 'Notifikasi belum diaktifkan';
     }
     if(note)note.textContent=fcmStatus==='error'
-      ? 'Notifikasi lokal aktif, tetapi Firebase belum tersambung. Buka ulang halaman ini dengan internet aktif untuk mencoba lagi.'
-      : 'APK memakai notifikasi Android native. Nama pengirim ditampilkan sebagai Amaliyah.';
+      ? 'Izin notifikasi sudah aktif, tetapi layanan pengingat belum tersambung. Buka ulang halaman ini saat internet aktif untuk mencoba lagi.'
+      : 'Aplikasi menggunakan sistem notifikasi perangkat. Nama pengirim ditampilkan sebagai Amaliyah.';
     return;
   }
 
@@ -1796,7 +1796,7 @@ async function updatePushStatus(error=null){
 
   if(error){
     if(status){
-      status.textContent=`Push belum tersambung • ${error.message||'coba lagi'}`;
+      status.textContent=`Layanan notifikasi belum tersambung • coba lagi`;
       status.classList.add('notification-push-error');
       status.classList.remove('notification-push-live');
     }
@@ -1807,12 +1807,12 @@ async function updatePushStatus(error=null){
 
   if(Notification.permission==='granted' && s.enabled && sub){
     if(status){
-      status.textContent='Notifikasi Push Aktif • perangkat tersambung';
+      status.textContent='Notifikasi Aktif • perangkat siap menerima pengingat';
       status.classList.add('notification-push-live');
     }
-    if(note)note.textContent='Perangkat sudah terhubung ke Web Push. Gunakan “Tes Notifikasi” untuk memastikan notifikasi dapat diterima saat aplikasi ditutup.';
+    if(note)note.textContent='Perangkat sudah siap menerima notifikasi. Gunakan “Tes Notifikasi” untuk memastikan pengingat tetap diterima saat aplikasi ditutup.';
   }else if(note){
-    note.textContent='Web Push akan menghubungkan perangkat ini ke layanan notifikasi Amaliyah. Setelah tes berhasil, tahap berikutnya adalah menjadwalkan pengiriman sholat dari server.';
+    note.textContent='Perangkat ini akan dihubungkan ke layanan notifikasi Amaliyah agar pengingat sholat tetap dapat diterima saat aplikasi ditutup.';
   }
 }
 async function testPushNotification(){
@@ -1820,12 +1820,12 @@ async function testPushNotification(){
   try{
     if(btn){btn.disabled=true;btn.textContent='Mengirim…';}
     if(nativeNotificationApp()){
-      await showAppNotification('Tes Amaliyah','Notifikasi native berhasil. Nama pengirim akan tampil sebagai Amaliyah.');
-      await appNotice('Tes notifikasi native telah dikirim.');
+      await showAppNotification('Tes Amaliyah','Tes notifikasi berhasil. Nama pengirim akan tampil sebagai Amaliyah.');
+      await appNotice('Tes notifikasi telah dikirim.');
       return;
     }
     const sub=await syncPushSubscription({silent:false});
-    if(!sub)throw new Error('Subscription belum tersedia.');
+    if(!sub)throw new Error('Perangkat belum siap menerima notifikasi.');
 
     const r=await fetch(`${PUSH_API}/test-push`,{
       method:'POST',
@@ -1833,11 +1833,11 @@ async function testPushNotification(){
       body:JSON.stringify({endpoint:sub.endpoint})
     });
     const j=await r.json().catch(()=>({}));
-    if(!r.ok || !j.ok)throw new Error(j.error||'Tes notifikasi gagal.');
+    if(!r.ok || !j.ok)throw new Error('Layanan notifikasi belum siap. Coba lagi saat internet stabil.');
 
     await appNotice('Tes dikirim. Tutup/minimalkan aplikasi dan periksa notifikasi HP.');
   }catch(err){
-    await appNotice(`Tes notifikasi gagal: ${err.message}`);
+    await appNotice('Tes notifikasi belum berhasil. Periksa koneksi internet lalu coba kembali.');
     await updatePushStatus(err);
   }finally{
     if(btn){btn.textContent='Tes Notifikasi';}
@@ -1892,15 +1892,15 @@ function syncNotificationUI(){
   const status=$('#notificationStatusText');
   const btn=$('#notificationPermissionBtn');
   if(permission==='unsupported'){
-    if(status)status.textContent='Browser ini tidak mendukung notifikasi web.';
+    if(status)status.textContent='Perangkat ini belum mendukung notifikasi Amaliyah.';
     if(btn)btn.classList.add('hidden');
   }else if(permission==='denied'){
     if(status)status.textContent=nativeNotificationApp()
       ? 'Izin notifikasi diblokir di pengaturan aplikasi.'
-      : 'Izin notifikasi diblokir di pengaturan browser.';
+      : 'Izin notifikasi diblokir di pengaturan perangkat.';
     if(btn){btn.textContent='Izin Diblokir';btn.disabled=true;}
   }else if(permission==='granted'){
-    if(status)status.textContent=s.enabled?'Notifikasi Aktif':'Izin tersedia • notifikasi sedang OFF';
+    if(status)status.textContent=s.enabled?'Notifikasi Aktif':'Izin tersedia • notifikasi belum dinyalakan';
     if(btn){btn.textContent='Izin Notifikasi Aktif';btn.disabled=true;}
   }else{
     if(status)status.textContent='Notifikasi belum diizinkan.';
@@ -1919,17 +1919,17 @@ async function requestNotifications(){
       setNotificationSettings(s);
       syncNotificationUI();
       startPrayerNotificationScheduler();
-      await showAppNotification('Amaliyah','Notifikasi native berhasil diaktifkan.');
+      await showAppNotification('Amaliyah','Notifikasi berhasil diaktifkan.');
     }else{
       syncNotificationUI();
       await appNotice('Izin notifikasi belum diberikan. Aktifkan melalui pengaturan aplikasi Amaliyah.');
     }
     return;
   }
-  if(!pushSupported())return appNotice('Browser ini tidak mendukung Web Push.');
+  if(!pushSupported())return appNotice('Perangkat ini belum mendukung notifikasi Amaliyah.');
   if(Notification.permission==='denied'){
     syncNotificationUI();
-    return appNotice('Izin notifikasi diblokir. Aktifkan kembali melalui pengaturan situs/browser.');
+    return appNotice('Izin notifikasi diblokir. Aktifkan kembali melalui pengaturan notifikasi perangkat.');
   }
 
   const p=Notification.permission==='granted'
@@ -1945,9 +1945,9 @@ async function requestNotifications(){
 
     try{
       await syncPushSubscription({silent:false});
-      await showAppNotification('Amaliyah','Notifikasi berhasil diaktifkan. Perangkat sedang disiapkan untuk Web Push.');
+      await showAppNotification('Amaliyah','Notifikasi berhasil diaktifkan. Perangkat sedang disiapkan untuk menerima pengingat.');
     }catch(err){
-      await appNotice(`Izin aktif, tetapi Web Push belum tersambung: ${err.message}`);
+      await appNotice(`Izin sudah aktif, tetapi layanan notifikasi belum tersambung. Coba lagi saat internet stabil.`);
     }
   }else{
     syncNotificationUI();
@@ -1970,7 +1970,7 @@ async function setNotificationMaster(enabled){
   if(enabled){
     if(nativeNotificationApp())return;
     try{await syncPushSubscription({silent:false});}
-    catch(err){await appNotice(`Web Push belum tersambung: ${err.message}`);}
+    catch(err){await appNotice(`Layanan notifikasi belum tersambung. Coba lagi saat internet stabil.`);}
   }else{
     await disablePushSubscription();
     await updatePushStatus();
@@ -2119,7 +2119,7 @@ async function bootPrayer(){
 
   if(!navigator.onLine){
     if(loc)setLocationLabel(loc.label||'Lokasi tersimpan');
-    compactPrayerError('Mode offline. Jadwal hari ini belum tersimpan. Sambungkan internet sekali untuk memperbarui jadwal.');
+    compactPrayerError('Tidak ada koneksi internet. Jadwal hari ini belum tersimpan. Sambungkan internet sekali untuk memperbaruinya.');
   }else{
     $('#prayerTimes').innerHTML=
       '<span>Izinkan lokasi untuk menampilkan jadwal sholat.</span>';
