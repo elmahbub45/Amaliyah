@@ -2,6 +2,7 @@ const PDFJS_LIB_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.m
 const PDFJS_WORKER_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
 const PDFJS_CACHE='amaliyah-external-v1';
 let pdfjsLib=null;
+let pdfEnginePromise=null;
 let pdfJsBlobUrls=[];
 
 async function cachedResponse(url){
@@ -28,32 +29,44 @@ async function fetchAndCacheExternal(url){
 
 async function loadPdfEngine(){
   if(pdfjsLib)return pdfjsLib;
+  if(pdfEnginePromise)return pdfEnginePromise;
 
-  const [libResponse,workerResponse]=await Promise.all([
-    fetchAndCacheExternal(PDFJS_LIB_URL),
-    fetchAndCacheExternal(PDFJS_WORKER_URL)
-  ]);
+  pdfEnginePromise=(async()=>{
+    const [libResponse,workerResponse]=await Promise.all([
+      fetchAndCacheExternal(PDFJS_LIB_URL),
+      fetchAndCacheExternal(PDFJS_WORKER_URL)
+    ]);
 
-  if(!libResponse || !workerResponse){
-    throw new Error('OFFLINE_PDF_ENGINE_NOT_CACHED');
+    if(!libResponse || !workerResponse){
+      throw new Error('OFFLINE_PDF_ENGINE_NOT_CACHED');
+    }
+
+    // V2.50.3: gunakan Blob response langsung. Hindari decode text + encode ulang
+    // terhadap ±1.7 MB source PDF.js setiap Reader dibuka.
+    const [libBlob,workerBlob]=await Promise.all([
+      libResponse.blob(),
+      workerResponse.blob()
+    ]);
+
+    if(!libBlob.size || !workerBlob.size){
+      throw new Error('OFFLINE_PDF_ENGINE_NOT_CACHED');
+    }
+
+    const libBlobUrl=URL.createObjectURL(libBlob);
+    const workerBlobUrl=URL.createObjectURL(workerBlob);
+    pdfJsBlobUrls=[libBlobUrl,workerBlobUrl];
+
+    pdfjsLib=await import(libBlobUrl);
+    pdfjsLib.GlobalWorkerOptions.workerSrc=workerBlobUrl;
+    return pdfjsLib;
+  })();
+
+  try{
+    return await pdfEnginePromise;
+  }catch(error){
+    pdfEnginePromise=null;
+    throw error;
   }
-
-  const [libSource,workerSource]=await Promise.all([
-    libResponse.text(),
-    workerResponse.text()
-  ]);
-
-  if(!libSource || !workerSource){
-    throw new Error('OFFLINE_PDF_ENGINE_NOT_CACHED');
-  }
-
-  const libBlobUrl=URL.createObjectURL(new Blob([libSource],{type:'text/javascript'}));
-  const workerBlobUrl=URL.createObjectURL(new Blob([workerSource],{type:'text/javascript'}));
-  pdfJsBlobUrls=[libBlobUrl,workerBlobUrl];
-
-  pdfjsLib=await import(libBlobUrl);
-  pdfjsLib.GlobalWorkerOptions.workerSrc=workerBlobUrl;
-  return pdfjsLib;
 }
 
 async function loadCatalog(){
@@ -77,6 +90,8 @@ async function loadCatalog(){
   }
 }
 
+// Mulai menyiapkan engine sedini mungkin sambil katalog dibaca.
+const pdfEngineWarmup=loadPdfEngine().catch(()=>null);
 const catalog=await loadCatalog();
 const items=catalog.items||[];
 
@@ -173,8 +188,9 @@ async function requestPrivatePdf(part){
   const key=r2KeyForPart(part);
   if(!key)return null;
 
-  const cached=await readOfflinePdf(part);
+  // Offline: langsung ke salinan lokal, tanpa mencoba jaringan sama sekali.
   if(!navigator.onLine){
+    const cached=await readOfflinePdf(part);
     if(cached){
       showReaderLoading('Membuka bacaan offline…','Menggunakan salinan yang tersimpan di perangkat');
       showReaderOfflineBadge();
@@ -202,10 +218,12 @@ async function requestPrivatePdf(part){
 
     const bytes=new Uint8Array(await pdfRes.arrayBuffer());
     if(!validPdfBytes(bytes))throw new Error('PDF_DATA_INVALID');
-    // Pastikan salinan offline benar-benar selesai ditulis sebelum Reader dianggap siap.
     await saveOfflinePdf(part,bytes);
     return bytes;
   }catch(error){
+    // Jangan membaca seluruh PDF cache di awal saat online. Hanya lakukan bila
+    // jaringan benar-benar gagal, agar pembukaan normal juga lebih cepat.
+    const cached=await readOfflinePdf(part);
     if(cached){
       showReaderLoading('Koneksi terganggu…','Membuka salinan yang tersimpan di perangkat');
       showReaderOfflineBadge('Salinan offline • koneksi sedang tidak stabil');
@@ -594,8 +612,11 @@ window.addEventListener('pagehide',()=>{recordHistory();pdfJsBlobUrls.forEach(ur
 
 try{
   showReaderLoading();
-  const engine=await loadPdfEngine();
-  const privateData=await requestPrivatePdf(part);
+  // Engine dan data PDF disiapkan bersamaan. Pada offline ini memangkas waktu
+  // tunggu karena Cache Storage tidak lagi dibaca secara berurutan.
+  const enginePromise=pdfEngineWarmup.then(engine=>engine||loadPdfEngine());
+  const pdfDataPromise=requestPrivatePdf(part);
+  const [engine,privateData]=await Promise.all([enginePromise,pdfDataPromise]);
 
   pdfDoc=privateData
     ? await engine.getDocument({data:privateData}).promise
