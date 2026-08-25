@@ -39,6 +39,12 @@ let explorerSelection=new Set();
 let explorerSelectionAnchor=null;
 let explorerVisibleKeys=[];
 
+// V2.47.0 — Pre-Release Health Check
+const HEALTH_PDF_WORKER='https://amaliyah-pdf.elmahbub45.workers.dev';
+const HEALTH_QURAN_BASE='https://quran.islam-db.com/data/pages/quranpages_1024/images/';
+let healthAbortController=null;
+let healthLastReport=null;
+
 async function boot(){
   original=await fetchBooks();
   data=clone(original);
@@ -134,6 +140,11 @@ function bind(){
   $('#applyBatchBtn').onclick=applyBatchImport;
 
   $('#rebuildCatalogBtn').onclick=openRebuildDialog;
+  $('#healthCheckBtn').onclick=openHealthCheckDialog;
+  $('#closeHealthCheckBtn').onclick=closeHealthCheckDialog;
+  $('#startHealthCheckBtn').onclick=runHealthCheck;
+  $('#cancelHealthCheckBtn').onclick=cancelHealthCheck;
+  $('#downloadHealthReportBtn').onclick=downloadHealthReport;
   $('#closeRebuildBtn').onclick=closeRebuildDialog;
   $('#cancelRebuildBtn').onclick=closeRebuildDialog;
   $('#rebuildChooseFolderBtn').onclick=()=>$('#rebuildFolderInput').click();
@@ -3000,6 +3011,202 @@ function applyBatchImport(){
   renderList();
   if(id)selectItem(id);
   toast('Batch Import selesai. Jangan lupa unggah PDF fisik ke R2 sesuai key yang dibuat.','ok');
+}
+
+
+/* ===================== V2.47.0 PRE-RELEASE HEALTH CHECK ===================== */
+function openHealthCheckDialog(){
+  $('#healthCheckDialog').showModal();
+}
+function closeHealthCheckDialog(){
+  if(healthAbortController)cancelHealthCheck();
+  $('#healthCheckDialog').close();
+}
+function cancelHealthCheck(){
+  healthAbortController?.abort();
+  healthAbortController=null;
+  $('#cancelHealthCheckBtn').classList.add('hidden');
+  $('#startHealthCheckBtn').disabled=false;
+  $('#startHealthCheckBtn').textContent='Periksa Lagi';
+  $('#healthProgressText').textContent='Pemeriksaan dihentikan.';
+}
+function healthFlattenPdf(catalog){
+  const rows=[];
+  const walk=(item,parentTitle='')=>{
+    if(!item)return;
+    if(item.type==='single'){
+      rows.push({id:item.id||'',title:item.title||item.id||'Tanpa judul',file:item.file||'',parent:parentTitle});
+      return;
+    }
+    if(Array.isArray(item.parts))item.parts.forEach(part=>rows.push({id:part.id||'',title:part.title||part.id||'Tanpa judul',file:part.file||'',parent:item.title||parentTitle}));
+    if(Array.isArray(item.items))item.items.forEach(child=>walk(child,item.title||parentTitle));
+  };
+  (catalog?.items||[]).forEach(item=>walk(item));
+  return rows;
+}
+function healthR2Key(row){
+  // Legacy ini sengaja sama dengan reader.js agar hasil pemeriksaan sesuai aplikasi yang benar-benar berjalan.
+  if(row.id==='wirdul-latif')return '05 Wirdul Latif.pdf';
+  return String(row.file||'').replace(/^\.?\//,'').replace(/^assets\/pdf-v2\//,'');
+}
+function healthAddResult(list,status,title,detail='',key=''){
+  list.push({status,title,detail,key});
+}
+function healthEscape(text=''){
+  return String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function renderHealthResults(report){
+  const list=$('#healthCheckList');
+  const rows=report.results||[];
+  list.innerHTML=rows.map(x=>`<div class="health-result ${x.status}"><span class="health-result-icon">${x.status==='ok'?'✓':x.status==='warn'?'!':'×'}</span><span><b>${healthEscape(x.title)}</b><small>${healthEscape(x.detail)}</small>${x.key?`<code>${healthEscape(x.key)}</code>`:''}</span></div>`).join('')||'<div class="health-empty"><b>Tidak ada hasil.</b></div>';
+  const ok=rows.filter(x=>x.status==='ok').length;
+  const warn=rows.filter(x=>x.status==='warn').length;
+  const error=rows.filter(x=>x.status==='error').length;
+  $('#healthOkCount').textContent=String(ok);
+  $('#healthWarnCount').textContent=String(warn);
+  $('#healthErrorCount').textContent=String(error);
+  const score=$('#healthSummary .health-score');
+  score.className='health-score '+(error?'bad':warn?'warn':'good');
+  $('#healthScoreIcon').textContent=error?'×':warn?'!':'✓';
+  $('#healthScoreTitle').textContent=error?'Belum siap rilis':warn?'Hampir siap':'Siap dari pemeriksaan ini';
+  $('#healthScoreText').textContent=error?`${error} masalah perlu diperbaiki sebelum rilis.`:warn?`${warn} hal perlu kamu periksa sebelum rilis.`:'Tidak ditemukan masalah dari pemeriksaan otomatis.';
+}
+function setHealthProgress(done,total,label){
+  const pct=total?Math.round(done/total*100):0;
+  $('#healthProgressText').textContent=label||`${done} dari ${total} diperiksa`;
+  $('#healthProgressPercent').textContent=`${pct}%`;
+  $('#healthProgressBar').style.width=`${pct}%`;
+}
+async function healthCheckPdf(row,signal){
+  const key=healthR2Key(row);
+  if(!key)return {status:'error',title:row.title,detail:'Path PDF kosong atau tidak valid.',key:''};
+  try{
+    const tokenRes=await fetch(`${HEALTH_PDF_WORKER}/token?key=${encodeURIComponent(key)}`,{cache:'no-store',credentials:'omit',signal});
+    if(!tokenRes.ok){
+      return {status:'error',title:row.title,detail:tokenRes.status===404?'File tidak ditemukan di R2.':`Worker PDF menjawab HTTP ${tokenRes.status}.`,key};
+    }
+    const token=await tokenRes.json();
+    if(!token?.url)return {status:'error',title:row.title,detail:'Worker tidak memberikan URL PDF sementara.',key};
+    // Coba Range kecil agar tidak mengunduh seluruh PDF. Bila storage mengabaikan Range, batalkan body secepatnya.
+    const pdfRes=await fetch(token.url,{method:'GET',headers:{Range:'bytes=0-1023'},cache:'no-store',credentials:'omit',signal});
+    if(!pdfRes.ok && pdfRes.status!==206)return {status:'error',title:row.title,detail:`Object R2 tidak dapat dibaca (HTTP ${pdfRes.status}).`,key};
+    try{await pdfRes.body?.cancel();}catch{}
+    return {status:'ok',title:row.title,detail:'PDF tersedia dan dapat diakses.',key};
+  }catch(err){
+    if(err?.name==='AbortError')throw err;
+    return {status:'error',title:row.title,detail:`Tidak dapat diperiksa: ${err?.message||'koneksi gagal'}.`,key};
+  }
+}
+async function healthCheckUrl(url,signal){
+  try{
+    const r=await fetch(url,{method:'GET',headers:{Range:'bytes=0-255'},cache:'no-store',signal});
+    if(!r.ok && r.status!==206)return false;
+    try{await r.body?.cancel();}catch{}
+    return true;
+  }catch(err){if(err?.name==='AbortError')throw err;return false;}
+}
+async function runHealthCheck(){
+  if(healthAbortController)return;
+  const controller=new AbortController();healthAbortController=controller;
+  const signal=controller.signal;
+  const results=[];
+  $('#startHealthCheckBtn').disabled=true;
+  $('#startHealthCheckBtn').textContent='Sedang Memeriksa…';
+  $('#cancelHealthCheckBtn').classList.remove('hidden');
+  $('#downloadHealthReportBtn').disabled=true;
+  $('#healthProgressWrap').classList.remove('hidden');
+  $('#healthCheckList').innerHTML='<div class="health-empty"><span class="health-spinner"></span><b>Sedang memeriksa…</b><small>Jangan tutup halaman Admin sampai selesai.</small></div>';
+  try{
+    let catalog;
+    try{catalog=await fetchBooks();healthAddResult(results,'ok','books.json','Katalog berhasil dibaca dari server.');}
+    catch(err){healthAddResult(results,'error','books.json',err.message||'Katalog gagal dibaca.');throw new Error('catalog-stop');}
+    const pdfs=healthFlattenPdf(catalog);
+    $('#healthTotalPdf').textContent=String(pdfs.length);
+
+    // Pemeriksaan struktur lokal.
+    const seenIds=new Map(),seenFiles=new Map();
+    for(const row of pdfs){
+      if(!row.id)healthAddResult(results,'error',row.title,'ID bacaan/bagian kosong.');
+      else if(seenIds.has(row.id))healthAddResult(results,'error',row.title,`ID duplikat dengan “${seenIds.get(row.id)}”.`,row.id);
+      else seenIds.set(row.id,row.title);
+      if(!row.title)healthAddResult(results,'error',row.id||'Bacaan','Judul kosong.');
+      if(!row.file)healthAddResult(results,'error',row.title,'Path PDF kosong.');
+      else if(seenFiles.has(row.file))healthAddResult(results,'error',row.title,`Path PDF sama dengan “${seenFiles.get(row.file)}”.`,row.file);
+      else seenFiles.set(row.file,row.title);
+    }
+    if(!results.some(x=>x.status==='error' && /duplikat|kosong/i.test(x.detail)))healthAddResult(results,'ok','Struktur katalog','Tidak ditemukan ID/path duplikat atau data wajib yang kosong.');
+    if(pdfs.some(x=>x.id==='wirdul-latif'))healthAddResult(results,'warn','Wirdul Latif memakai key R2 lama','Aplikasi masih memakai object “05 Wirdul Latif.pdf”. Aman untuk saat ini, tetapi sebaiknya dimigrasikan ke struktur R2 final.','05 Wirdul Latif.pdf');
+
+    // File inti yang harus satu origin dengan Admin.
+    const coreFiles=['./index.html','./style.css','./app.js','./reader.html','./reader.js','./reader.css','./quran.html','./quran.js','./quran.css','./quran-config.js','./manifest.webmanifest','./sw.js'];
+    let coreOk=true;
+    for(const file of coreFiles){
+      try{const r=await fetch(file,{cache:'no-store',signal});if(!r.ok){coreOk=false;healthAddResult(results,'error',file,`File inti tidak dapat dibuka (HTTP ${r.status}).`);}}
+      catch(err){if(err?.name==='AbortError')throw err;coreOk=false;healthAddResult(results,'error',file,'File inti gagal dimuat.');}
+    }
+    if(coreOk)healthAddResult(results,'ok','File inti aplikasi',`${coreFiles.length} file inti tersedia.`);
+
+    // Quran sample checks, bukan 604 halaman agar audit tetap ringan.
+    const quranPages=['page001.png','page302.png','page604.png'];
+    let quranOk=true;
+    for(const page of quranPages){if(!(await healthCheckUrl(HEALTH_QURAN_BASE+page,signal))){quranOk=false;healthAddResult(results,'warn','Sumber halaman Qur\'an',`${page} tidak dapat diperiksa dari perangkat ini.`);}}
+    if(quranOk)healthAddResult(results,'ok','Sumber halaman Qur\'an','Sampel halaman 1, 302, dan 604 dapat diakses.');
+
+    // R2 worker and PDFs. Concurrency dibatasi agar tidak membebani koneksi.
+    const total=pdfs.length;let done=0;let cursor=0;
+    setHealthProgress(0,total,'Memeriksa PDF di R2…');
+    const workers=Array.from({length:Math.min(5,total||1)},async()=>{
+      while(true){
+        const i=cursor++;if(i>=total)return;
+        const result=await healthCheckPdf(pdfs[i],signal);
+        if(result.status!=='ok')results.push(result);
+        done++;setHealthProgress(done,total,`Memeriksa PDF di R2 • ${done} / ${total}`);
+      }
+    });
+    await Promise.all(workers);
+    const pdfErrors=results.filter(x=>x.status==='error' && x.key).length;
+    if(!pdfErrors)healthAddResult(results,'ok','Semua PDF katalog',`${total} PDF berhasil ditemukan dan dapat diakses dari R2.`);
+    else healthAddResult(results,'error','Pemeriksaan PDF',`${pdfErrors} PDF perlu diperbaiki. Lihat daftar di bawah.`);
+
+    healthLastReport={createdAt:new Date().toISOString(),pdfCount:total,results};
+    renderHealthResults(healthLastReport);
+    setHealthProgress(total,total,'Pemeriksaan selesai.');
+    $('#downloadHealthReportBtn').disabled=false;
+  }catch(err){
+    if(err?.name==='AbortError'){
+      healthAddResult(results,'warn','Pemeriksaan dihentikan','Pemeriksaan dibatalkan sebelum seluruh file selesai dicek.');
+      healthLastReport={createdAt:new Date().toISOString(),pdfCount:+($('#healthTotalPdf').textContent||0),results};
+      renderHealthResults(healthLastReport);
+      $('#downloadHealthReportBtn').disabled=false;
+    }else if(err?.message!=='catalog-stop'){
+      healthAddResult(results,'error','Pemeriksaan tidak selesai',err?.message||'Terjadi kesalahan yang tidak diketahui.');
+      healthLastReport={createdAt:new Date().toISOString(),pdfCount:0,results};renderHealthResults(healthLastReport);
+      $('#downloadHealthReportBtn').disabled=false;
+    }else{
+      healthLastReport={createdAt:new Date().toISOString(),pdfCount:0,results};renderHealthResults(healthLastReport);$('#downloadHealthReportBtn').disabled=false;
+    }
+  }finally{
+    healthAbortController=null;
+    $('#cancelHealthCheckBtn').classList.add('hidden');
+    $('#startHealthCheckBtn').disabled=false;
+    $('#startHealthCheckBtn').textContent='Periksa Lagi';
+  }
+}
+function downloadHealthReport(){
+  if(!healthLastReport)return;
+  const rows=healthLastReport.results||[];
+  const ok=rows.filter(x=>x.status==='ok').length,warn=rows.filter(x=>x.status==='warn').length,error=rows.filter(x=>x.status==='error').length;
+  const lines=[
+    'HASIL PEMERIKSAAN KESEHATAN APLIKASI AMALIYAH','',
+    `Waktu: ${new Date(healthLastReport.createdAt).toLocaleString('id-ID')}`,
+    `PDF katalog: ${healthLastReport.pdfCount}`,
+    `Aman: ${ok} | Perlu dicek: ${warn} | Bermasalah: ${error}`,'',
+    error?'STATUS: BELUM SIAP RILIS':warn?'STATUS: HAMPIR SIAP — PERIKSA CATATAN':'STATUS: SIAP DARI PEMERIKSAAN OTOMATIS','',
+    'RINCIAN:'
+  ];
+  rows.forEach((x,i)=>{lines.push(`${i+1}. [${x.status==='ok'?'AMAN':x.status==='warn'?'PERLU DICEK':'BERMASALAH'}] ${x.title}`);if(x.detail)lines.push(`   ${x.detail}`);if(x.key)lines.push(`   R2: ${x.key}`);});
+  lines.push('','Catatan: pemeriksaan otomatis membantu menemukan masalah teknis umum. Tetap lakukan uji singkat di HP sebelum rilis.');
+  downloadText(lines.join('\n'),'HASIL-PERIKSA-APLIKASI.txt','text/plain;charset=utf-8');
 }
 
 /* ===================== REBUILD CATALOG + R2 REFRESH ===================== */

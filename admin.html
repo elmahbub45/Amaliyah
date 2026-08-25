@@ -34,6 +34,9 @@
       <button id="rebuildCatalogBtn" class="top-btn rebuild-action" type="button" title="Bangun ulang katalog dari folder utama">
         <span class="ui-icon i-folder" aria-hidden="true"></span><b>Rebuild Folder</b>
       </button>
+      <button id="healthCheckBtn" class="top-btn health-action" type="button" title="Periksa kesehatan aplikasi sebelum rilis">
+        <span class="health-btn-icon" aria-hidden="true">✓</span><b>Periksa Aplikasi</b>
+      </button>
       <button id="backupBtn" class="top-btn" type="button" title="Backup & pemulihan">
         <span class="ui-icon i-backup" aria-hidden="true"></span><b>Backup</b>
       </button>
@@ -581,6 +584,55 @@
       <div class="dialog-actions sticky-dialog-actions">
         <button id="cancelBatchBtn" class="ghost" type="button">Batal</button>
         <button id="applyBatchBtn" class="primary" type="button" disabled>Tambahkan ke Katalog</button>
+      </div>
+    </div>
+  </dialog>
+
+
+  <!-- V2.47.0 — Pre-Release Health Check -->
+  <dialog id="healthCheckDialog" class="wide-dialog health-check-dialog">
+    <div class="dialog-card health-check-card">
+      <div class="dialog-head">
+        <div>
+          <small>SEBELUM RILIS</small>
+          <h3>Periksa Kesehatan Aplikasi</h3>
+        </div>
+        <button id="closeHealthCheckBtn" class="icon-btn dark" type="button" aria-label="Tutup">✕</button>
+      </div>
+
+      <div class="health-intro">
+        <span class="health-intro-icon" aria-hidden="true">✓</span>
+        <span><b>Pemeriksaan aman dan tidak mengubah data.</b><small>Admin mengecek katalog, alamat PDF private, dan beberapa komponen penting. PDF hanya diuji dengan permintaan ringan, bukan diunduh penuh.</small></span>
+      </div>
+
+      <div class="health-summary" id="healthSummary">
+        <div class="health-score pending"><span id="healthScoreIcon">…</span><b id="healthScoreTitle">Belum diperiksa</b><small id="healthScoreText">Klik “Mulai Pemeriksaan” untuk mengecek aplikasi.</small></div>
+        <div class="health-metrics">
+          <span><b id="healthTotalPdf">0</b><small>PDF</small></span>
+          <span class="good"><b id="healthOkCount">0</b><small>Aman</small></span>
+          <span class="warn"><b id="healthWarnCount">0</b><small>Perlu Dicek</small></span>
+          <span class="bad"><b id="healthErrorCount">0</b><small>Bermasalah</small></span>
+        </div>
+      </div>
+
+      <div class="health-progress-wrap hidden" id="healthProgressWrap">
+        <div class="health-progress-label"><span id="healthProgressText">Menyiapkan pemeriksaan…</span><b id="healthProgressPercent">0%</b></div>
+        <div class="health-progress"><i id="healthProgressBar"></i></div>
+      </div>
+
+      <div class="health-check-list" id="healthCheckList">
+        <div class="health-empty"><span>☑</span><b>Belum ada hasil</b><small>Pemeriksaan akan tampil di sini dengan bahasa sederhana.</small></div>
+      </div>
+
+      <div class="health-note">
+        <b>Yang diperiksa</b>
+        <span>Struktur books.json • ID dan path duplikat • kelengkapan judul/file • koneksi Worker PDF • keberadaan object PDF di R2 • konfigurasi Mushaf • file inti aplikasi.</span>
+      </div>
+
+      <div class="dialog-actions sticky-dialog-actions health-actions">
+        <button id="downloadHealthReportBtn" class="ghost" type="button" disabled>Download Hasil (.txt)</button>
+        <button id="cancelHealthCheckBtn" class="ghost hidden" type="button">Hentikan</button>
+        <button id="startHealthCheckBtn" class="primary" type="button">Mulai Pemeriksaan</button>
       </div>
     </div>
   </dialog>
