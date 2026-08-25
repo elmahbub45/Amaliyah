@@ -1590,3 +1590,299 @@ body{
 
 /* V2.45.3 — Header notif & settings icon polish */
 .settings-nav-icon{width:20px;height:20px;stroke-width:1.7}
+
+
+/* =========================================================
+   V2.46.0 — Home UI Refresh
+   Visual-only refinement. Existing IDs, actions and logic stay intact.
+   ========================================================= */
+#app{
+  background:
+    radial-gradient(circle at 50% 330px,rgba(205,169,93,.08),transparent 260px),
+    linear-gradient(180deg,#f7f1e7 0%,#f8f3ea 34%,#f4eee4 100%);
+}
+#app > main{padding-bottom:34px}
+
+/* Header: more compact, calm and dimensional */
+#app .hero{
+  position:relative;
+  overflow:hidden;
+  padding:calc(18px + env(safe-area-inset-top)) 20px 32px;
+  border-radius:0 0 32px 32px;
+  background:
+    radial-gradient(circle at 16% 5%,rgba(231,196,113,.12),transparent 31%),
+    radial-gradient(circle at 92% 76%,rgba(255,255,255,.055),transparent 30%),
+    linear-gradient(155deg,#0d5a45 0%,#084535 48%,#06382e 100%);
+  box-shadow:0 14px 34px rgba(6,58,46,.15);
+}
+#app .hero::before{
+  opacity:.34;
+  transform:scale(.94);
+}
+#app .hero .top{position:relative;z-index:2}
+#app .hero .brand h1{
+  font-size:34px;
+  line-height:1;
+  letter-spacing:.018em;
+  text-shadow:0 2px 12px rgba(0,0,0,.13);
+}
+#app .hero .brand p{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.84}
+#app .hero .notif-icon{
+  width:38px;height:38px;
+  border-color:rgba(235,205,137,.26);
+  background:rgba(255,255,255,.055);
+  box-shadow:inset 0 1px rgba(255,255,255,.08),0 5px 16px rgba(0,0,0,.08);
+}
+#app .hero .quote{
+  position:relative;
+  z-index:2;
+  margin-top:18px;
+  padding:13px 16px 12px;
+  border:1px solid rgba(240,213,151,.16);
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.025));
+  box-shadow:inset 0 1px rgba(255,255,255,.055);
+}
+#app .hero .arabic{font-size:20px !important;line-height:1.6;color:#e8c978}
+#app .hero .quote p{max-width:360px;margin:5px auto 2px;font-size:10.5px !important;line-height:1.45}
+#app .hero .quote small{font-size:8.5px;opacity:.62}
+
+/* Shared home section rhythm */
+#app main > section:not(.prayer){margin-top:24px}
+#app .section-head{margin:0 2px 10px}
+#app .section-head>b,
+#app .section-title{
+  color:#314c42;
+  font-size:11px;
+  font-weight:850;
+  letter-spacing:.085em;
+}
+#app .section-title{margin:0 2px 10px}
+#app .section-head .link{
+  min-height:30px;
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:5px 8px;
+  border-radius:999px;
+  color:#356757;
+  background:rgba(11,79,61,.055);
+  font-size:9.5px;
+}
+
+/* Prayer card */
+#app .prayer{
+  position:relative;
+  z-index:3;
+  margin-top:-14px;
+  padding:17px 16px 14px;
+  border:1px solid rgba(206,184,144,.5);
+  border-radius:24px;
+  background:rgba(255,253,249,.97);
+  box-shadow:0 16px 34px rgba(65,49,25,.075);
+}
+#app .prayer-heading>b{font-size:11px;letter-spacing:.075em;color:#29443a}
+#app .prayer-heading #location{margin-top:7px;font-size:10.5px;color:#52665f}
+#app .prayer-heading small{font-size:9.5px;color:#939a96}
+#app .location-btn{
+  min-height:32px;
+  padding:6px 10px;
+  border:1px solid #e2d4bd;
+  background:#faf3e8;
+  box-shadow:none;
+}
+#app .times{gap:7px;margin:15px 0 12px}
+#app .time{
+  min-width:0;
+  padding:9px 2px 8px;
+  border-radius:13px;
+  border-color:#ece0cd;
+  background:#fffefa;
+  box-shadow:0 3px 8px rgba(72,53,26,.025);
+}
+#app .time b{font-size:13.5px}
+#app .time.active{
+  background:linear-gradient(160deg,#0c5a45,#074333);
+  border-color:#0a503e;
+  box-shadow:0 7px 18px rgba(6,69,53,.18);
+}
+#app .next{
+  padding:11px 12px;
+  border:1px solid rgba(224,207,176,.52);
+  border-radius:13px;
+  background:linear-gradient(135deg,#f8f0e2,#f5ead7);
+  color:#41574f;
+  font-size:11px;
+}
+#app .monthly-link{
+  margin-top:11px;
+  padding:11px 3px 1px;
+  border-top-color:#eee2d0;
+  font-size:10px;
+}
+
+/* Qur'an: more focal without changing controls */
+#app .quran-home-section{margin-top:25px}
+#app .quran-separate-badge{
+  padding:5px 9px;
+  border-color:rgba(184,139,54,.2);
+  background:#faf2e3;
+  font-size:7.5px;
+}
+#app .quran-home-card{
+  gap:13px;
+  padding:18px;
+  border:1px solid rgba(229,196,120,.31);
+  border-radius:26px;
+  background:
+    radial-gradient(circle at 92% 3%,rgba(228,187,94,.11),transparent 34%),
+    linear-gradient(145deg,#0d664e 0%,#08503e 52%,#063d31 100%);
+  box-shadow:0 17px 34px rgba(5,70,54,.16);
+}
+#app .quran-home-card:before{
+  content:"";
+  position:absolute;
+  inset:7px;
+  pointer-events:none;
+  border:1px solid rgba(239,209,141,.09);
+  border-radius:20px;
+}
+#app .quran-home-ornament{
+  width:60px;height:72px;
+  border-radius:18px;
+  border-color:rgba(239,206,128,.45);
+  background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.035));
+  font-size:31px;
+}
+#app .quran-home-kicker{font-size:7.5px;letter-spacing:.13em}
+#app .quran-home-copy h2{margin:5px 0 3px;font-size:19px}
+#app .quran-home-copy p{font-size:8.5px;line-height:1.45}
+#app .quran-home-progress{height:4px;margin-top:10px;background:rgba(255,255,255,.12)}
+#app .quran-home-actions{gap:8px;margin-top:3px}
+#app .quran-home-actions .quran-home-button{
+  min-height:42px;
+  border-radius:13px;
+  font-size:9.5px;
+  letter-spacing:.015em;
+}
+#app .quran-home-directory{background:rgba(255,255,255,.06)}
+#app .quran-home-continue{
+  background:linear-gradient(180deg,#e4bd68,#d7aa50);
+  box-shadow:0 6px 14px rgba(0,0,0,.11);
+}
+
+/* Continue reading */
+#app .continue-home-section{margin-top:24px}
+#app .reading-card{
+  min-height:78px;
+  gap:11px;
+  padding:12px;
+  border:1px solid rgba(218,202,176,.72);
+  border-radius:20px;
+  background:rgba(255,253,249,.96);
+  box-shadow:0 8px 22px rgba(66,50,27,.05);
+}
+#app .home-book-icon{
+  width:46px;height:46px;flex-basis:46px;
+  border-radius:14px;
+  background:linear-gradient(145deg,#0c604a,#074435);
+  box-shadow:0 5px 12px rgba(7,71,55,.12);
+}
+#app .reading-card .grow h3{font-size:13px;color:#29433a}
+#app .reading-card .grow p{margin:4px 0 7px;font-size:9.5px}
+#app .reading-card .progress{height:4px;background:#efe4d3}
+#app .reading-card .primary{
+  min-height:38px;
+  padding:0 12px;
+  border-radius:12px;
+  background:#0b5643;
+  font-size:9.5px;
+  font-weight:800;
+  box-shadow:0 5px 12px rgba(7,67,52,.12);
+}
+
+/* Favorites: compact premium tiles */
+#app .favorites-section{margin-top:24px}
+#app .favorite-strip{gap:9px}
+#app .favorite-card{
+  min-height:72px !important;
+  gap:8px !important;
+  padding:9px !important;
+  border-color:rgba(221,205,178,.78);
+  border-radius:18px;
+  background:rgba(255,253,249,.96);
+  box-shadow:0 6px 18px rgba(67,51,28,.04);
+}
+#app .favorite-icon{
+  width:40px;height:40px;
+  border-radius:12px;
+  background:linear-gradient(145deg,#0c604a,#074435);
+}
+#app .favorite-copy b{font-size:11.5px;line-height:1.25;padding-right:8px}
+#app .favorite-copy small{font-size:8.5px}
+#app .favorite-star{font-size:11px !important;top:7px !important;right:8px !important}
+
+/* Categories: softer, clearer information hierarchy */
+#app .category-section{margin-top:24px}
+#app .categories{gap:9px !important}
+#app .categories button{
+  position:relative;
+  overflow:hidden;
+  min-height:92px;
+  padding:12px 5px 10px;
+  border:1px solid rgba(220,203,174,.72);
+  border-radius:19px;
+  background:rgba(255,253,249,.96);
+  box-shadow:0 6px 18px rgba(66,50,27,.04);
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+#app .categories button:active{transform:scale(.975)}
+#app .categories .category-icon{
+  width:38px;height:38px;
+  margin:0 auto 7px;
+  border-radius:13px;
+  background:linear-gradient(145deg,#f5eddf,#f8f2e8);
+  color:#a97e31;
+}
+#app .categories .category-icon svg{width:19px;height:19px;stroke-width:1.55}
+#app .categories b{margin-top:0;font-size:10.5px;color:#30483f}
+#app .categories small{margin-top:3px;font-size:7.8px;color:#9a9e9b}
+
+/* Bottom navigation: same actions, refined shell */
+#app .bottom-nav{
+  width:min(520px,calc(100% - 12px));
+  bottom:6px;
+  padding:7px 7px calc(7px + env(safe-area-inset-bottom));
+  border:1px solid rgba(238,216,165,.09);
+  border-radius:23px;
+  background:rgba(5,65,51,.965);
+  box-shadow:0 10px 32px rgba(5,52,42,.24);
+  backdrop-filter:blur(16px);
+}
+#app .bottom-nav button{min-height:55px;border-radius:16px;gap:3px}
+#app .bottom-nav .active{
+  color:#f0ca75;
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+  box-shadow:inset 0 1px rgba(255,255,255,.05);
+}
+#app .bottom-nav .nav-icon{width:20px;height:20px}
+#app .bottom-nav span{font-size:8.2px}
+
+@media(max-width:390px){
+  #app .hero{padding-left:16px;padding-right:16px}
+  #app .hero .brand h1{font-size:32px}
+  #app .hero .quote{padding:12px 12px 11px}
+  #app main{padding-left:13px;padding-right:13px}
+  #app .prayer{padding:15px 13px 13px}
+  #app .times{gap:5px}
+  #app .time{font-size:9.3px}
+  #app .time b{font-size:12.5px}
+  #app .quran-home-card{padding:16px;gap:11px}
+  #app .quran-home-ornament{width:55px;height:68px}
+  #app .quran-home-copy h2{font-size:17.5px}
+  #app .categories button{min-height:88px}
+}
+@media(min-width:480px){
+  #app .hero{padding-left:24px;padding-right:24px}
+  #app > main{padding-left:18px;padding-right:18px}
+}
