@@ -34,8 +34,11 @@
       <button id="rebuildCatalogBtn" class="top-btn rebuild-action" type="button" title="Bangun ulang katalog dari folder utama">
         <span class="ui-icon i-folder" aria-hidden="true"></span><b>Rebuild Folder</b>
       </button>
-      <button id="healthCheckBtn" class="top-btn health-action" type="button" title="Periksa kesehatan aplikasi sebelum rilis">
-        <span class="health-btn-icon" aria-hidden="true">✓</span><b>Periksa Aplikasi</b>
+      <button id="pathRepairBtn" class="top-btn path-repair-action" type="button" title="Periksa dan rapikan alamat/path PDF dengan aman">
+        <span class="path-repair-btn-icon" aria-hidden="true">↗</span><b>Perbaiki Path</b>
+      </button>
+      <button id="healthCheckBtn" class="top-btn health-action" type="button" title="Periksa aplikasi sebelum dipublikasikan">
+        <span class="health-btn-icon" aria-hidden="true">✓</span><b>Cek Sebelum Publish</b>
       </button>
       <button id="backupBtn" class="top-btn" type="button" title="Backup & pemulihan">
         <span class="ui-icon i-backup" aria-hidden="true"></span><b>Backup</b>
@@ -589,6 +592,38 @@
   </dialog>
 
 
+  <!-- V2.48.0 — Friendly Path Repair -->
+  <dialog id="pathRepairDialog" class="wide-dialog path-repair-dialog">
+    <div class="dialog-card path-repair-card">
+      <div class="dialog-head">
+        <div><span>ALAT PERAWATAN</span><h2>Perbaiki Path PDF</h2><p>Rapikan alamat PDF tanpa menyentuh file fisik di R2.</p></div>
+        <button id="closePathRepairBtn" class="icon-btn dark" type="button" aria-label="Tutup">✕</button>
+      </div>
+      <div class="path-repair-intro">
+        <span class="path-repair-intro-icon" aria-hidden="true">✓</span>
+        <span><b>Aman untuk pengguna awam.</b><small>Admin hanya memperbaiki format path yang jelas aman, misalnya <code>wirid/a.pdf</code> menjadi <code>assets/pdf-v2/wirid/a.pdf</code>. Jika perubahan membutuhkan memindahkan file R2, Admin hanya memberi petunjuk dan tidak menerapkannya otomatis.</small></span>
+      </div>
+      <div class="path-repair-summary">
+        <span><b id="pathRepairTotal">0</b><small>Path PDF</small></span>
+        <span class="good"><b id="pathRepairSafe">0</b><small>Bisa Otomatis</small></span>
+        <span class="warn"><b id="pathRepairManual">0</b><small>Perlu Manual</small></span>
+        <span><b id="pathRepairClean">0</b><small>Sudah Rapi</small></span>
+      </div>
+      <div id="pathRepairList" class="path-repair-list">
+        <div class="path-repair-empty"><b>Belum diperiksa</b><small>Klik “Periksa Path” untuk melihat apakah ada alamat PDF lama.</small></div>
+      </div>
+      <div class="path-repair-note">
+        <b>Bedanya dua hasil:</b>
+        <span><strong>Bisa Otomatis</strong> = R2 key sebenarnya tidak berubah, jadi aman dirapikan di katalog. <strong>Perlu Manual</strong> = lokasi object R2 harus dipindah/upload dulu; Admin akan memberi alamat tujuan.</span>
+      </div>
+      <div class="dialog-actions sticky-dialog-actions path-repair-actions">
+        <button id="downloadPathRepairBtn" class="ghost" type="button" disabled>Download Panduan (.txt)</button>
+        <button id="scanPathRepairBtn" class="ghost" type="button">Periksa Path</button>
+        <button id="applyPathRepairBtn" class="primary" type="button" disabled>Terapkan yang Aman</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- V2.47.0 — Pre-Release Health Check -->
   <dialog id="healthCheckDialog" class="wide-dialog health-check-dialog">
     <div class="dialog-card health-check-card">
@@ -606,7 +641,7 @@
       </div>
 
       <div class="health-summary" id="healthSummary">
-        <div class="health-score pending"><span id="healthScoreIcon">…</span><b id="healthScoreTitle">Belum diperiksa</b><small id="healthScoreText">Klik “Mulai Pemeriksaan” untuk mengecek aplikasi.</small></div>
+        <div class="health-score pending"><span id="healthScoreIcon">…</span><b id="healthScoreTitle">Belum diperiksa</b><small id="healthScoreText">Klik “Mulai Pemeriksaan” untuk mengetahui apakah aplikasi siap dipublikasikan.</small></div>
         <div class="health-metrics">
           <span><b id="healthTotalPdf">0</b><small>PDF</small></span>
           <span class="good"><b id="healthOkCount">0</b><small>Aman</small></span>

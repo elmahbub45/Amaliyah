@@ -45,6 +45,9 @@ const HEALTH_QURAN_BASE='https://quran.islam-db.com/data/pages/quranpages_1024/i
 let healthAbortController=null;
 let healthLastReport=null;
 
+// V2.48.0 — Friendly Path Repair
+let pathRepairLastScan=null;
+
 async function boot(){
   original=await fetchBooks();
   data=clone(original);
@@ -140,6 +143,11 @@ function bind(){
   $('#applyBatchBtn').onclick=applyBatchImport;
 
   $('#rebuildCatalogBtn').onclick=openRebuildDialog;
+  $('#pathRepairBtn').onclick=openPathRepairDialog;
+  $('#closePathRepairBtn').onclick=closePathRepairDialog;
+  $('#scanPathRepairBtn').onclick=scanPathRepairs;
+  $('#applyPathRepairBtn').onclick=applySafePathRepairs;
+  $('#downloadPathRepairBtn').onclick=downloadPathRepairGuide;
   $('#healthCheckBtn').onclick=openHealthCheckDialog;
   $('#closeHealthCheckBtn').onclick=closeHealthCheckDialog;
   $('#startHealthCheckBtn').onclick=runHealthCheck;
@@ -3014,6 +3022,65 @@ function applyBatchImport(){
 }
 
 
+/* ===================== V2.48.0 FRIENDLY PATH REPAIR ===================== */
+function openPathRepairDialog(){
+  pathRepairLastScan=null;
+  $('#pathRepairTotal').textContent='0';$('#pathRepairSafe').textContent='0';$('#pathRepairManual').textContent='0';$('#pathRepairClean').textContent='0';
+  $('#pathRepairList').innerHTML='<div class="path-repair-empty"><b>Belum diperiksa</b><small>Klik “Periksa Path” untuk melihat apakah ada alamat PDF lama.</small></div>';
+  $('#applyPathRepairBtn').disabled=true;$('#downloadPathRepairBtn').disabled=true;$('#pathRepairDialog').showModal();
+}
+function closePathRepairDialog(){$('#pathRepairDialog').close();}
+function pathRepairRefs(){
+  const rows=[];(data?.items||[]).forEach((item,itemIndex)=>{
+    if(item?.type==='single'&&item.file)rows.push({kind:'single',itemIndex,partIndex:-1,title:item.title||item.id||'Tanpa judul',category:item.category||'',file:String(item.file||'')});
+    (item?.parts||[]).forEach((part,partIndex)=>{if(part?.file&&!part.itemId)rows.push({kind:'part',itemIndex,partIndex,title:`${item.title||item.id||'Bacaan'} — ${part.title||part.id||'Bagian'}`,category:item.category||'',file:String(part.file||'')});});
+  });return rows;
+}
+function pathRepairNormalizeRaw(file=''){
+  let raw=String(file||'').trim().replace(/\\+/g,'/').replace(/\/+/g,'/');
+  raw=raw.replace(/^\.\//,'').replace(/^\/+/, '');
+  if(/^pdf-v2\//i.test(raw))raw=`assets/${raw}`;
+  if(/^assets\/pdf-v2\//i.test(raw))raw='assets/pdf-v2/'+raw.slice(raw.toLowerCase().indexOf('assets/pdf-v2/')+'assets/pdf-v2/'.length).replace(/^\/+/, '');
+  return raw;
+}
+function pathRepairKnownRoot(category='',rows=[]){
+  const counts=new Map();rows.filter(r=>r.category===category).forEach(r=>{const n=pathRepairNormalizeRaw(r.file);const m=n.match(/^assets\/pdf-v2\/([^/]+)\//i);if(m)counts.set(m[1],(counts.get(m[1])||0)+1);});
+  const best=[...counts.entries()].sort((a,b)=>b[1]-a[1])[0]?.[0];if(best)return best;
+  if(/dalail|istigfar/i.test(category))return 'dalail';if(/sholat/i.test(category))return 'doa';return categoryFolder(category);
+}
+function buildPathRepairScan(){
+  const refs=pathRepairRefs(),results=[];refs.forEach(ref=>{
+    const original=ref.file,normalized=pathRepairNormalizeRaw(original);
+    if(/^assets\/pdf-v2\/.+\.pdf$/i.test(normalized)){
+      if(normalized!==original)results.push({...ref,status:'safe',from:original,to:normalized,reason:'Format path dapat dirapikan tanpa mengubah R2 key.'});
+      else results.push({...ref,status:'clean',from:original,to:original,reason:'Path sudah memakai struktur final.'});return;
+    }
+    const keyLike=normalized.replace(/^assets\/pdf-v2\//i,'');
+    if(keyLike.includes('/')&&/\.pdf$/i.test(keyLike)){results.push({...ref,status:'safe',from:original,to:`assets/pdf-v2/${keyLike}`,reason:'Prefix virtual katalog belum lengkap; R2 key tetap sama.'});return;}
+    const root=pathRepairKnownRoot(ref.category,refs),filename=safePdfFilename(basename(normalized)||`${slugify(ref.title)}.pdf`),to=`assets/pdf-v2/${root}/${filename}`;
+    results.push({...ref,status:'manual',from:original,to,reason:'Lokasi R2 ikut berubah. Upload/pindahkan file ke tujuan ini lebih dulu, lalu ubah katalog.'});
+  });return {createdAt:new Date().toISOString(),results,total:results.length,safe:results.filter(x=>x.status==='safe').length,manual:results.filter(x=>x.status==='manual').length,clean:results.filter(x=>x.status==='clean').length};
+}
+function renderPathRepairScan(scan){
+  $('#pathRepairTotal').textContent=String(scan.total);$('#pathRepairSafe').textContent=String(scan.safe);$('#pathRepairManual').textContent=String(scan.manual);$('#pathRepairClean').textContent=String(scan.clean);
+  const issues=scan.results.filter(x=>x.status!=='clean');
+  $('#pathRepairList').innerHTML=issues.length?issues.map(x=>`<div class="path-repair-row ${x.status}"><span class="path-repair-row-icon">${x.status==='safe'?'✓':'!'}</span><span><b>${healthEscape(x.title)}</b><small>${healthEscape(x.reason)}</small><code>Dari: ${healthEscape(x.from)}\nKe: ${healthEscape(x.to)}</code></span></div>`).join(''):'<div class="path-repair-empty"><b>Semua path sudah rapi ✓</b><small>Tidak ada perubahan yang perlu dilakukan pada katalog saat ini.</small></div>';
+  $('#applyPathRepairBtn').disabled=!scan.safe;$('#downloadPathRepairBtn').disabled=false;
+}
+function scanPathRepairs(){pathRepairLastScan=buildPathRepairScan();renderPathRepairScan(pathRepairLastScan);if(pathRepairLastScan.safe)toast(`${pathRepairLastScan.safe} path bisa diperbaiki otomatis.`,'ok');else if(pathRepairLastScan.manual)toast(`${pathRepairLastScan.manual} path perlu langkah R2 manual.`,'warn');else toast('Semua path PDF sudah rapi.','ok');}
+async function applySafePathRepairs(){
+  const scan=pathRepairLastScan||buildPathRepairScan(),safe=scan.results.filter(x=>x.status==='safe');if(!safe.length)return toast('Tidak ada path aman yang perlu diperbaiki.','ok');
+  const yes=await confirmInternal('Terapkan perbaikan path aman?',`${safe.length} path akan dirapikan di editor katalog. File fisik di R2 tidak dipindah atau dihapus.\n\nSetelah itu Preview & Download books.json seperti biasa.`,'Terapkan','Batal');if(!yes)return;
+  pushHistory();safe.forEach(x=>{const item=data.items?.[x.itemIndex];if(!item)return;if(x.kind==='single')item.file=x.to;else if(item.parts?.[x.partIndex])item.parts[x.partIndex].file=x.to;});
+  markDirty(`${safe.length} path PDF dirapikan otomatis`);renderList();if(selectedId)selectItem(selectedId);pathRepairLastScan=buildPathRepairScan();renderPathRepairScan(pathRepairLastScan);toast(`${safe.length} path selesai dirapikan. Jangan lupa ekspor books.json.`,'ok');
+}
+function downloadPathRepairGuide(){
+  const scan=pathRepairLastScan||buildPathRepairScan(),lines=['PANDUAN PERBAIKAN PATH PDF — AMALIYAH','',`Waktu: ${new Date(scan.createdAt).toLocaleString('id-ID')}`,`Total path: ${scan.total}`,`Bisa diperbaiki otomatis: ${scan.safe}`,`Perlu langkah manual di R2: ${scan.manual}`,`Sudah rapi: ${scan.clean}`,''];
+  const safe=scan.results.filter(x=>x.status==='safe');lines.push('BAGIAN A — AMAN DIPERBAIKI OTOMATIS','Perubahan ini tidak mengubah R2 key; hanya merapikan alamat di books.json.');if(!safe.length)lines.push('Tidak ada.');safe.forEach((x,i)=>lines.push(`${i+1}. ${x.title}\n   Dari: ${x.from}\n   Menjadi: ${x.to}`));
+  lines.push('','BAGIAN B — PERLU LANGKAH MANUAL DI R2','Untuk bagian ini, jangan ubah books.json dulu. Upload/pindahkan PDF ke alamat tujuan, tes, kemudian baru ubah path katalog.');const manual=scan.results.filter(x=>x.status==='manual');if(!manual.length)lines.push('Tidak ada.');manual.forEach((x,i)=>lines.push(`${i+1}. ${x.title}\n   Saat ini: ${x.from}\n   Tujuan katalog: ${x.to}\n   R2 tujuan: ${r2Key(x.to)}`));
+  lines.push('','Catatan: alat ini tidak menghapus atau memindahkan file R2. Untuk perubahan struktur besar, gunakan Rebuild Folder.');downloadText(lines.join('\n'),'PANDUAN-PERBAIKAN-PATH.txt','text/plain;charset=utf-8');
+}
+
 /* ===================== V2.47.0 PRE-RELEASE HEALTH CHECK ===================== */
 function openHealthCheckDialog(){
   $('#healthCheckDialog').showModal();
@@ -3066,8 +3133,8 @@ function renderHealthResults(report){
   const score=$('#healthSummary .health-score');
   score.className='health-score '+(error?'bad':warn?'warn':'good');
   $('#healthScoreIcon').textContent=error?'×':warn?'!':'✓';
-  $('#healthScoreTitle').textContent=error?'Belum siap rilis':warn?'Hampir siap':'Siap dari pemeriksaan ini';
-  $('#healthScoreText').textContent=error?`${error} masalah perlu diperbaiki sebelum rilis.`:warn?`${warn} hal perlu kamu periksa sebelum rilis.`:'Tidak ditemukan masalah dari pemeriksaan otomatis.';
+  $('#healthScoreTitle').textContent=error?'JANGAN PUBLISH DULU':warn?'HAMPIR SIAP PUBLISH':'SIAP PUBLISH';
+  $('#healthScoreText').textContent=error?`${error} masalah perlu diperbaiki lebih dulu.`:warn?`${warn} catatan perlu kamu periksa sebelum publish.`:'Pemeriksaan otomatis tidak menemukan penghalang rilis.';
 }
 function setHealthProgress(done,total,label){
   const pct=total?Math.round(done/total*100):0;
@@ -3103,6 +3170,15 @@ async function healthCheckUrl(url,signal){
     return true;
   }catch(err){if(err?.name==='AbortError')throw err;return false;}
 }
+async function healthCheckImage(url,signal){
+  return await new Promise((resolve,reject)=>{
+    const img=new Image();let done=false;
+    const finish=value=>{if(done)return;done=true;clearTimeout(timer);signal?.removeEventListener('abort',onAbort);img.onload=null;img.onerror=null;resolve(value);};
+    const onAbort=()=>{if(done)return;done=true;clearTimeout(timer);img.src='';reject(new DOMException('Aborted','AbortError'));};
+    const timer=setTimeout(()=>finish(false),10000);img.onload=()=>finish(true);img.onerror=()=>finish(false);
+    if(signal?.aborted)return onAbort();signal?.addEventListener('abort',onAbort,{once:true});img.src=`${url}${url.includes('?')?'&':'?'}health=${Date.now()}`;
+  });
+}
 async function runHealthCheck(){
   if(healthAbortController)return;
   const controller=new AbortController();healthAbortController=controller;
@@ -3134,6 +3210,9 @@ async function runHealthCheck(){
     }
     if(!results.some(x=>x.status==='error' && /duplikat|kosong/i.test(x.detail)))healthAddResult(results,'ok','Struktur katalog','Tidak ditemukan ID/path duplikat atau data wajib yang kosong.');
 
+    if(dirty)healthAddResult(results,'warn','Perubahan Admin belum diekspor','Ada perubahan di editor yang belum menjadi books.json di server. Preview & Download books.json sebelum publish.');
+    else healthAddResult(results,'ok','Status editor Admin','Tidak ada perubahan lokal yang belum diekspor.');
+
     // File inti yang harus satu origin dengan Admin.
     const coreFiles=['./index.html','./style.css','./app.js','./reader.html','./reader.js','./reader.css','./quran.html','./quran.js','./quran.css','./quran-config.js','./manifest.webmanifest','./sw.js'];
     let coreOk=true;
@@ -3146,8 +3225,8 @@ async function runHealthCheck(){
     // Quran sample checks, bukan 604 halaman agar audit tetap ringan.
     const quranPages=['page001.png','page302.png','page604.png'];
     let quranOk=true;
-    for(const page of quranPages){if(!(await healthCheckUrl(HEALTH_QURAN_BASE+page,signal))){quranOk=false;healthAddResult(results,'warn','Sumber halaman Qur\'an',`${page} tidak dapat diperiksa dari perangkat ini.`);}}
-    if(quranOk)healthAddResult(results,'ok','Sumber halaman Qur\'an','Sampel halaman 1, 302, dan 604 dapat diakses.');
+    for(const page of quranPages){if(!(await healthCheckImage(HEALTH_QURAN_BASE+page,signal))){quranOk=false;healthAddResult(results,'warn','Sumber halaman Qur\'an',`${page} tidak dapat dimuat sebagai gambar dari perangkat ini.`);}}
+    if(quranOk)healthAddResult(results,'ok','Sumber halaman Qur\'an','Sampel halaman 1, 302, dan 604 dapat ditampilkan.');
 
     // R2 worker and PDFs. Concurrency dibatasi agar tidak membebani koneksi.
     const total=pdfs.length;let done=0;let cursor=0;
@@ -3198,7 +3277,7 @@ function downloadHealthReport(){
     `Waktu: ${new Date(healthLastReport.createdAt).toLocaleString('id-ID')}`,
     `PDF katalog: ${healthLastReport.pdfCount}`,
     `Aman: ${ok} | Perlu dicek: ${warn} | Bermasalah: ${error}`,'',
-    error?'STATUS: BELUM SIAP RILIS':warn?'STATUS: HAMPIR SIAP — PERIKSA CATATAN':'STATUS: SIAP DARI PEMERIKSAAN OTOMATIS','',
+    error?'STATUS: JANGAN PUBLISH DULU':warn?'STATUS: HAMPIR SIAP PUBLISH — PERIKSA CATATAN':'STATUS: SIAP PUBLISH DARI PEMERIKSAAN OTOMATIS','',
     'RINCIAN:'
   ];
   rows.forEach((x,i)=>{lines.push(`${i+1}. [${x.status==='ok'?'AMAN':x.status==='warn'?'PERLU DICEK':'BERMASALAH'}] ${x.title}`);if(x.detail)lines.push(`   ${x.detail}`);if(x.key)lines.push(`   R2: ${x.key}`);});

@@ -3875,3 +3875,20 @@ dialog.health-check-dialog{
   .health-score>span{width:32px;height:32px;font-size:16px}
   .health-actions button{flex:1 1 100%;width:100%}
 }
+
+
+/* =========================================================
+   V2.48.0 — Admin Independence Tools
+   ========================================================= */
+.path-repair-action{border-color:rgba(190,145,56,.34)!important;background:rgba(210,171,90,.09)!important}
+.path-repair-btn-icon{width:20px;height:20px;display:grid;place-items:center;border-radius:7px;background:#b8872d;color:#fff;font-size:12px;font-weight:900}
+.path-repair-card{width:min(900px,94vw);max-height:min(88vh,840px);overflow:auto;overflow-x:hidden}
+.path-repair-intro{display:flex;gap:12px;align-items:flex-start;margin:14px 0;padding:13px 14px;border:1px solid #eadcb9;border-radius:14px;background:#fffaf0}
+.path-repair-intro-icon{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#b8872d;color:#fff;font-weight:900}
+.path-repair-intro b,.path-repair-intro small{display:block}.path-repair-intro small{margin-top:4px;color:#6f746e;line-height:1.48}.path-repair-intro code{padding:1px 4px;border-radius:5px;background:#f2ead9;color:#65512d}
+.path-repair-summary{display:grid;grid-template-columns:repeat(4,1fr);overflow:hidden;border:1px solid #e3ddd1;border-radius:16px;background:#fff;margin-bottom:12px}
+.path-repair-summary span{display:grid;place-items:center;align-content:center;min-height:72px;padding:10px 5px;border-right:1px solid #eee8dd;text-align:center}.path-repair-summary span:last-child{border:0}.path-repair-summary b{font-size:20px}.path-repair-summary small{margin-top:3px;color:#7a827e;font-size:9px}.path-repair-summary .good b{color:#167759}.path-repair-summary .warn b{color:#b37c1a}
+.path-repair-list{display:grid;gap:8px;max-height:370px;overflow:auto;padding:2px}
+.path-repair-row{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:start;padding:11px 12px;border:1px solid #e5dfd4;border-radius:13px;background:#fff}.path-repair-row-icon{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;font-weight:900}.path-repair-row b,.path-repair-row small,.path-repair-row code{display:block}.path-repair-row small{margin-top:3px;color:#6f7874;line-height:1.42}.path-repair-row code{margin-top:6px;padding:6px 7px;border-radius:7px;background:#f3f0e9;color:#625a4d;font-size:9px;overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}.path-repair-row.safe{border-color:#cfe4d9;background:#f7fcfa}.path-repair-row.safe .path-repair-row-icon{background:#e5f5ee;color:#117052}.path-repair-row.manual{border-color:#eadcb7;background:#fffbf0}.path-repair-row.manual .path-repair-row-icon{background:#f7e9bf;color:#9b6a12}.path-repair-row.clean .path-repair-row-icon{background:#edf0ee;color:#66736d}.path-repair-empty{padding:34px 16px;text-align:center;color:#75807b}.path-repair-empty b,.path-repair-empty small{display:block}.path-repair-empty small{margin-top:5px}.path-repair-note{margin-top:11px;padding:11px 13px;border-radius:12px;background:#f5f2eb;color:#66716c;font-size:10px;line-height:1.5}.path-repair-note b{display:block;margin-bottom:3px;color:#30473e}.path-repair-note strong{color:#3f5149}.path-repair-actions{justify-content:flex-end}.path-repair-actions #downloadPathRepairBtn{margin-right:auto}
+@media(max-width:760px){.path-repair-card{width:96vw}.path-repair-summary{grid-template-columns:repeat(2,1fr)}.path-repair-summary span:nth-child(2){border-right:0}.path-repair-summary span:nth-child(-n+2){border-bottom:1px solid #eee8dd}.path-repair-actions{flex-wrap:wrap}.path-repair-actions button{flex:1 1 160px}.path-repair-actions #downloadPathRepairBtn{margin-right:0}}
+@media(max-width:520px){.path-repair-actions button{flex:1 1 100%;width:100%}}
