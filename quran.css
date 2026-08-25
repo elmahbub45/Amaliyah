@@ -308,3 +308,179 @@ html,body{background:linear-gradient(180deg,#efe7d7 0%,#f7f2e9 24%,#f3ecdf 100%)
   .directory-item{grid-template-columns:50px minmax(0,1fr) minmax(58px,auto);min-height:80px}
   .directory-copy b{font-size:14px}
 }
+
+
+/* =========================================================
+   V2.51.3 — Quran Ultra Luxe + Hide Complete Offline Card
+   ========================================================= */
+.quran-directory{
+  background:
+    radial-gradient(circle at 50% -12%, rgba(186,145,62,.15) 0, rgba(186,145,62,.06) 18%, transparent 42%),
+    radial-gradient(circle at 92% 6%, rgba(10,96,77,.10), transparent 18%),
+    linear-gradient(180deg,#fbf7ef 0%,#f6efe3 28%,#f2eadb 100%);
+}
+.quran-directory::after{
+  content:"";
+  position:fixed;
+  inset:auto 0 0;
+  height:110px;
+  pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(243,235,223,.82));
+}
+.directory-header{
+  background:rgba(251,247,239,.9);
+  box-shadow:0 12px 28px rgba(73,59,33,.055), inset 0 -1px 0 rgba(214,188,129,.10);
+}
+.directory-header span{font-size:9.5px;letter-spacing:.26em;color:#a97d28}
+.directory-header b{
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size:22px;
+  color:#16382f;
+  text-shadow:0 1px 0 rgba(255,255,255,.55);
+}
+.round-button{
+  border-color:rgba(208,184,137,.82);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.96),rgba(248,238,223,.96));
+  box-shadow:0 10px 22px rgba(81,62,30,.08), inset 0 1px 0 rgba(255,255,255,.98), inset 0 0 0 1px rgba(219,196,153,.26);
+}
+.mushaf-intro{
+  margin-top:20px;
+  padding:26px 24px 24px;
+  border-radius:34px;
+  border:1px solid rgba(232,198,114,.22);
+  background:
+    radial-gradient(circle at 84% 22%, rgba(255,255,255,.10), transparent 18%),
+    radial-gradient(circle at 76% 18%, rgba(233,196,99,.12), transparent 34%),
+    linear-gradient(145deg,#0e6a54 0%,#0a5647 28%,#084337 64%,#052d26 100%);
+  box-shadow:0 24px 50px rgba(8,60,48,.26), inset 0 1px 0 rgba(255,255,255,.08), 0 0 0 1px rgba(255,245,220,.03);
+}
+.mushaf-intro::before{
+  inset:12px;
+  border-radius:26px;
+  border:1px solid rgba(241,212,140,.13);
+}
+.mushaf-seal{
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255,255,255,.11), transparent 58%),
+    linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), 0 8px 18px rgba(0,0,0,.10);
+}
+.mushaf-intro-copy>span{font-size:10px;letter-spacing:.21em;color:#efcc7f}
+.mushaf-intro h1{font-size:31px;letter-spacing:-.01em;color:#fff5d3}
+.mushaf-intro p{font-size:13px;color:rgba(255,255,255,.85)}
+.directory-progress-track{height:7px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden}
+.directory-progress-track i{box-shadow:0 0 18px rgba(235,194,92,.35)}
+.mushaf-intro>button{
+  min-height:54px;
+  border-radius:18px;
+  background:linear-gradient(180deg,#f0cf7d 0%,#d6a545 52%,#c7902a 100%);
+  box-shadow:0 14px 26px rgba(10,33,26,.22), inset 0 1px 0 rgba(255,248,231,.58), inset 0 -1px 0 rgba(123,86,24,.22);
+}
+.mushaf-intro>button:hover{filter:brightness(1.02)}
+.quran-offline-card{
+  border-radius:26px;
+  border:1px solid rgba(194,165,102,.26);
+  background:
+    radial-gradient(circle at 100% 0, rgba(211,175,95,.05), transparent 30%),
+    linear-gradient(180deg,rgba(255,253,248,.98),rgba(254,249,242,.98));
+  box-shadow:0 12px 34px rgba(74,61,36,.085), inset 0 1px 0 rgba(255,255,255,.78);
+}
+.quran-offline-card.is-complete{display:none!important}
+.directory-card{
+  position:relative;
+  overflow:hidden;
+  margin-top:22px;
+  border-radius:32px;
+  border:1px solid rgba(205,178,122,.18);
+  background:
+    radial-gradient(circle at 100% 0, rgba(198,160,87,.05), transparent 28%),
+    linear-gradient(180deg,rgba(255,254,250,.99),rgba(253,248,240,.97));
+  box-shadow:0 18px 40px rgba(67,56,35,.07), inset 0 1px 0 rgba(255,255,255,.88);
+}
+.directory-card::before{
+  content:"";
+  position:absolute;
+  inset:12px;
+  border-radius:22px;
+  border:1px solid rgba(222,203,168,.22);
+  pointer-events:none;
+}
+.directory-tabs{
+  padding:7px;
+  border-radius:20px;
+  background:linear-gradient(180deg,#f0e7d9,#f5eee4);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+}
+.directory-tabs button{
+  min-height:46px;
+  border-radius:15px;
+  font-weight:700;
+  color:#727873;
+}
+.directory-tabs button.active{
+  background:linear-gradient(180deg,#ffffff,#fff9ef);
+  color:#0e604d;
+  box-shadow:0 8px 16px rgba(64,59,43,.08), inset 0 1px 0 rgba(255,255,255,.88);
+}
+.quran-search{
+  min-height:50px;
+  border-radius:18px;
+  border-color:rgba(218,203,179,.95);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.84);
+}
+.quran-search input{font-size:13.5px}
+.directory-item{
+  min-height:90px;
+  border-radius:24px;
+  border:1px solid rgba(235,224,204,.96);
+  background:
+    radial-gradient(circle at 100% 100%, rgba(196,158,83,.045), transparent 26%),
+    linear-gradient(135deg,#fffefb 0%,#fffaf1 100%);
+  box-shadow:0 9px 18px rgba(76,61,35,.05), inset 0 1px 0 rgba(255,255,255,.86);
+}
+.directory-number{
+  width:54px;height:54px;
+  border-radius:19px;
+  border:1px solid rgba(224,201,160,.74);
+  background:linear-gradient(180deg,#fff8eb,#f5e7cf);
+  color:#9f7223;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.75);
+}
+.directory-copy em{font-size:7.5px;letter-spacing:.18em;color:#a58a58}
+.directory-copy b{font-size:15.5px;color:#1f342e}
+.directory-copy small{font-size:9.2px;color:#8a8e8b}
+.directory-arabic{
+  font-size:25px;
+  line-height:1.15;
+  color:#8e6622;
+  text-shadow:0 1px 0 rgba(255,255,255,.58);
+}
+.directory-arrow{
+  width:40px;height:40px;
+  border:1px solid rgba(230,216,189,.82);
+  background:linear-gradient(180deg,#fbf2e3,#f6ead7);
+  color:#8f6a2d;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.78);
+}
+.directory-page-jump{
+  border-radius:24px;
+  box-shadow:0 10px 22px rgba(67,56,35,.05), inset 0 1px 0 rgba(255,255,255,.82);
+}
+.page-jump-icon{
+  background:linear-gradient(180deg,#0d6a55,#0a5345);
+  color:#f2d27a;
+  box-shadow:0 10px 20px rgba(9,67,55,.14);
+}
+.quran-attribution{padding-bottom:8px;font-size:9.5px}
+@media(max-width:520px){
+  .directory-header b{font-size:20px}
+  .mushaf-intro h1{font-size:27px}
+}
+@media(max-width:420px){
+  .directory-header b{font-size:18px}
+  .mushaf-intro{padding:20px 16px 18px}
+  .mushaf-intro h1{font-size:24px}
+  .directory-card{border-radius:26px}
+  .directory-item{min-height:84px;border-radius:22px}
+}
