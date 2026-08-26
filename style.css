@@ -3601,3 +3601,106 @@ body{
     padding-right:3px!important;
   }
 }
+
+
+/* =========================================================
+   V2.53.7 — HOME FINAL POLISH
+   ========================================================= */
+
+/* Header lebih lega atas-bawah */
+#app .home-light-hero{
+  padding-top:calc(18px + env(safe-area-inset-top))!important;
+  padding-bottom:20px!important;
+}
+#app .home-topbar{
+  padding-top:5px!important;
+  padding-bottom:5px!important;
+}
+#app .home-brand h1{
+  margin-top:0!important;
+  margin-bottom:5px!important;
+}
+#app .home-brand p{
+  margin-top:0!important;
+}
+
+/* Khazanah sekarang 8 kartu: 4 x 2 */
+#app .home-khazanah-seven{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+}
+#app .home-khazanah-seven button{
+  min-height:74px!important;
+}
+
+/* Semua ikon Khazanah satu bahasa warna: emerald */
+#app .home-khazanah-seven .category-icon,
+#app .home-khazanah-seven button:nth-child(1) .category-icon,
+#app .home-khazanah-seven button:nth-child(2) .category-icon,
+#app .home-khazanah-seven button:nth-child(3) .category-icon,
+#app .home-khazanah-seven button:nth-child(4) .category-icon,
+#app .home-khazanah-seven button:nth-child(5) .category-icon,
+#app .home-khazanah-seven button:nth-child(6) .category-icon,
+#app .home-khazanah-seven button:nth-child(7) .category-icon,
+#app .home-khazanah-seven button:nth-child(8) .category-icon{
+  color:#21624f!important;
+  background:linear-gradient(145deg,#eaf3ee,#f7f5ec)!important;
+  border:1px solid #dce9e2!important;
+}
+#app .home-khazanah-seven .category-icon svg{
+  stroke:currentColor!important;
+}
+#app .home-khazanah-all{
+  background:linear-gradient(180deg,#f3f7f4 0%,#edf4ef 100%)!important;
+  border-color:#d8e6df!important;
+}
+#app .home-khazanah-all b{
+  color:#215c4b!important;
+}
+
+/* Favorit: judul bacaan sedikit lebih besar */
+#app .favorites-section .home-favorite-card .favorite-copy b{
+  font-size:11.4px!important;
+  line-height:1.24!important;
+}
+#app .favorites-section .home-favorite-card .favorite-copy small{
+  font-size:7.8px!important;
+}
+
+/* Kurangi ruang kosong beranda bagian bawah */
+#app>main{
+  padding-bottom:92px!important;
+}
+#app .continue-home-section{
+  margin-bottom:4px!important;
+}
+#app{
+  padding-bottom:88px!important;
+}
+#globalBottomNav.global-bottom-nav{
+  bottom:7px!important;
+}
+
+/* Sedikit rapatkan section paling bawah tanpa terasa sesak */
+#app .category-section + .continue-home-section{
+  margin-top:17px!important;
+}
+#app .continue-home-section .reading-card{
+  margin-bottom:0!important;
+}
+
+@media(max-width:390px){
+  #app .home-light-hero{
+    padding-top:calc(16px + env(safe-area-inset-top))!important;
+    padding-bottom:18px!important;
+  }
+  #app .home-topbar{
+    padding-top:4px!important;
+    padding-bottom:4px!important;
+  }
+  #app .favorites-section .home-favorite-card .favorite-copy b{
+    font-size:10.7px!important;
+  }
+  #app .home-khazanah-seven button{
+    min-height:72px!important;
+  }
+}
