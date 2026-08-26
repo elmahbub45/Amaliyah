@@ -1539,17 +1539,69 @@ function renderPrayerData(data){
 }
 function renderPrayers(t){
   if(!t)return;
-  const names=[['Subuh','Fajr'],['Dzuhur','Dhuhr'],['Ashar','Asr'],['Maghrib','Maghrib'],['Isya','Isha']];
-  const parsed=names.map(([n,k])=>{const tm=cleanTime(t[k]),a=tm.split(':').map(Number);return {n,k,tm,mins:a[0]*60+a[1]};});
+
+  const displayNames=[
+    ['Imsak','Imsak'],
+    ['Subuh','Fajr'],
+    ['Dzuhur','Dhuhr'],
+    ['Ashar','Asr'],
+    ['Maghrib','Maghrib'],
+    ['Isya','Isha']
+  ];
+  const prayerNames=displayNames.slice(1);
+  const parse=([n,k])=>{
+    const tm=cleanTime(t[k]);
+    const a=tm.split(':').map(Number);
+    return {n,k,tm,mins:a[0]*60+a[1]};
+  };
+  const display=displayNames.map(parse);
+  const prayers=prayerNames.map(parse);
+
+  const pad=v=>String(v).padStart(2,'0');
+
   const update=()=>{
-    const now=new Date(),cur=now.getHours()*60+now.getMinutes();
-    let next=parsed.find(x=>x.mins>cur);
-    if(!next){const f=parsed[0];next={...f,mins:f.mins+1440};}
-    $('#prayerTimes').innerHTML=parsed.map(x=>`<div class="time ${x.n===next.n?'active':''}">${x.n}<b>${x.tm}</b></div>`).join('');
-    const diff=Math.max(0,next.mins-cur),h=Math.floor(diff/60),m=diff%60;
+    const now=new Date();
+    const curSeconds=now.getHours()*3600+now.getMinutes()*60+now.getSeconds();
+    const curMinutes=curSeconds/60;
+
+    let next=prayers.find(x=>x.mins>curMinutes);
+    if(!next){
+      const f=prayers[0];
+      next={...f,mins:f.mins+1440};
+    }
+
+    let active;
+    if(curMinutes<prayers[0].mins){
+      active=prayers[0];
+    }else{
+      active=[...prayers].reverse().find(x=>x.mins<=curMinutes)||prayers[0];
+    }
+
+    $('#prayerTimes').innerHTML=display.map(x=>
+      `<div class="time ${x.n===active.n?'active':''}"><span>${x.n}</span><b>${x.tm}</b></div>`
+    ).join('');
+
+    const targetSeconds=next.mins*60;
+    const diffSeconds=Math.max(0,Math.round(targetSeconds-curSeconds));
+    const h=Math.floor(diffSeconds/3600);
+    const m=Math.floor((diffSeconds%3600)/60);
+    const s=diffSeconds%60;
+
+    const nameEl=$('#currentPrayerName');
+    const timeEl=$('#currentPrayerTime');
+    const countdownEl=$('#prayerCountdownValue');
+    const targetEl=$('#prayerCountdownTarget');
+    if(nameEl)nameEl.textContent=active.n;
+    if(timeEl)timeEl.textContent=active.tm;
+    if(countdownEl)countdownEl.textContent=`−${pad(h)}:${pad(m)}:${pad(s)}`;
+    if(targetEl)targetEl.textContent=`menuju ${next.n}`;
+
     $('#nextPrayer').innerHTML=`<b>Sholat berikutnya: ${next.n} — ${next.tm}</b><br>${h?h+' jam ':''}${m} menit lagi`;
   };
-  update(); clearInterval(prayerCountdownTimer); prayerCountdownTimer=setInterval(update,30000);
+
+  update();
+  clearInterval(prayerCountdownTimer);
+  prayerCountdownTimer=setInterval(update,1000);
 }
 
 let monthlyOffset=0;

@@ -1935,51 +1935,128 @@ body{
 
 
 /* =========================================================
-   V2.52.1 — Settings UI Refresh
+   V2.53.0 — Light Home Refresh
+   Approved visual direction: warm ivory + emerald + illustrated art
    ========================================================= */
-.settings-screen{padding-bottom:120px}
-.settings-screenbar{margin-bottom:12px}
-.settings-hero-panel{display:grid;grid-template-columns:62px minmax(0,1fr);gap:14px;align-items:flex-start;padding:18px 18px 16px;border:1px solid rgba(200,155,67,.22);border-radius:24px;background:linear-gradient(180deg,#fffaf1 0%,#fff6e8 100%);box-shadow:0 10px 28px rgba(67,51,24,.08);position:relative;overflow:hidden}
-.settings-hero-panel::before{content:"";position:absolute;right:-34px;top:-34px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#e6c16f44 0%,#e6c16f12 45%,transparent 72%)}
-.settings-hero-mark{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(180deg,#0d5b49 0%,#064c3b 100%);color:#f1cf7b;font-size:28px;box-shadow:0 10px 22px rgba(6,76,59,.18);position:relative;z-index:1}
-.settings-hero-copy{position:relative;z-index:1;min-width:0}
-.settings-hero-kicker{display:block;margin-bottom:5px;color:#9a7b38;font-size:9px;font-weight:800;letter-spacing:.16em}
-.settings-hero-copy h2{margin:0 0 8px;font-size:18px;line-height:1.3;color:#14352d}
-.settings-hero-copy p{margin:0;color:#6d756f;font-size:12px;line-height:1.6}
-.settings-group-title{display:flex;align-items:center;gap:10px;margin:18px 4px 10px;color:#8e7440}
-.settings-group-title::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(200,155,67,.32),rgba(200,155,67,0))}
-.settings-group-title span{font-size:10px;font-weight:800;letter-spacing:.16em}
-.settings-feature-card{padding:16px 16px 15px;border-radius:22px;background:linear-gradient(180deg,#ffffff 0%,#fffdf8 100%);box-shadow:0 10px 24px rgba(53,42,23,.06)}
-.settings-feature-head{display:grid;grid-template-columns:46px minmax(0,1fr);gap:12px;align-items:flex-start}
-.settings-feature-head--top{align-items:flex-start}
-.settings-feature-icon{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(180deg,#f6ecd7 0%,#efe2c3 100%);color:#8d6c2f;font-size:22px;box-shadow:inset 0 1px 0 rgba(255,255,255,.65)}
-.settings-feature-copy{min-width:0}
-.settings-feature-copy.full-width{width:100%}
-.settings-feature-kicker{display:block;margin-bottom:5px;color:#9b7b3c;font-size:8.5px;font-weight:800;letter-spacing:.15em}
-.settings-feature-copy h3{margin:0 0 4px;font-size:15px;color:#17352d}
-.settings-feature-copy p{margin:0;color:#6f756f;font-size:12px;line-height:1.55}
-.settings-simple-head{display:block}
-.settings-action-row{margin-top:14px}
-.settings-support-note{margin-top:10px}
-.settings-single-action{margin-top:14px}
-.settings-single-action .primary,.settings-link-button{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-width:180px}
-.settings-compact-card .settings-single-action .primary{width:100%}
-.notification-card .notification-controls{margin-top:14px;padding-top:14px;border-top:1px solid #eee5d6}
-.notification-card .prayer-toggle-grid label{background:#fbf8f0;border-color:#eadfce}
-.notification-card .prayer-toggle-grid label:has(input:checked){border-color:#0f6b58;background:#edf6f1}
-.notification-card .notification-reminder{padding:11px 12px;border-radius:14px;background:#faf6ee;border:1px solid #eee4d4}
-.notification-card .notification-reminder select{background:white}
-.notification-action-row button.secondary,.settings-single-action .secondary,.settings-offline-actions .secondary,.adhan-action-row .secondary{background:#f7f1e4;color:#17473c;border:1px solid #eadfce}
-.notification-action-row button.primary,.settings-single-action .primary,.settings-offline-actions .primary,.adhan-action-row .primary{box-shadow:0 8px 18px rgba(6,76,59,.14)}
-.adhan-settings-card{border-color:#e9dcc6;background:linear-gradient(180deg,#fffdfa 0%,#fff8ee 100%)}
-.adhan-mode-grid{gap:10px;margin-top:14px}
-.adhan-mode-option{padding:12px 13px;border-radius:16px;background:#fffdf8}
-.adhan-mode-option:has(input:checked){border-color:#0f6b58;background:#eef7f2;box-shadow:0 0 0 2px rgba(6,76,59,.07)}
-.adhan-action-row{grid-template-columns:1.35fr 1fr 1fr}
-.quran-offline-settings .settings-feature-head{margin-bottom:2px}
-.migration-backup-card{background:linear-gradient(180deg,#fffdf8 0%,#fff6ea 100%);border-color:#ead8bc}
-.migration-backup-card .settings-feature-icon{background:linear-gradient(180deg,#0f5f4d 0%,#084738 100%);color:#f1cf7b}
-.migration-backup-card .settings-link-button{width:100%}
-.about-app-card{border-radius:22px;background:linear-gradient(180deg,#ffffff 0%,#fffaf1 100%)}
-.about-app-copy p{line-height:1.55}
-@media(max-width:420px){.settings-hero-panel{grid-template-columns:54px minmax(0,1fr);padding:16px}.settings-hero-mark{width:54px;height:54px;font-size:24px;border-radius:18px}.settings-hero-copy h2{font-size:16px}.settings-feature-head{grid-template-columns:42px minmax(0,1fr);gap:10px}.settings-feature-icon{width:42px;height:42px;border-radius:14px;font-size:20px}.settings-action-row,.adhan-action-row{grid-template-columns:1fr}.settings-single-action .primary,.settings-link-button{width:100%}.settings-group-title{margin-top:16px}}
+:root{
+  --home-ivory:#fbf8f1;
+  --home-paper:#fffdf8;
+  --home-emerald:#1f644f;
+  --home-emerald-deep:#174c3d;
+  --home-gold:#c9a25c;
+  --home-line:#eadfcf;
+  --home-text:#173f35;
+  --home-soft:#7c7265;
+}
+body{background:#eee8dd}
+#app{background:var(--home-ivory)}
+.home-light-hero{
+  background:linear-gradient(180deg,#fffdf8 0%,#fbf8f1 100%);
+  color:var(--home-text);
+  padding:calc(22px + env(safe-area-inset-top)) 20px 18px;
+  border-radius:0;
+  border-bottom:1px solid rgba(201,162,92,.12);
+}
+.home-topbar{align-items:center;text-align:left}
+.home-brand h1{
+  margin:0;
+  color:var(--home-text);
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:39px;
+  line-height:1;
+  font-weight:600;
+  letter-spacing:-.025em;
+}
+.home-brand p{margin:8px 0 0;color:#735f4e;font-size:13px}
+.home-header-actions{display:flex;gap:9px;align-items:center}
+.home-header-icon{
+  width:43px;height:43px;border:1px solid #eee2d1;border-radius:50%;
+  background:#fffdfa;color:#244e42;box-shadow:0 6px 16px rgba(61,45,23,.08);
+  display:grid;place-items:center;
+}
+.home-header-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.home-header-icon.notification-active{color:#a77c31;border-color:#e7cf9d;background:#fff9eb}
+main{padding:0 13px 20px}
+.prayer-premium-light{
+  margin-top:0;padding:0;overflow:hidden;border-radius:24px;
+  background:#fffdf8;border:1px solid #e7d5b5;
+  box-shadow:0 12px 28px rgba(69,52,27,.09),inset 0 0 0 1px rgba(255,255,255,.6);
+}
+.prayer-visual-stage{position:relative;min-height:250px;overflow:hidden;background:#fcf8ed}
+.prayer-mosque-art{position:absolute;z-index:0;right:-12px;bottom:-4px;width:76%;max-width:none;height:auto;object-fit:contain;filter:saturate(.92) contrast(.98)}
+.prayer-visual-fade{position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#fffdf8 0%,#fffdf8 32%,rgba(255,253,248,.88) 43%,rgba(255,253,248,.22) 66%,rgba(255,253,248,0) 100%)}
+.prayer-copy-layer{position:relative;z-index:2;padding:17px 16px 12px;min-height:250px}
+.prayer-head-light{align-items:flex-start}
+.prayer-head-light .prayer-heading>b{font-family:Georgia,'Times New Roman',serif;font-size:18px;color:var(--home-text);letter-spacing:.01em}
+.prayer-head-light #location{margin-top:5px;font-size:11px;color:#32594d}
+.prayer-head-light #dateText,.prayer-head-light #hijriDate{display:none}
+.prayer-location-btn{border:1px solid #e5d5b8;background:rgba(255,253,248,.88);color:#31594d;border-radius:999px;padding:8px 11px;box-shadow:0 4px 12px rgba(73,55,27,.05);backdrop-filter:blur(7px)}
+.current-prayer-display{display:flex;flex-direction:column;align-items:flex-start;margin-top:29px;line-height:1}
+.current-prayer-display strong{font-family:Georgia,'Times New Roman',serif;color:var(--home-emerald-deep);font-size:25px;font-weight:500;margin-bottom:3px}
+.current-prayer-display span{font-family:Georgia,'Times New Roman',serif;color:#17483b;font-size:55px;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.current-prayer-display small{margin-top:11px;color:#2b7560;font-size:16px;font-variant-numeric:tabular-nums}
+.current-prayer-display em{margin-top:6px;color:#6c675f;font-size:13px;font-style:normal}
+.prayer-times-light{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin:0 10px 10px;
+  padding:5px;background:rgba(255,253,248,.96);border:1px solid #e7ded1;border-radius:18px;
+  box-shadow:0 8px 20px rgba(76,59,30,.08);position:relative;z-index:4;
+}
+.prayer-times-light .time{min-width:0;border:0;border-right:1px solid #eee5d8;background:transparent;border-radius:0;padding:10px 2px 9px;font-size:9px;color:#504a42}
+.prayer-times-light .time:last-child{border-right:0}
+.prayer-times-light .time span{display:block;white-space:nowrap}
+.prayer-times-light .time b{font-family:Georgia,'Times New Roman',serif;font-size:13px;color:#173f35;margin-top:5px;font-weight:500}
+.prayer-times-light .time.active{background:linear-gradient(180deg,#4d8a70,#28624f);border:1px solid #245b49;border-radius:15px;color:white;box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 5px 12px rgba(35,86,69,.22);transform:translateY(-4px)}
+.prayer-times-light .time.active b{color:white}
+.prayer-next-summary{margin:0 12px 0;padding:8px 11px;background:#f7f4ec;border-radius:12px;font-size:10px;color:#657069;display:none}
+.prayer-monthly-link{margin:0 14px 12px;width:calc(100% - 28px);padding:8px 0 1px;border-top:1px solid #eee3d3;color:#31594d;background:transparent;font-size:10.5px}
+.quran-home-section{margin-top:14px}
+.quran-section-head{display:none}
+.quran-home-card-light{
+  display:grid;grid-template-columns:34% minmax(0,1fr);grid-template-rows:auto auto;gap:0 12px;
+  min-height:170px;padding:0 14px 0 0;border-radius:22px;overflow:hidden;
+  background:linear-gradient(180deg,#fffdf9,#fffaf2);border:1px solid #ead9bc;
+  box-shadow:0 9px 22px rgba(67,50,25,.07);position:relative;
+}
+.quran-home-art{grid-row:1/3;grid-column:1;min-height:170px;overflow:hidden;background:#f8f1e4}
+.quran-home-art img{width:100%;height:100%;object-fit:cover;display:block}
+.quran-home-card-light .quran-home-ornament{position:absolute;right:14px;top:13px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#d0aa58;background:#16533f;font-size:18px;border:2px solid #e2c475;box-shadow:0 4px 12px rgba(31,83,65,.15)}
+.quran-home-card-light .quran-home-copy{grid-column:2;padding:16px 44px 5px 0;align-self:end}
+.quran-home-card-light .quran-home-kicker{display:none}
+.quran-home-card-light h2{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:500;color:#174c3d;margin:0 0 8px}
+.quran-home-card-light p{font-size:11px;line-height:1.55;color:#5e5a53;margin:0}
+.quran-home-card-light .quran-home-progress{height:5px;margin-top:10px;background:#eee5d6}
+.quran-home-card-light .quran-home-progress i{background:var(--home-emerald)}
+.quran-home-card-light .quran-home-actions{grid-column:2;display:grid;grid-template-columns:1.15fr 1fr;gap:8px;padding:7px 0 14px}
+.quran-home-card-light .quran-home-button{min-height:39px;border-radius:14px;font-size:11px}
+.quran-home-card-light .quran-home-continue{background:linear-gradient(180deg,#4f876e,#2c654f);color:white;border:0;box-shadow:0 6px 14px rgba(36,91,72,.16)}
+.quran-home-card-light .quran-home-directory{border:1px solid transparent;background:transparent;color:#2f5e50}
+.continue-home-section,.favorites-section,.category-section{margin-top:18px}
+.section-title,.section-head>b{font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:500;color:#174c3d;letter-spacing:0}
+.section-head .link{color:#745f45;font-size:11px}
+.reading-card{border-radius:17px;border-color:#ece2d5;background:#fffdfa;box-shadow:0 7px 18px rgba(61,46,27,.05)}
+.category-section .categories{grid-template-columns:repeat(4,1fr);gap:8px;overflow:visible}
+.category-section .categories button{min-height:92px;border-radius:18px;border:1px solid #eae0d3;background:linear-gradient(180deg,#fffefa,#faf5eb);box-shadow:0 6px 15px rgba(64,48,27,.05);color:#24604f;padding:13px 5px}
+.category-section .category-icon{width:32px;height:32px;margin:auto;color:#2b725d}
+.category-section .categories b{font-size:10.5px;color:#2d423b}
+.category-section .categories small{font-size:8.5px}
+.favorite-strip{gap:9px}
+.favorite-strip>*{border-color:#e9dfd1!important;background:#fffdfa!important;box-shadow:0 6px 16px rgba(60,45,26,.05)!important}
+.bottom-nav{
+  width:min(536px,calc(100% - 18px));bottom:8px;border-radius:25px;padding:7px 7px calc(7px + env(safe-area-inset-bottom));
+  background:rgba(255,253,249,.96);border:1px solid #e7ddcf;box-shadow:0 10px 30px rgba(52,39,24,.14);backdrop-filter:blur(14px)
+}
+.bottom-nav button{color:#9c9183;border-radius:17px;padding:7px 2px 5px;font-size:18px}
+.bottom-nav button .nav-icon{width:20px;height:20px}
+.bottom-nav button span{font-size:8.5px}
+.bottom-nav .active{color:#1f604e;background:#f2eee5;box-shadow:inset 0 -2px 0 #1f604e}
+@media(max-width:390px){
+  .home-brand h1{font-size:35px}
+  .prayer-visual-stage,.prayer-copy-layer{min-height:232px}
+  .prayer-mosque-art{width:79%;right:-24px}
+  .current-prayer-display{margin-top:24px}
+  .current-prayer-display span{font-size:49px}
+  .prayer-times-light .time{font-size:8.2px;padding-inline:1px}
+  .prayer-times-light .time b{font-size:11.7px}
+  .quran-home-card-light{grid-template-columns:36% minmax(0,1fr)}
+  .quran-home-card-light h2{font-size:19px}
+}

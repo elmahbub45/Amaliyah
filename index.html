@@ -15,31 +15,49 @@
 </head>
 <body>
 <div id="app">
-  <header class="hero">
-    <div class="top">
-      <span class="top-spacer" aria-hidden="true"></span>
-      <div class="brand"><h1>Amaliyah</h1><p>Khazanah Amaliyah Harian</p></div>
-      <button class="icon notif-icon" id="notifBtn" type="button" aria-label="Pengaturan notifikasi" title="Pengaturan notifikasi">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
-      </button>
+  <header class="hero home-light-hero">
+    <div class="top home-topbar">
+      <div class="brand home-brand">
+        <h1>Amaliyah</h1>
+        <p>Sahabat dalam setiap amalan</p>
+      </div>
+      <div class="home-header-actions">
+        <button class="icon home-header-icon" type="button" onclick="showLibrary('Semua');setTimeout(toggleSearch,80)" aria-label="Cari khazanah" title="Cari khazanah">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+        </button>
+        <button class="icon notif-icon home-header-icon" id="notifBtn" type="button" aria-label="Pengaturan notifikasi" title="Pengaturan notifikasi">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+        </button>
+      </div>
     </div>
-    <div class="quote"><div class="arabic">خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ</div><p>Sebaik-baik kalian adalah yang mempelajari Al-Qur'an dan mengajarkannya.</p><small>(HR. Bukhari)</small></div>
   </header>
 
   <main>
-    <section class="card prayer">
-      <div class="prayer-head">
-        <div class="prayer-heading">
-          <b>JADWAL SHOLAT HARI INI</b>
-          <div id="location">📍 Izinkan lokasi untuk jadwal otomatis</div>
-          <small id="dateText"></small>
-          <small id="hijriDate" class="hijri"></small>
+    <section class="card prayer prayer-premium-light">
+      <div class="prayer-visual-stage">
+        <img class="prayer-mosque-art" src="assets/home/prayer-mosque.webp" alt="" aria-hidden="true">
+        <div class="prayer-visual-fade" aria-hidden="true"></div>
+        <div class="prayer-copy-layer">
+          <div class="prayer-head prayer-head-light">
+            <div class="prayer-heading">
+              <b>Waktu Sholat</b>
+              <div id="location">📍 Izinkan lokasi untuk jadwal otomatis</div>
+              <small id="dateText"></small>
+              <small id="hijriDate" class="hijri"></small>
+            </div>
+            <button id="locBtn" class="location-btn prayer-location-btn" type="button" aria-label="Ubah lokasi"><span aria-hidden="true">⌖</span> Ubah</button>
+          </div>
+          <div class="current-prayer-display" aria-live="polite">
+            <strong id="currentPrayerName">—</strong>
+            <span id="currentPrayerTime">--:--</span>
+            <small id="prayerCountdownValue">--:--:--</small>
+            <em id="prayerCountdownTarget">menuju waktu berikutnya</em>
+          </div>
         </div>
-        <button id="locBtn" class="location-btn" type="button" aria-label="Ubah lokasi"><span aria-hidden="true">⌖</span> Ubah</button>
       </div>
-      <div id="prayerTimes" class="times"><span>Memuat jadwal…</span></div>
-      <div id="nextPrayer" class="next">Jadwal menggunakan metode KEMENAG RI</div>
-      <button id="monthlyBtn" class="monthly-link" type="button">▣ Lihat Jadwal Bulanan <span>›</span></button>
+      <div id="prayerTimes" class="times prayer-times-light"><span>Memuat jadwal…</span></div>
+      <div id="nextPrayer" class="next prayer-next-summary">Jadwal menggunakan metode KEMENAG RI</div>
+      <button id="monthlyBtn" class="monthly-link prayer-monthly-link" type="button">▣ Lihat Jadwal Bulanan <span>›</span></button>
     </section>
 
     <section class="quran-home-section" aria-labelledby="quranHomeTitle">
@@ -47,7 +65,8 @@
         <b id="quranHomeTitle">MUSHAF AL-QUR'AN</b>
         <span class="quran-separate-badge">Mushaf Khusus</span>
       </div>
-      <article class="quran-home-card">
+      <article class="quran-home-card quran-home-card-light">
+        <div class="quran-home-art" aria-hidden="true"><img src="assets/home/quran-card.webp" alt=""></div>
         <div class="quran-home-ornament" aria-hidden="true">۞</div>
         <div class="quran-home-copy">
           <span class="quran-home-kicker">MUSHAF MADINAH • 604 HALAMAN</span>
@@ -210,168 +229,118 @@
   </div>
   <div id="historyList" class="list-wrap"></div>
 </div>
-<div id="settings" class="screen hidden settings-screen">
-  <div class="screenbar settings-screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Pengaturan</b><span></span></div>
-
-  <section class="settings-hero-panel">
-    <div class="settings-hero-mark" aria-hidden="true">⚙</div>
-    <div class="settings-hero-copy">
-      <span class="settings-hero-kicker">PENGATURAN AMALIYAH</span>
-      <h2>Atur pengalaman membaca, sholat, dan data aplikasi</h2>
-      <p>Semua pengaturan utama Amaliyah dirangkum lebih rapi agar mudah dipahami dan nyaman diubah kapan saja.</p>
+<div id="settings" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Pengaturan</b><span></span></div><div class="settings-card notification-card" id="notificationSettings">
+  <div class="notification-head">
+    <div>
+      <h3>Notifikasi Sholat</h3>
+      <p id="notificationStatusText">Memeriksa status notifikasi…</p>
     </div>
-  </section>
-
-  <div class="settings-group-title"><span>WAKTU SHOLAT & ADZAN</span></div>
-
-  <div class="settings-card settings-feature-card notification-card" id="notificationSettings">
-    <div class="settings-feature-head">
-      <span class="settings-feature-icon" aria-hidden="true">🕰</span>
-      <div class="settings-feature-copy">
-        <span class="settings-feature-kicker">PENGINGAT SHOLAT</span>
-        <div class="notification-head">
-          <div>
-            <h3>Notifikasi Sholat</h3>
-            <p id="notificationStatusText">Memeriksa status notifikasi…</p>
-          </div>
-          <label class="switch" aria-label="Aktifkan notifikasi sholat">
-            <input id="notificationMaster" type="checkbox" onchange="setNotificationMaster(this.checked)">
-            <span class="switch-track"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <div id="notificationControls" class="notification-controls">
-      <div class="notification-label">Waktu yang diingatkan</div>
-      <div class="prayer-toggle-grid">
-        <label><input type="checkbox" data-prayer-notif="Subuh"> <span>Subuh</span></label>
-        <label><input type="checkbox" data-prayer-notif="Dzuhur"> <span>Dzuhur</span></label>
-        <label><input type="checkbox" data-prayer-notif="Ashar"> <span>Ashar</span></label>
-        <label><input type="checkbox" data-prayer-notif="Maghrib"> <span>Maghrib</span></label>
-        <label><input type="checkbox" data-prayer-notif="Isya"> <span>Isya</span></label>
-      </div>
-      <label class="notification-reminder">
-        <span>Waktu pengingat</span>
-        <select id="notificationLead" onchange="saveNotificationSettings()">
-          <option value="0">Tepat waktu sholat</option>
-          <option value="5">5 menit sebelumnya</option>
-          <option value="10">10 menit sebelumnya</option>
-          <option value="15">15 menit sebelumnya</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="notification-action-row settings-action-row">
-      <button id="notificationPermissionBtn" class="primary notification-permission-btn" type="button" onclick="requestNotifications()">Aktifkan Izin Notifikasi</button>
-      <button id="notificationTestBtn" class="secondary notification-test-btn" type="button" onclick="testPushNotification()">Tes Notifikasi</button>
-    </div>
-    <small class="notification-note settings-support-note" id="notificationPushNote">Perangkat ini akan dihubungkan ke layanan notifikasi Amaliyah agar pengingat sholat tetap dapat diterima saat aplikasi ditutup.</small>
+    <label class="switch" aria-label="Aktifkan notifikasi sholat">
+      <input id="notificationMaster" type="checkbox" onchange="setNotificationMaster(this.checked)">
+      <span class="switch-track"></span>
+    </label>
   </div>
 
-  <div class="settings-card settings-feature-card adhan-settings-card hidden" id="adhanSettings">
-    <div class="settings-feature-head">
-      <span class="settings-feature-icon" aria-hidden="true">🔊</span>
-      <div class="settings-feature-copy full-width">
-        <span class="settings-feature-kicker">SUARA WAKTU SHOLAT</span>
-        <div class="notification-head settings-simple-head">
-          <div>
-            <h3>Suara Waktu Sholat</h3>
-            <p id="adhanStatusText">Memeriksa kesiapan suara…</p>
-          </div>
-        </div>
-      </div>
+  <div id="notificationControls" class="notification-controls">
+    <div class="notification-label">Waktu yang diingatkan</div>
+    <div class="prayer-toggle-grid">
+      <label><input type="checkbox" data-prayer-notif="Subuh"> <span>Subuh</span></label>
+      <label><input type="checkbox" data-prayer-notif="Dzuhur"> <span>Dzuhur</span></label>
+      <label><input type="checkbox" data-prayer-notif="Ashar"> <span>Ashar</span></label>
+      <label><input type="checkbox" data-prayer-notif="Maghrib"> <span>Maghrib</span></label>
+      <label><input type="checkbox" data-prayer-notif="Isya"> <span>Isya</span></label>
     </div>
-
-    <div class="adhan-mode-grid" role="radiogroup" aria-label="Pilihan suara waktu sholat">
-      <label class="adhan-mode-option">
-        <input type="radio" name="adhanMode" value="notification" onchange="setAdhanMode(this.value)">
-        <span><b>Tanpa Suara</b><small>Hanya notifikasi waktu sholat</small></span>
-      </label>
-      <label class="adhan-mode-option">
-        <input type="radio" name="adhanMode" value="short" onchange="setAdhanMode(this.value)">
-        <span><b>Pengingat Singkat</b><small>Cuplikan adzan sekitar 12 detik</small></span>
-      </label>
-      <label class="adhan-mode-option">
-        <input type="radio" name="adhanMode" value="full" onchange="setAdhanMode(this.value)">
-        <span><b>Adzan Lengkap</b><small>Berbunyi tepat ketika masuk waktu sholat</small></span>
-      </label>
-    </div>
-
-    <div class="notification-action-row adhan-action-row settings-action-row">
-      <button id="adhanExactAlarmBtn" class="primary" type="button" onclick="requestAdhanExactAlarm()">Izinkan Ketepatan Waktu</button>
-      <button id="adhanTestBtn" class="secondary" type="button" onclick="testAdhanSound()">Tes Suara</button>
-      <button id="adhanStopBtn" class="secondary" type="button" onclick="stopAdhanSound()">Hentikan</button>
-    </div>
-    <small class="notification-note settings-support-note">Adzan Subuh menggunakan audio Subuh. Dzuhur, Ashar, Maghrib, dan Isya menggunakan adzan biasa. Pengaturan ini hanya tersedia pada aplikasi Android Amaliyah.</small>
+    <label class="notification-reminder">
+      <span>Waktu pengingat</span>
+      <select id="notificationLead" onchange="saveNotificationSettings()">
+        <option value="0">Tepat waktu sholat</option>
+        <option value="5">5 menit sebelumnya</option>
+        <option value="10">10 menit sebelumnya</option>
+        <option value="15">15 menit sebelumnya</option>
+      </select>
+    </label>
   </div>
 
-  <div class="settings-group-title"><span>LOKASI & AL-QUR'AN</span></div>
+  <div class="notification-action-row">
+    <button id="notificationPermissionBtn" class="primary notification-permission-btn" type="button" onclick="requestNotifications()">Aktifkan Izin Notifikasi</button>
+    <button id="notificationTestBtn" class="secondary notification-test-btn" type="button" onclick="testPushNotification()">Tes Notifikasi</button>
+  </div>
+  <small class="notification-note" id="notificationPushNote">Perangkat ini akan dihubungkan ke layanan notifikasi Amaliyah agar pengingat sholat tetap dapat diterima saat aplikasi ditutup.</small>
+</div>
 
-  <div class="settings-card settings-feature-card settings-compact-card">
-    <div class="settings-feature-head">
-      <span class="settings-feature-icon" aria-hidden="true">📍</span>
-      <div class="settings-feature-copy full-width">
-        <span class="settings-feature-kicker">JADWAL SHOLAT</span>
-        <h3>Lokasi Sholat</h3>
-        <p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p>
-      </div>
+<div class="settings-card adhan-settings-card hidden" id="adhanSettings">
+  <div class="notification-head">
+    <div>
+      <h3>Suara Waktu Sholat</h3>
+      <p id="adhanStatusText">Memeriksa kesiapan suara…</p>
     </div>
-    <div class="settings-single-action"><button class="primary" type="button" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button></div>
   </div>
 
-  <div class="settings-card settings-feature-card quran-offline-settings" data-quran-offline-ui>
-    <div class="settings-feature-head settings-feature-head--top">
-      <span class="settings-feature-icon" aria-hidden="true">۞</span>
-      <div class="settings-feature-copy full-width">
-        <span class="settings-feature-kicker">AKSES TANPA INTERNET</span>
-        <div class="quran-offline-settings-head">
-          <div>
-            <h3>Al-Qur'an Tanpa Internet</h3>
-            <p data-quran-offline-status>Memeriksa penyimpanan Al-Qur'an…</p>
-          </div>
-          <strong data-quran-offline-percent>0%</strong>
-        </div>
-      </div>
-    </div>
-    <div class="settings-offline-progress"><i data-quran-offline-progress></i></div>
-    <div class="settings-offline-count"><span data-quran-offline-count>0 / 604 halaman</span><span>Hanya Mushaf</span></div>
-    <div class="settings-offline-actions">
-      <button class="primary" data-quran-offline-download type="button">Unduh Al-Qur'an</button>
-      <button class="secondary" data-quran-offline-clear type="button" hidden>Hapus Data Tersimpan</button>
-    </div>
-    <small class="quran-offline-policy">Khazanah lainnya tetap membutuhkan koneksi internet dan tidak disimpan di perangkat.</small>
+  <div class="adhan-mode-grid" role="radiogroup" aria-label="Pilihan suara waktu sholat">
+    <label class="adhan-mode-option">
+      <input type="radio" name="adhanMode" value="notification" onchange="setAdhanMode(this.value)">
+      <span><b>Tanpa Suara</b><small>Hanya notifikasi waktu sholat</small></span>
+    </label>
+    <label class="adhan-mode-option">
+      <input type="radio" name="adhanMode" value="short" onchange="setAdhanMode(this.value)">
+      <span><b>Pengingat Singkat</b><small>Cuplikan adzan sekitar 12 detik</small></span>
+    </label>
+    <label class="adhan-mode-option">
+      <input type="radio" name="adhanMode" value="full" onchange="setAdhanMode(this.value)">
+      <span><b>Adzan Lengkap</b><small>Berbunyi tepat ketika masuk waktu sholat</small></span>
+    </label>
   </div>
 
-  <div class="settings-group-title"><span>DATA APLIKASI</span></div>
-
-  <div class="settings-card settings-feature-card migration-backup-card">
-    <div class="settings-feature-head settings-feature-head--top">
-      <span class="settings-feature-icon" aria-hidden="true">🛡</span>
-      <div class="settings-feature-copy full-width">
-        <span class="settings-feature-kicker">CADANGAN & PINDAH PERANGKAT</span>
-        <h3>Cadangkan Data Aplikasi</h3>
-        <p>Simpan progres, favorit, penanda, riwayat, lokasi, dan pengaturan sebelum pindah ke APK baru.</p>
-      </div>
-    </div>
-    <div class="settings-single-action"><a class="primary settings-link-button" href="migration-backup.html">Buka Cadangan Data</a></div>
-    <small class="quran-offline-policy">Halaman Al-Qur'an yang sudah diunduh tidak ikut dicadangkan dan dapat diunduh ulang nanti.</small>
+  <div class="notification-action-row adhan-action-row">
+    <button id="adhanExactAlarmBtn" class="primary" type="button" onclick="requestAdhanExactAlarm()">Izinkan Ketepatan Waktu</button>
+    <button id="adhanTestBtn" class="secondary" type="button" onclick="testAdhanSound()">Tes Suara</button>
+    <button id="adhanStopBtn" class="secondary" type="button" onclick="stopAdhanSound()">Hentikan</button>
   </div>
+  <small class="notification-note">Adzan Subuh menggunakan audio Subuh. Dzuhur, Ashar, Maghrib, dan Isya menggunakan adzan biasa. Pengaturan ini hanya tersedia pada aplikasi Android Amaliyah.</small>
+</div>
 
-  <div class="settings-group-title"><span>TENTANG APLIKASI</span></div>
+<div class="settings-card">
+  <h3>Lokasi Sholat</h3>
+  <p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p>
+  <button class="primary" type="button" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button>
+</div>
 
-  <div class="settings-card about-app-card">
-    <div class="about-app-mark" aria-label="Logo Amaliyah"><span class="about-app-fallback">A</span><img src="assets/icons/icon-192.png" alt="" onerror="this.remove()"></div>
-    <div class="about-app-copy">
-      <span class="about-app-kicker">TENTANG APLIKASI</span>
-      <h3>Amaliyah</h3>
-      <p>Khazanah amaliyah harian dengan pembacaan yang nyaman, Mushaf khusus, dan pengingat sholat yang lebih rapi.</p>
-      <div class="developer-line">
-        <span>Dikembangkan oleh</span>
-        <strong>elmahbub.my.id</strong>
-      </div>
+<div class="settings-card quran-offline-settings" data-quran-offline-ui>
+  <div class="quran-offline-settings-head">
+    <div>
+      <h3>Al-Qur'an Tanpa Internet</h3>
+      <p data-quran-offline-status>Memeriksa penyimpanan Al-Qur'an…</p>
+    </div>
+    <strong data-quran-offline-percent>0%</strong>
+  </div>
+  <div class="settings-offline-progress"><i data-quran-offline-progress></i></div>
+  <div class="settings-offline-count"><span data-quran-offline-count>0 / 604 halaman</span><span>Hanya Mushaf</span></div>
+  <div class="settings-offline-actions">
+    <button class="primary" data-quran-offline-download type="button">Unduh Al-Qur'an</button>
+    <button class="secondary" data-quran-offline-clear type="button" hidden>Hapus Data Tersimpan</button>
+  </div>
+  <small class="quran-offline-policy">Khazanah lainnya tetap membutuhkan koneksi internet dan tidak disimpan di perangkat.</small>
+</div>
+<div class="settings-card migration-backup-card">
+  <h3>Cadangkan Data Aplikasi</h3>
+  <p>Simpan progres, favorit, penanda, riwayat, lokasi, dan pengaturan sebelum pindah ke APK baru.</p>
+  <a class="primary" href="migration-backup.html" style="display:inline-flex;text-decoration:none;align-items:center;justify-content:center">Buka Cadangan Data</a>
+  <small class="quran-offline-policy">Halaman Al-Qur'an yang sudah diunduh tidak ikut dicadangkan dan dapat diunduh ulang nanti.</small>
+</div>
+
+
+<div class="settings-card about-app-card">
+  <div class="about-app-mark" aria-label="Logo Amaliyah"><span class="about-app-fallback">A</span><img src="assets/icons/icon-192.png" alt="" onerror="this.remove()"></div>
+  <div class="about-app-copy">
+    <span class="about-app-kicker">TENTANG APLIKASI</span>
+    <h3>Amaliyah</h3>
+    <p>Khazanah amaliyah harian.</p>
+    <div class="developer-line">
+      <span>Dikembangkan oleh</span>
+      <strong>elmahbub.my.id</strong>
     </div>
   </div>
+</div>
 
 </div>
 
