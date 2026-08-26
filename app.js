@@ -1627,12 +1627,13 @@ function renderPrayers(t){
     const m=Math.floor((diffSeconds%3600)/60);
     const s=diffSeconds%60;
 
-    const nameEl=$('#currentPrayerName');
     const timeEl=$('#currentPrayerTime');
     const countdownEl=$('#prayerCountdownValue');
     const targetEl=$('#prayerCountdownTarget');
-    if(nameEl)nameEl.textContent=active.n;
-    if(timeEl)timeEl.textContent=active.tm;
+    if(timeEl){
+      const clockNow=new Date();
+      timeEl.textContent=`${pad(clockNow.getHours())}:${pad(clockNow.getMinutes())}`;
+    }
     if(countdownEl)countdownEl.textContent=`−${pad(h)}:${pad(m)}:${pad(s)}`;
     if(targetEl)targetEl.textContent=`menuju ${next.n}`;
 
