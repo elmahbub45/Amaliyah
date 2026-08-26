@@ -2322,3 +2322,297 @@ html,body{background:#f1ece3}
 .settings-about-panel{display:grid!important;grid-template-columns:47px minmax(0,1fr)!important;gap:12px!important;align-items:center!important;padding:14px!important}.settings-about-panel .about-app-mark{width:45px!important;height:45px!important;border-radius:13px!important;background:#285f4f!important;box-shadow:none!important}.settings-about-panel .about-app-kicker{font-size:7.5px!important;color:#9b8662!important}.settings-about-panel .about-app-copy h3{font-size:12px!important;margin:0 0 2px!important}.settings-about-panel .about-app-copy p{font-size:8.5px!important;margin:0 0 5px!important}.settings-about-panel .developer-line{font-size:8px!important}
 
 @media(max-width:390px){#app .category-section .categories{grid-template-columns:repeat(4,minmax(0,1fr))!important}.settings-minimal-modern .adhan-action-row{grid-template-columns:1fr!important}.settings-minimal-modern .adhan-action-row button{width:100%!important}.settings-title-wrap>small{font-size:8px}}
+
+
+/* =========================================================
+   V2.53.3 — Visual Polish + Midnight Prayer Fix
+   ========================================================= */
+
+/* Header: Cari + Lonceng kembali menjadi dua tombol mandiri */
+#app .home-topbar{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+}
+#app .home-brand{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  max-width:calc(100% - 92px)!important;
+}
+#app .home-brand h1,
+#app .home-brand p{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+#app .home-header-tools{
+  flex:0 0 auto!important;
+  display:flex!important;
+  gap:8px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+#app .home-light-hero .home-header-tools .home-header-icon,
+#app .home-light-hero .home-header-tools .notif-icon.home-header-icon{
+  width:36px!important;
+  height:36px!important;
+  min-width:36px!important;
+  padding:0!important;
+  border:1px solid #eadfce!important;
+  border-radius:50%!important;
+  background:#fffdf9!important;
+  color:#245246!important;
+  box-shadow:0 5px 13px rgba(59,43,21,.065)!important;
+}
+#app .home-light-hero .home-header-tools .home-header-icon + .home-header-icon{
+  border-left:1px solid #eadfce!important;
+  border-radius:50%!important;
+}
+#app .home-light-hero .home-header-tools .home-header-icon svg{
+  width:17px!important;
+  height:17px!important;
+}
+
+/* Home: section terasa lebih fresh, tidak berteriak */
+#app .section-head>b,
+#app .section-title{
+  font-family:Georgia,'Times New Roman',serif!important;
+  font-size:20px!important;
+  line-height:1.15!important;
+  font-weight:500!important;
+  text-transform:none!important;
+  letter-spacing:-.01em!important;
+  color:#18493d!important;
+}
+#app .section-head .link{
+  font-size:10.5px!important;
+  color:#7c6a53!important;
+}
+#app>main{
+  padding-bottom:132px!important;
+}
+
+/* Khazanah: lebih ringan dan tidak terlalu kotak */
+#app .category-section .categories{
+  gap:7px!important;
+}
+#app .category-section .categories button{
+  min-height:86px!important;
+  padding:11px 4px 10px!important;
+  border-radius:16px!important;
+  background:linear-gradient(180deg,#fffefa,#fbf7ef)!important;
+}
+#app .category-section .category-icon{
+  width:30px!important;
+  height:30px!important;
+  border-radius:11px!important;
+  background:#edf4ef!important;
+  padding:6px!important;
+}
+#app .category-section .categories b{
+  font-size:10px!important;
+  margin-top:7px!important;
+}
+#app .category-section .categories small{
+  font-size:7.6px!important;
+}
+
+/* Bottom nav: active lebih halus */
+#app .bottom-nav{
+  border-radius:24px!important;
+  padding:5px!important;
+}
+#app .bottom-nav button{
+  min-height:48px!important;
+  border-radius:16px!important;
+}
+#app .bottom-nav .active{
+  background:#edf2ed!important;
+  box-shadow:inset 0 0 0 1px rgba(37,94,77,.045)!important;
+}
+#app .bottom-nav .active::after{
+  width:16px!important;
+}
+
+/* =========================================================
+   Settings — compact Minimal Modern
+   ========================================================= */
+.settings-minimal-modern{
+  background:#f8f7f3!important;
+  padding-left:12px!important;
+  padding-right:12px!important;
+}
+.settings-minimal-modern .settings-topbar{
+  margin-bottom:4px!important;
+}
+.settings-title-wrap>b{
+  font-size:19px!important;
+}
+.settings-title-wrap>small{
+  font-size:8.5px!important;
+}
+.settings-section-label{
+  margin:15px 6px 7px!important;
+  font-size:8px!important;
+  letter-spacing:.13em!important;
+}
+.settings-panel{
+  border-radius:17px!important;
+  box-shadow:0 4px 13px rgba(47,38,25,.038)!important;
+}
+.settings-row-head{
+  grid-template-columns:34px minmax(0,1fr) auto!important;
+  gap:9px!important;
+  padding:11px 12px!important;
+}
+.settings-row-head-static{
+  grid-template-columns:34px minmax(0,1fr)!important;
+}
+.settings-row-icon{
+  width:34px!important;
+  height:34px!important;
+  border-radius:11px!important;
+}
+.settings-row-icon svg{
+  width:18px!important;
+  height:18px!important;
+}
+.settings-row-copy h3{
+  font-size:11.5px!important;
+  margin-bottom:2px!important;
+}
+.settings-row-copy p{
+  font-size:8.5px!important;
+  line-height:1.4!important;
+}
+
+/* Prayer selection: compact chips, no giant checkbox */
+.settings-minimal-modern .prayer-toggle-grid{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:5px!important;
+}
+.settings-minimal-modern .prayer-toggle-grid label{
+  min-height:54px!important;
+  padding:7px 2px 6px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:5px!important;
+  border-radius:11px!important;
+  font-size:8px!important;
+}
+.settings-minimal-modern .prayer-toggle-grid input[type="checkbox"]{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  width:16px!important;
+  height:16px!important;
+  min-width:16px!important;
+  margin:0!important;
+  border:1.4px solid #9cb7ad!important;
+  border-radius:5px!important;
+  background:#fff!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.settings-minimal-modern .prayer-toggle-grid input[type="checkbox"]:checked{
+  border-color:#23624f!important;
+  background:#23624f!important;
+}
+.settings-minimal-modern .prayer-toggle-grid input[type="checkbox"]:checked::after{
+  content:"✓"!important;
+  color:white!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  line-height:1!important;
+}
+
+/* Reminder row lebih pendek */
+.settings-select-row{
+  margin-top:9px!important;
+  padding:9px 10px!important;
+}
+.settings-select-row select{
+  min-width:118px!important;
+}
+
+/* Izin aktif tampil seperti status, bukan tombol disable besar */
+#notificationPermissionBtn.permission-granted{
+  background:#edf3ef!important;
+  color:#27604f!important;
+  border:1px solid #d5e4dc!important;
+  box-shadow:none!important;
+  opacity:1!important;
+}
+#notificationPermissionBtn.permission-denied{
+  background:#fff0ed!important;
+  color:#a85145!important;
+  border:1px solid #f0d0ca!important;
+  opacity:1!important;
+}
+
+/* Adzan: pilihan lebih ringkas */
+.settings-choice-list{
+  gap:5px!important;
+  margin-bottom:10px!important;
+}
+.settings-choice-list .adhan-mode-option{
+  min-height:55px!important;
+  padding:8px 10px!important;
+  border-radius:11px!important;
+  align-items:center!important;
+}
+.settings-choice-list .adhan-mode-option input{
+  width:17px!important;
+  height:17px!important;
+  margin-top:0!important;
+}
+.settings-choice-list .adhan-mode-option b{
+  font-size:9.3px!important;
+}
+.settings-choice-list .adhan-mode-option small{
+  font-size:7.7px!important;
+}
+
+/* Jika izin exact sudah siap, Tes/Hentikan berdampingan */
+.settings-minimal-modern .adhan-action-row{
+  grid-template-columns:1fr 1fr!important;
+}
+.settings-minimal-modern #adhanExactAlarmBtn{
+  grid-column:1/-1!important;
+}
+.settings-minimal-modern #adhanTestBtn,
+.settings-minimal-modern #adhanStopBtn{
+  width:100%!important;
+}
+
+/* Buttons less bulky */
+.settings-action-row button,
+.settings-wide-button,
+.settings-offline-actions button{
+  min-height:34px!important;
+  border-radius:10px!important;
+}
+
+/* About panel sedikit lebih ringkas */
+.settings-about-panel{
+  padding:12px!important;
+}
+
+@media(max-width:390px){
+  #app .home-brand{
+    max-width:calc(100% - 84px)!important;
+  }
+  #app .home-light-hero .home-header-tools .home-header-icon,
+  #app .home-light-hero .home-header-tools .notif-icon.home-header-icon{
+    width:34px!important;height:34px!important;min-width:34px!important;
+  }
+  .settings-minimal-modern .adhan-action-row{
+    grid-template-columns:1fr 1fr!important;
+  }
+}

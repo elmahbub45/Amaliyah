@@ -1583,10 +1583,12 @@ function renderPrayers(t){
     }
 
     let active;
+    // Setelah tengah malam tetapi sebelum Subuh, waktu sholat aktif
+    // masih Isya dari hari sebelumnya. Subuh adalah waktu berikutnya.
     if(curMinutes<prayers[0].mins){
-      active=prayers[0];
+      active=prayers[prayers.length-1];
     }else{
-      active=[...prayers].reverse().find(x=>x.mins<=curMinutes)||prayers[0];
+      active=[...prayers].reverse().find(x=>x.mins<=curMinutes)||prayers[prayers.length-1];
     }
 
     $('#prayerTimes').innerHTML=display.map(x=>
@@ -2161,6 +2163,7 @@ function syncNotificationUI(){
 
   const status=$('#notificationStatusText');
   const btn=$('#notificationPermissionBtn');
+  if(btn)btn.classList.remove('permission-granted','permission-denied');
   if(permission==='unsupported'){
     if(status)status.textContent='Perangkat ini belum mendukung notifikasi Amaliyah.';
     if(btn)btn.classList.add('hidden');
@@ -2168,10 +2171,10 @@ function syncNotificationUI(){
     if(status)status.textContent=nativeNotificationApp()
       ? 'Izin notifikasi diblokir di pengaturan aplikasi.'
       : 'Izin notifikasi diblokir di pengaturan perangkat.';
-    if(btn){btn.textContent='Izin Diblokir';btn.disabled=true;}
+    if(btn){btn.textContent='Izin Diblokir';btn.disabled=true;btn.classList.add('permission-denied');}
   }else if(permission==='granted'){
     if(status)status.textContent=s.enabled?'Notifikasi Aktif':'Izin tersedia • notifikasi belum dinyalakan';
-    if(btn){btn.textContent='Izin Notifikasi Aktif';btn.disabled=true;}
+    if(btn){btn.textContent='Izin Notifikasi Aktif';btn.disabled=true;btn.classList.add('permission-granted');}
   }else{
     if(status)status.textContent='Notifikasi belum diizinkan.';
     if(btn){btn.textContent='Aktifkan Izin Notifikasi';btn.disabled=false;btn.classList.remove('hidden');}
