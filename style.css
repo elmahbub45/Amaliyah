@@ -3291,3 +3291,117 @@ body{
     min-height:66px!important;
   }
 }
+
+
+/* =========================================================
+   V2.53.5 — GLOBAL FLOATING NAVIGATION
+   Satu navigasi untuk seluruh halaman aplikasi utama.
+   Reader dan Al-Qur'an berada di dokumen terpisah, sehingga
+   navigasi ini tidak tampil di sana.
+   ========================================================= */
+
+#globalBottomNav.global-bottom-nav{
+  position:fixed!important;
+  z-index:1200!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:8px!important;
+  transform:translateX(-50%)!important;
+  width:min(530px,calc(100% - 22px))!important;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:0!important;
+  padding:5px 6px calc(5px + env(safe-area-inset-bottom))!important;
+  margin:0!important;
+  border:1px solid #e8dfd2!important;
+  border-radius:23px!important;
+  background:rgba(255,253,249,.985)!important;
+  box-shadow:0 12px 28px rgba(48,37,24,.13)!important;
+  backdrop-filter:blur(18px)!important;
+  -webkit-backdrop-filter:blur(18px)!important;
+}
+
+#globalBottomNav.global-bottom-nav button{
+  min-width:0!important;
+  min-height:47px!important;
+  padding:5px 2px 4px!important;
+  border:0!important;
+  border-radius:15px!important;
+  background:transparent!important;
+  color:#988e81!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  box-shadow:none!important;
+}
+
+#globalBottomNav.global-bottom-nav .nav-icon{
+  width:19px!important;
+  height:19px!important;
+  display:block!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+
+#globalBottomNav.global-bottom-nav span{
+  display:block!important;
+  margin:0!important;
+  color:inherit!important;
+  font-size:8px!important;
+  line-height:1.05!important;
+  font-weight:650!important;
+}
+
+#globalBottomNav.global-bottom-nav button.active{
+  color:#1f604e!important;
+  background:#f0f3ef!important;
+  box-shadow:none!important;
+}
+
+#globalBottomNav.global-bottom-nav button.active::after{
+  content:""!important;
+  display:block!important;
+  width:14px!important;
+  height:2px!important;
+  margin:2px auto 0!important;
+  border-radius:99px!important;
+  background:#1f604e!important;
+}
+
+/* Ruang aman agar isi halaman tidak tertutup footer floating */
+#app,
+.screen{
+  padding-bottom:calc(105px + env(safe-area-inset-bottom))!important;
+}
+#app>main{
+  padding-bottom:132px!important;
+}
+
+/* Nav lama tidak lagi berada di dalam #app */
+#app>.bottom-nav{
+  display:none!important;
+}
+
+@media(max-width:390px){
+  #globalBottomNav.global-bottom-nav{
+    width:calc(100% - 18px)!important;
+    bottom:7px!important;
+    padding-left:4px!important;
+    padding-right:4px!important;
+  }
+  #globalBottomNav.global-bottom-nav button{
+    min-height:45px!important;
+  }
+  #globalBottomNav.global-bottom-nav .nav-icon{
+    width:18px!important;
+    height:18px!important;
+  }
+  #globalBottomNav.global-bottom-nav span{
+    font-size:7.6px!important;
+  }
+}

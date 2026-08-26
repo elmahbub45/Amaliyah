@@ -281,11 +281,32 @@ function getSavedScreenState(){
   }catch{return null}
 }
 
+function globalNavKeyForScreen(screen='home'){
+  if(screen==='categories' || screen==='library' || screen==='collection')return 'categories';
+  if(screen==='bookmarks')return 'bookmarks';
+  if(screen==='history')return 'history';
+  if(screen==='settings')return 'settings';
+  // Jadwal bulanan dan Kelola Favorit berasal dari Beranda.
+  if(screen==='monthly' || screen==='favorites')return 'home';
+  return 'home';
+}
+function updateGlobalBottomNav(screen='home'){
+  const nav=$('#globalBottomNav');
+  if(!nav)return;
+  const activeKey=globalNavKeyForScreen(screen);
+  nav.querySelectorAll('[data-nav-key]').forEach(btn=>{
+    const isActive=btn.dataset.navKey===activeKey;
+    btn.classList.toggle('active',isActive);
+    if(isActive)btn.setAttribute('aria-current','page');
+    else btn.removeAttribute('aria-current');
+  });
+}
 function paintScreen(screen='home'){
   const id=SCREEN_TO_ID[screen]||SCREEN_TO_ID.home;
   Object.values(SCREEN_TO_ID).forEach(x=>$(x)?.classList.add('hidden'));
   $(id)?.classList.remove('hidden');
   currentScreen=screen;
+  updateGlobalBottomNav(screen);
   scrollTo(0,0);
 }
 function navigateScreen(screen='home',opts={}){
