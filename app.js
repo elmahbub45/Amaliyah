@@ -1,3 +1,4 @@
+/* V2.53.2 — Theme Unification + Settings UI only; functional logic preserved. */
 const $ = s => document.querySelector(s);
 const store = localStorage;
 

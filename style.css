@@ -2248,3 +2248,77 @@ html,body{background:#f1ece3}
   #app .quran-home-card.quran-home-card-light{grid-template-columns:36% minmax(0,1fr)!important}
   #app .quran-home-card-light .quran-home-copy h2{font-size:17px!important}
 }
+
+
+/* =========================================================
+   V2.53.2 — Theme Unification + Minimal Modern Settings
+   ========================================================= */
+:root{--home-ivory:#fbf8f1;--home-surface:#fffdf9;--home-line:#e9dfd2;--home-green:#184f40;--home-green-2:#2f725d;--home-mint:#e7f1eb;--home-gold:#c9a45d;--home-text:#243b34;--home-muted:#7b746b}
+
+/* Header tools: kecil, ringan, satu bahasa dengan tema terang */
+#app .home-header-tools{gap:2px!important;padding:3px!important;border:1px solid rgba(224,211,190,.78)!important;border-radius:18px!important;background:rgba(255,253,249,.78)!important;box-shadow:0 5px 16px rgba(63,45,22,.055)!important;backdrop-filter:blur(10px)!important}
+#app .home-light-hero .home-header-tools .home-header-icon,#app .home-light-hero .home-header-tools .notif-icon.home-header-icon{width:31px!important;height:31px!important;min-width:31px!important;border:0!important;border-radius:14px!important;background:transparent!important;box-shadow:none!important;color:#31594d!important}
+#app .home-light-hero .home-header-tools .home-header-icon+ .home-header-icon{border-left:1px solid #eee4d6!important;border-radius:0 14px 14px 0!important}
+#app .home-light-hero .home-header-tools .home-header-icon svg{width:16px!important;height:16px!important;stroke-width:1.7!important}
+#app .home-light-hero .notif-icon.notification-active{color:#9d7830!important;background:#f7eedb!important}
+
+/* Hilangkan summary lama di antara prayer times dan Jadwal Bulanan */
+#app .prayer-premium-light .prayer-next-summary{display:none!important}
+
+/* Judul section seperti editorial ringan */
+#app .section-head,#app .continue-home-section>.section-title{margin:0 2px 9px!important}
+#app .section-head>b,#app .section-title{font-family:Georgia,'Times New Roman',serif!important;font-size:19px!important;line-height:1.1!important;font-weight:500!important;color:var(--home-green)!important;text-transform:none!important}
+#app .section-head .link{padding:5px 1px!important;background:transparent!important;color:#74624e!important;font-size:10px!important;font-weight:600!important}
+
+/* Khazanah: card terang dengan ikon emerald, tidak terasa seperti tema lama */
+#app .category-section .categories{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;overflow:hidden!important}
+#app .category-section .categories button{position:relative!important;min-height:88px!important;padding:12px 5px 10px!important;border:1px solid var(--home-line)!important;border-radius:17px!important;background:linear-gradient(180deg,#fffefb 0%,#faf6ee 100%)!important;box-shadow:0 6px 16px rgba(56,42,24,.045)!important;color:var(--home-green)!important}
+#app .category-section .categories button::before{content:"";position:absolute;inset:7px;border-radius:12px;background:radial-gradient(circle at 50% 20%,rgba(47,114,93,.07),transparent 52%);pointer-events:none}
+#app .category-section .category-icon{position:relative;z-index:1;width:34px!important;height:34px!important;margin:0 auto 6px!important;padding:6px!important;border-radius:11px!important;background:#edf3ef!important;color:#25614f!important}
+#app .category-section .categories b{position:relative;z-index:1;margin:0!important;font-size:10px!important;color:#2d443c!important;font-weight:650!important}
+#app .category-section .categories small{position:relative;z-index:1;margin-top:3px!important;font-size:7.8px!important;color:#8b8277!important}
+
+/* Lanjutkan membaca: satu card horizontal minimal */
+#app .continue-home-section .reading-card{display:grid!important;grid-template-columns:52px minmax(0,1fr) 42px!important;gap:11px!important;align-items:center!important;padding:10px!important;border-radius:18px!important;background:#fffdf9!important;border:1px solid var(--home-line)!important;box-shadow:0 7px 18px rgba(56,42,24,.05)!important}
+#app .continue-home-section .home-book-icon{width:52px!important;height:58px!important;border-radius:13px!important;background:linear-gradient(160deg,#f6efe1,#eaf1eb)!important;border:1px solid #e5dac9!important;color:#235a49!important;font-size:23px!important;box-shadow:none!important}
+#app .continue-home-section .grow h3{font-family:Georgia,'Times New Roman',serif!important;font-size:15px!important;font-weight:500!important;color:#25463d!important}
+#app .continue-home-section .grow p{margin:4px 0 7px!important;font-size:9.5px!important;color:#7d756b!important}
+#app .continue-home-section .progress{height:4px!important;background:#eee7dc!important}
+#app .continue-home-section .progress i{background:#397963!important}
+#app .continue-home-section #continueBtn{width:40px!important;height:40px!important;min-width:40px!important;padding:0!important;border-radius:50%!important;overflow:hidden!important;font-size:0!important;background:linear-gradient(180deg,#4f876e,#2d6650)!important;box-shadow:0 6px 13px rgba(36,91,72,.15)!important}
+#app .continue-home-section #continueBtn::after{content:"›";font-size:23px;line-height:1;color:white}
+
+/* Favorit: strip lebih lembut, ringan */
+#app .favorites-section .favorite-strip{gap:8px!important;padding-bottom:2px!important}
+#app .favorites-section .favorite-strip>*{border:1px solid var(--home-line)!important;border-radius:16px!important;background:linear-gradient(180deg,#fffefb,#faf6ef)!important;box-shadow:0 5px 14px rgba(57,43,24,.04)!important}
+
+/* Floating bottom nav minimal modern */
+#app .bottom-nav{width:min(530px,calc(100% - 22px))!important;bottom:8px!important;border-radius:22px!important;background:rgba(255,253,249,.985)!important;border:1px solid #e8dfd2!important;padding:5px 6px calc(5px + env(safe-area-inset-bottom))!important;box-shadow:0 12px 28px rgba(48,37,24,.13)!important}
+#app .bottom-nav button{min-height:49px!important;border-radius:15px!important;color:#9a9287!important}
+#app .bottom-nav .active{color:#235e4d!important;background:#eef2ed!important;box-shadow:none!important}
+#app .bottom-nav .active::after{content:"";display:block;width:18px;height:2px;margin:3px auto 0;border-radius:99px;background:#235e4d}
+
+/* Settings screen — Minimal Modern, bukan card dekoratif berat */
+.settings-minimal-modern{background:#f7f6f2!important;padding:calc(10px + env(safe-area-inset-top)) 13px 112px!important;color:#273d36!important}
+.settings-minimal-modern .settings-topbar{position:sticky;top:0;z-index:8;margin:-2px -3px 8px!important;padding:5px 3px 10px!important;background:linear-gradient(180deg,rgba(247,246,242,.99) 78%,rgba(247,246,242,0))!important;grid-template-columns:38px 1fr 38px!important}
+.settings-minimal-modern .settings-topbar>button{width:34px;height:34px;display:grid;place-items:center;border:1px solid #e8e2d9!important;border-radius:50%;background:#fff!important;font-size:24px!important;color:#31584c;box-shadow:0 3px 10px rgba(50,39,25,.05)}
+.settings-title-wrap{display:flex;flex-direction:column;align-items:center;gap:2px}.settings-title-wrap>b{font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:500;color:#1e4f41}.settings-title-wrap>small{font-size:9px;color:#91897e;font-weight:450}
+.settings-section-label{margin:17px 7px 7px;font-size:8.5px;line-height:1;font-weight:800;letter-spacing:.14em;color:#8a7b68}
+.settings-panel{margin:0 0 10px!important;padding:0!important;border:1px solid #e9e4dc!important;border-radius:18px!important;background:#fff!important;box-shadow:0 5px 16px rgba(47,38,25,.045)!important;overflow:hidden!important}
+.settings-row-head{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:10px;align-items:center;padding:13px 13px}.settings-row-head-static{grid-template-columns:38px minmax(0,1fr)}
+.settings-row-icon{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:#edf3ef;color:#24604f}.settings-row-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+.settings-row-copy{min-width:0}.settings-row-copy h3{margin:0 0 3px!important;font-family:inherit!important;font-size:12px!important;font-weight:700!important;color:#2b443b!important}.settings-row-copy p{margin:0!important;font-size:9px!important;line-height:1.45!important;color:#8a837a!important}
+.settings-inner-block{margin:0 13px!important;padding:12px 0!important;border-top:1px solid #eee9e1!important}
+.settings-minimal-modern .notification-label{font-size:9px!important;color:#766f65!important;margin-bottom:8px!important;font-weight:700!important}
+.settings-minimal-modern .prayer-toggle-grid{gap:5px!important}.settings-minimal-modern .prayer-toggle-grid label{padding:8px 3px!important;border:1px solid #ece7df!important;border-radius:10px!important;background:#faf9f6!important;font-size:8.5px!important}.settings-minimal-modern .prayer-toggle-grid label:has(input:checked){background:#eaf3ee!important;border-color:#bcd5c9!important;color:#1f5d4c!important}
+.settings-select-row{margin-top:10px!important;padding:10px 11px!important;border:1px solid #ece7df!important;border-radius:12px!important;background:#faf9f6!important}.settings-select-row>span{display:flex;flex-direction:column;gap:2px}.settings-select-row b{font-size:9.5px;color:#3c4c46}.settings-select-row small{font-size:7.8px;color:#999188}.settings-select-row select{max-width:132px!important;padding:7px 8px!important;border:0!important;border-radius:9px!important;background:white!important;color:#31584c!important;font-size:8.5px!important}
+.settings-action-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;margin:0!important;padding:0 13px 12px!important}.settings-action-row button{min-height:36px!important;margin:0!important;border-radius:11px!important;font-size:9px!important}.settings-action-row .primary,.settings-wide-button.primary,.settings-offline-actions .primary{background:#275f4e!important;color:#fff!important;box-shadow:none!important}.settings-action-row .secondary,.settings-offline-actions .secondary{background:#f6f4ef!important;color:#3d514a!important;border:1px solid #e6e0d7!important}
+.settings-note{display:block;margin:0!important;padding:0 13px 12px!important;font-size:7.9px!important;line-height:1.45!important;color:#999188!important}
+.settings-minimal-modern .switch{width:43px;height:25px}.settings-minimal-modern .switch-track::after{width:19px;height:19px}.settings-minimal-modern .switch input:checked + .switch-track::after{transform:translateX(18px)}.settings-minimal-modern .switch input:checked + .switch-track{background:#2d745e}
+.settings-choice-list{margin:0 13px 12px!important;display:grid!important;gap:6px!important}.settings-choice-list .adhan-mode-option{padding:10px 11px!important;border:1px solid #ece7df!important;border-radius:12px!important;background:#faf9f6!important}.settings-choice-list .adhan-mode-option:has(input:checked){background:#eaf3ee!important;border-color:#b9d4c7!important;box-shadow:none!important}.settings-choice-list .adhan-mode-option b{font-size:9.5px!important}.settings-choice-list .adhan-mode-option small{font-size:8px!important}
+.settings-minimal-modern .adhan-action-row{grid-template-columns:1.45fr .8fr .8fr!important}
+.settings-simple-panel{padding-bottom:12px!important}.settings-wide-button{display:flex!important;width:calc(100% - 26px)!important;margin:0 13px!important;min-height:38px!important;align-items:center!important;justify-content:center!important;border:0!important;border-radius:11px!important;text-decoration:none!important;font-size:9px!important}
+.settings-minimal-modern .quran-offline-settings-head{display:grid!important}.settings-minimal-modern .quran-offline-settings-head>strong{grid-column:3!important;grid-row:1!important;align-self:center!important;min-width:42px!important;height:29px!important;background:#eef3ef!important;color:#2c6755!important;font-size:9px!important}.settings-minimal-modern .settings-offline-progress{margin:0 13px 8px!important;height:5px!important}.settings-minimal-modern .settings-offline-count{margin:0 13px 10px!important;font-size:8px!important}.settings-minimal-modern .settings-offline-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;margin:0!important;padding:0 13px 12px!important}.settings-minimal-modern .settings-offline-actions button{min-height:36px!important;border-radius:11px!important;font-size:9px!important}
+.settings-about-panel{display:grid!important;grid-template-columns:47px minmax(0,1fr)!important;gap:12px!important;align-items:center!important;padding:14px!important}.settings-about-panel .about-app-mark{width:45px!important;height:45px!important;border-radius:13px!important;background:#285f4f!important;box-shadow:none!important}.settings-about-panel .about-app-kicker{font-size:7.5px!important;color:#9b8662!important}.settings-about-panel .about-app-copy h3{font-size:12px!important;margin:0 0 2px!important}.settings-about-panel .about-app-copy p{font-size:8.5px!important;margin:0 0 5px!important}.settings-about-panel .developer-line{font-size:8px!important}
+
+@media(max-width:390px){#app .category-section .categories{grid-template-columns:repeat(4,minmax(0,1fr))!important}.settings-minimal-modern .adhan-action-row{grid-template-columns:1fr!important}.settings-minimal-modern .adhan-action-row button{width:100%!important}.settings-title-wrap>small{font-size:8px}}
