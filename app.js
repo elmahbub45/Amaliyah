@@ -557,7 +557,10 @@ function updateCategoryCounts(){
     el.dataset.activeCategory=cat;
     const count=isAll ? items.length : items.filter(b=>b.category===cat).length;
     const title=el.querySelector('b');
-    if(title)title.textContent=isAll?'Lihat Semua':categoryDisplayName(cat);
+    if(title){
+      const customTitle=String(el.dataset.displayTitle||'').trim();
+      title.textContent=isAll?'Lihat Semua':(customTitle||categoryDisplayName(cat));
+    }
     const label=el.querySelector('small');
     if(label){
       label.textContent=isAll
@@ -572,7 +575,8 @@ function updateCategoryCounts(){
 
 function categoryVisualKey(value){
   const text=String(value||'').toLocaleLowerCase('id-ID');
-  if(text.includes('qur'))return 'quran';
+  if(text.includes('qur')||text.includes('surah'))return 'quran';
+  if(text.includes('sholat')||text.includes('salat'))return 'mosque';
   if(text.includes('wirid'))return 'wirid';
   if(text.includes('doa'))return 'doa';
   if(text.includes('maulid'))return 'maulid';
@@ -956,10 +960,11 @@ function renderHomeFavorites(){
     const meta=isPart
       ? `${entry.item.title} • Bagian`
       : (entry.item.type==='collection'?'Koleksi':entry.item.type==='group'?'Kelompok':entry.item.category);
-    return `<button class="favorite-card ${isPart?'favorite-card-part':''}" type="button" data-fav-key="${entry.key}">
-      <span class="favorite-icon">${entry.item.icon||'◈'}</span>
+    return `<button class="favorite-card home-favorite-card ${isPart?'favorite-card-part':''}" type="button" data-fav-key="${entry.key}">
+      <span class="favorite-icon home-favorite-icon">${categoryVisualSvg(entry.item.category)}</span>
       <span class="favorite-copy"><b>${title}</b><small>${meta}</small></span>
-      <span class="favorite-star">★</span>
+      <span class="favorite-heart" aria-hidden="true">♥</span>
+      <span class="favorite-open" aria-hidden="true">›</span>
     </button>`;
   }).join('');
 

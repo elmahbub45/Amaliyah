@@ -3405,3 +3405,199 @@ body{
     font-size:7.6px!important;
   }
 }
+
+
+/* =========================================================
+   V2.53.6 — HOME REORDER + FAVORITES REFRESH
+   Al-Qur'an -> Favorit -> Khazanah -> Lanjutkan Membaca
+   ========================================================= */
+
+/* Home section rhythm after Quran */
+#app .quran-home-section + .favorites-section{
+  margin-top:20px!important;
+}
+#app .favorites-section + .category-section{
+  margin-top:20px!important;
+}
+#app .category-section + .continue-home-section{
+  margin-top:20px!important;
+}
+
+/* Favorit: section yang lebih premium, tetapi tetap light */
+#app .favorites-section .section-head{
+  margin-bottom:9px!important;
+}
+#app .favorites-section .section-head .link{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  padding:6px 9px!important;
+  border:1px solid #eadfce!important;
+  border-radius:999px!important;
+  background:#fffaf2!important;
+  color:#7f6941!important;
+  font-size:9px!important;
+}
+#app .favorites-section .favorite-strip{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  overflow:visible!important;
+  padding:0!important;
+}
+#app .favorites-section .home-favorite-card{
+  position:relative!important;
+  min-width:0!important;
+  width:auto!important;
+  min-height:72px!important;
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr) 17px!important;
+  grid-template-rows:auto!important;
+  gap:8px!important;
+  align-items:center!important;
+  padding:9px 8px 9px 9px!important;
+  border:1px solid #e8ded0!important;
+  border-radius:16px!important;
+  background:
+    radial-gradient(circle at 15% 0%,rgba(201,165,90,.065),transparent 36%),
+    linear-gradient(180deg,#fffefb 0%,#faf7f0 100%)!important;
+  box-shadow:0 6px 16px rgba(56,43,25,.045)!important;
+  text-align:left!important;
+  color:#233f37!important;
+  overflow:hidden!important;
+}
+#app .favorites-section .home-favorite-card::before{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;
+  top:15px!important;
+  bottom:15px!important;
+  width:2px!important;
+  border-radius:0 2px 2px 0!important;
+  background:linear-gradient(180deg,#d5b66d,#b78e3e)!important;
+  opacity:.62!important;
+}
+#app .favorites-section .home-favorite-icon{
+  grid-column:1!important;
+  width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid #e8dbc3!important;
+  border-radius:12px!important;
+  background:linear-gradient(145deg,#fbf7ed,#eef4ef)!important;
+  color:#286450!important;
+}
+#app .favorites-section .home-favorite-icon svg{
+  width:21px!important;
+  height:21px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.65!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+#app .favorites-section .home-favorite-card .favorite-copy{
+  grid-column:2!important;
+  min-width:0!important;
+}
+#app .favorites-section .home-favorite-card .favorite-copy b{
+  display:block!important;
+  margin:0!important;
+  padding:0 12px 0 0!important;
+  font-size:10.5px!important;
+  line-height:1.22!important;
+  color:#274239!important;
+  font-weight:700!important;
+  overflow:hidden!important;
+  display:-webkit-box!important;
+  -webkit-line-clamp:2!important;
+  -webkit-box-orient:vertical!important;
+}
+#app .favorites-section .home-favorite-card .favorite-copy small{
+  display:block!important;
+  margin-top:3px!important;
+  font-size:7.6px!important;
+  line-height:1.2!important;
+  color:#8b8276!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#app .favorites-section .favorite-heart{
+  position:absolute!important;
+  right:9px!important;
+  top:7px!important;
+  color:#c49b4c!important;
+  font-size:9px!important;
+  opacity:.78!important;
+}
+#app .favorites-section .favorite-open{
+  grid-column:3!important;
+  align-self:center!important;
+  justify-self:center!important;
+  color:#9a8c76!important;
+  font-family:Georgia,'Times New Roman',serif!important;
+  font-size:20px!important;
+  line-height:1!important;
+}
+#app .favorites-section .favorite-star{
+  display:none!important;
+}
+
+/* Khazanah exact seven categories: 4 + 3 */
+#app .home-khazanah-seven{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+  overflow:visible!important;
+}
+#app .home-khazanah-seven button{
+  min-height:76px!important;
+}
+#app .home-khazanah-seven button:nth-child(n+5){
+  min-height:74px!important;
+}
+#app .home-khazanah-seven .category-icon{
+  background:linear-gradient(145deg,#edf4ef,#f8f5eb)!important;
+}
+#app .home-khazanah-seven button:nth-child(1) .category-icon,
+#app .home-khazanah-seven button:nth-child(4) .category-icon{
+  color:#1f604e!important;
+}
+#app .home-khazanah-seven button:nth-child(5) .category-icon,
+#app .home-khazanah-seven button:nth-child(7) .category-icon{
+  color:#997539!important;
+}
+
+/* Continue now comes last, with a little breathing room before floating nav */
+#app .continue-home-section{
+  margin-bottom:18px!important;
+}
+
+@media(max-width:390px){
+  #app .favorites-section .home-favorite-card{
+    min-height:69px!important;
+    grid-template-columns:37px minmax(0,1fr) 15px!important;
+    gap:7px!important;
+    padding-left:8px!important;
+  }
+  #app .favorites-section .home-favorite-icon{
+    width:37px!important;
+    height:37px!important;
+    min-height:37px!important;
+    border-radius:11px!important;
+  }
+  #app .favorites-section .home-favorite-card .favorite-copy b{
+    font-size:9.8px!important;
+  }
+  #app .home-khazanah-seven{
+    gap:6px!important;
+  }
+  #app .home-khazanah-seven button{
+    min-height:73px!important;
+    padding-left:3px!important;
+    padding-right:3px!important;
+  }
+}
