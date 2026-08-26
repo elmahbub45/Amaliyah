@@ -1550,9 +1550,20 @@ function renderPrayers(t){
   ];
   const prayerNames=displayNames.slice(1);
   const parse=([n,k])=>{
-    const tm=cleanTime(t[k]);
+    let tm=cleanTime(t[k]);
+    // Sebagian sumber jadwal Kemenag tidak mengirim Imsak.
+    // Untuk tampilan beranda, gunakan 10 menit sebelum Subuh sebagai fallback.
+    if(n==='Imsak' && !/^\d{2}:\d{2}$/.test(tm)){
+      const fajr=cleanTime(t.Fajr);
+      if(/^\d{2}:\d{2}$/.test(fajr)){
+        const [fh,fm]=fajr.split(':').map(Number);
+        const total=(fh*60+fm-10+1440)%1440;
+        tm=`${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;
+      }
+    }
     const a=tm.split(':').map(Number);
-    return {n,k,tm,mins:a[0]*60+a[1]};
+    const mins=(Number.isFinite(a[0])&&Number.isFinite(a[1]))?a[0]*60+a[1]:0;
+    return {n,k,tm,mins};
   };
   const display=displayNames.map(parse);
   const prayers=prayerNames.map(parse);
