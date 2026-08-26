@@ -687,3 +687,30 @@ body.controls-off #stage{
 /* V2.50.0 — Offline Comfort */
 .reader-offline-badge{position:fixed;z-index:40;top:calc(68px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:calc(100vw - 28px);padding:7px 10px;border-radius:999px;background:rgba(35,53,46,.9);color:#f7d987;border:1px solid rgba(241,211,139,.2);box-shadow:0 6px 18px rgba(0,0,0,.15);font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}.reader-offline-badge.hidden{display:none}
 body.controls-off .reader-offline-badge{opacity:.55}
+
+
+/* =========================================================
+   V2.53.4 — Light Theme Alignment (Reader supporting UI only)
+   ========================================================= */
+:root{
+  --am-ui-bg:#f8f5ee;
+  --am-ui-surface:#fffdf8;
+  --am-ui-line:#e7ded0;
+  --am-ui-emerald:#1f6a57;
+  --am-ui-emerald-dark:#174d41;
+  --am-ui-soft:#eaf2ed;
+  --am-ui-gold:#c9a55a;
+}
+header,
+footer{
+  border-color:rgba(231,222,208,.72)!important;
+}
+header button,
+footer button{
+  border-radius:12px!important;
+}
+.reader-offline-badge{
+  background:rgba(31,73,61,.92)!important;
+  color:#fff8e8!important;
+  border-color:rgba(201,165,90,.22)!important;
+}

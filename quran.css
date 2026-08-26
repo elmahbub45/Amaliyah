@@ -484,3 +484,46 @@ html,body{background:linear-gradient(180deg,#efe7d7 0%,#f7f2e9 24%,#f3ecdf 100%)
   .directory-card{border-radius:26px}
   .directory-item{min-height:84px;border-radius:22px}
 }
+
+
+/* =========================================================
+   V2.53.4 — Light Theme Alignment for Qur'an directory
+   Mushaf reading page remains special.
+   ========================================================= */
+#quranDirectory,
+.quran-directory,
+.directory-screen{
+  background:#f8f5ee!important;
+}
+.directory-card,
+.directory-item,
+.directory-page-jump{
+  border-color:#e7ded0!important;
+  background:linear-gradient(180deg,#fffdf8,#fbf8f1)!important;
+  box-shadow:0 7px 18px rgba(55,43,25,.045)!important;
+}
+.directory-tabs{
+  background:#f0ede6!important;
+}
+.directory-tabs button.active{
+  color:#174d41!important;
+  background:#fffdf8!important;
+}
+.quran-search{
+  border-color:#e7ded0!important;
+  background:#fffdf8!important;
+}
+.directory-number{
+  background:#f8f1e4!important;
+  border-color:#e6d9c4!important;
+  color:#987439!important;
+}
+.directory-arrow{
+  background:#eaf2ed!important;
+  border-color:#d7e5de!important;
+  color:#1f6a57!important;
+}
+.page-jump-icon{
+  background:#1f6a57!important;
+  color:#f3d47f!important;
+}
