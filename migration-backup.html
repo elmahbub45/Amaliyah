@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b4d3b">
+<title>Cadangan Data Amaliyah</title>
+<style>
+:root{--green:#0b4d3b;--gold:#b88a39;--cream:#f7f3ea;--card:#fffdf8;--line:#e4dccd;--text:#18302a;--muted:#6d7a75}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text)}
+.wrap{max-width:680px;margin:auto;padding:18px 14px 30px}.head{display:flex;align-items:center;gap:10px;margin-bottom:14px}.back{border:0;background:var(--green);color:#fff;width:40px;height:40px;border-radius:13px;font-size:24px}.head b{font-size:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 8px 24px #173d3020;margin-bottom:12px}.mark{width:44px;height:44px;border-radius:14px;background:#e6efe9;color:var(--green);display:grid;place-items:center;font-size:22px;font-weight:800;margin-bottom:10px}h1{font-size:20px;margin:0 0 7px}h2{font-size:16px;margin:0 0 7px}p{margin:0;color:var(--muted);line-height:1.55;font-size:14px}.summary{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}.summary span{padding:11px;border:1px solid var(--line);border-radius:14px;background:#faf7f0}.summary b,.summary small{display:block}.summary b{font-size:17px;color:var(--green)}.summary small{font-size:11px;color:var(--muted);margin-top:2px}.btns{display:grid;gap:9px;margin-top:13px}button{font:inherit;font-weight:750;border:0;border-radius:14px;padding:13px 15px;cursor:pointer}.primary{background:var(--green);color:#fff}.secondary{background:#efe8da;color:var(--green);border:1px solid #ded2bd}.danger{background:#fff3f0;color:#9a463b;border:1px solid #ebcbc4}textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:14px;padding:12px;font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;color:#31413c;background:#fff;margin-top:12px}.status{margin-top:10px;padding:10px 12px;border-radius:12px;background:#edf5f0;color:#20583f;font-size:13px;display:none}.status.show{display:block}.warn{background:#fff7e6;color:#7c5c1e}.bad{background:#fff0ed;color:#8d4037}.note{font-size:12px;margin-top:10px;color:#7a746b}.divider{height:1px;background:var(--line);margin:18px 0}.restore{margin-top:10px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="head"><button class="back" type="button" onclick="history.back()" aria-label="Kembali">‹</button><b>Cadangan Data Amaliyah</b></div>
+
+  <section class="card">
+    <div class="mark">✓</div>
+    <h1>Simpan sebelum pindah APK</h1>
+    <p>Cadangan ini membaca data Amaliyah yang tersimpan di aplikasi ini. Tidak ada data yang dikirim ke server.</p>
+    <div class="summary">
+      <span><b id="itemCount">0</b><small>Data tersimpan</small></span>
+      <span><b id="byteCount">0 KB</b><small>Ukuran cadangan</small></span>
+    </div>
+    <div class="btns">
+      <button class="primary" type="button" id="copyBtn">Salin Cadangan</button>
+      <button class="secondary" type="button" id="refreshBtn">Perbarui Cadangan</button>
+    </div>
+    <div id="copyStatus" class="status"></div>
+    <textarea id="backupText" readonly spellcheck="false" aria-label="Isi cadangan"></textarea>
+    <p class="note"><b>Penting:</b> setelah menekan “Salin Cadangan”, tempelkan ke Catatan/Notepad dan simpan. Jangan uninstall Amaliyah lama sebelum salinan itu benar-benar tersimpan.</p>
+    <p class="note">Halaman Al-Qur'an yang pernah diunduh untuk tanpa internet tidak ikut disalin; halaman tersebut dapat diunduh ulang di APK baru.</p>
+  </section>
+
+  <section class="card restore">
+    <h2>Pulihkan setelah APK baru terpasang</h2>
+    <p>Nanti buka halaman ini dari APK baru, tempel cadangan lama, lalu tekan Pulihkan.</p>
+    <textarea id="restoreText" spellcheck="false" placeholder="Tempel cadangan di sini…"></textarea>
+    <div class="btns"><button class="danger" type="button" id="restoreBtn">Periksa & Pulihkan</button></div>
+    <div id="restoreStatus" class="status"></div>
+  </section>
+</main>
+<script>
+(()=>{
+  'use strict';
+  const FORMAT='amaliyah-migration-backup-v1';
+  const $=s=>document.querySelector(s);
+
+  function snapshot(){
+    const items={};
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(key!=null)items[key]=localStorage.getItem(key);
+    }
+    let native={};
+    try{
+      if(window.AmaliyahAndroid){
+        if(typeof AmaliyahAndroid.getNotificationEnabledState==='function')native.notificationEnabled=String(AmaliyahAndroid.getNotificationEnabledState());
+        if(typeof AmaliyahAndroid.getFcmStatus==='function')native.fcmStatus=String(AmaliyahAndroid.getFcmStatus());
+      }
+    }catch{}
+    return {format:FORMAT,version:1,createdAt:new Date().toISOString(),origin:location.origin,items,native};
+  }
+
+  function render(){
+    const data=snapshot();
+    const text=JSON.stringify(data);
+    $('#backupText').value=text;
+    $('#itemCount').textContent=Object.keys(data.items).length;
+    $('#byteCount').textContent=(new Blob([text]).size/1024).toFixed(1)+' KB';
+    return text;
+  }
+
+  function status(el,msg,type=''){
+    el.textContent=msg;
+    el.className='status show'+(type?' '+type:'');
+  }
+
+  async function copyBackup(){
+    const text=render();
+    let ok=false;
+    try{await navigator.clipboard.writeText(text);ok=true}catch{}
+    if(!ok){
+      const box=$('#backupText');
+      box.focus();box.select();
+      try{ok=document.execCommand('copy')}catch{}
+      box.setSelectionRange(0,0);
+    }
+    status($('#copyStatus'),ok?'Cadangan sudah disalin. Sekarang tempelkan ke Catatan/Notepad dan simpan.':'Salin otomatis belum berhasil. Tekan lama isi kotak cadangan, pilih Semua, lalu Salin.',ok?'':'warn');
+  }
+
+  function restore(){
+    const raw=$('#restoreText').value.trim();
+    if(!raw)return status($('#restoreStatus'),'Tempelkan isi cadangan terlebih dahulu.','warn');
+    let data;
+    try{data=JSON.parse(raw)}catch{return status($('#restoreStatus'),'Isi cadangan tidak terbaca. Pastikan disalin lengkap dari awal sampai akhir.','bad')}
+    if(!data||data.format!==FORMAT||!data.items||typeof data.items!=='object')return status($('#restoreStatus'),'File/teks ini bukan cadangan migrasi Amaliyah yang sesuai.','bad');
+    const entries=Object.entries(data.items);
+    try{
+      for(const [key,value] of entries)localStorage.setItem(key,value==null?'':String(value));
+    }catch{return status($('#restoreStatus'),'Sebagian data belum dapat dipulihkan karena penyimpanan perangkat tidak mencukupi.','bad')}
+    status($('#restoreStatus'),`Berhasil memulihkan ${entries.length} data. Kembali ke Beranda lalu buka ulang aplikasi.`);
+  }
+
+  $('#copyBtn').addEventListener('click',copyBackup);
+  $('#refreshBtn').addEventListener('click',()=>{render();status($('#copyStatus'),'Cadangan diperbarui dari data terbaru.')});
+  $('#restoreBtn').addEventListener('click',restore);
+  render();
+})();
+</script>
+</body>
+</html>
