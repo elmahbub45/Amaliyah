@@ -1,0 +1,12 @@
+Amaliyah V2.52.0 — Aktivasi Adzan Native
+
+Upload 5 file ini ke repo Amaliyah utama dan ganti file lama yang bernama sama.
+- index.html
+- app.js
+- style.css
+- sw.js
+- migration-backup.html
+
+Paket ini TIDAK berisi books.json.
+Halaman cadangan migrasi tetap dipertahankan.
+Setelah GitHub Pages selesai update, tutup Amaliyah dari recent apps lalu buka kembali.

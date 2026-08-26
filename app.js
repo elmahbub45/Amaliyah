@@ -1529,6 +1529,7 @@ function renderPrayerData(data){
   }
 
   queuePushSync();
+  queueNativePrayerScheduleSync();
   startPrayerNotificationScheduler();
   const hijri=data.date?.hijri;
   if(hijri){
@@ -1634,6 +1635,7 @@ let pushSyncTimer=null;
 const DEFAULT_NOTIF_SETTINGS={
   enabled:false,
   lead:0,
+  adhanMode:'notification',
   prayers:{Subuh:true,Dzuhur:true,Ashar:true,Maghrib:true,Isya:true}
 };
 
@@ -1645,6 +1647,188 @@ function pushSupported(){
 function nativeNotificationApp(){
   return !!(window.AmaliyahAndroid &&
     typeof window.AmaliyahAndroid.getNotificationPermission==='function');
+}
+function nativeAdhanSupported(){
+  return !!(nativeNotificationApp() &&
+    typeof window.AmaliyahAndroid.syncPrayerSchedule==='function' &&
+    typeof window.AmaliyahAndroid.getAdhanMode==='function');
+}
+function nativeExactAlarmPermission(){
+  if(!nativeAdhanSupported())return 'unsupported';
+  try{return window.AmaliyahAndroid.getExactAlarmPermission?.()||'required';}
+  catch{return 'required'}
+}
+function getAdhanMode(){
+  const fallback=getNotificationSettings().adhanMode||'notification';
+  if(!nativeAdhanSupported())return fallback;
+  try{
+    const mode=String(window.AmaliyahAndroid.getAdhanMode?.()||fallback);
+    return ['notification','short','full'].includes(mode)?mode:fallback;
+  }catch{return fallback}
+}
+function syncAdhanUI(){
+  const card=$('#adhanSettings');
+  if(!card)return;
+  const supported=nativeAdhanSupported();
+  card.classList.toggle('hidden',!supported);
+  if(!supported)return;
+
+  const s=getNotificationSettings();
+  const mode=getAdhanMode();
+  document.querySelectorAll('input[name="adhanMode"]').forEach(input=>{
+    input.checked=input.value===mode;
+    input.disabled=!s.enabled || notificationPermission()!=='granted';
+  });
+
+  const exact=nativeExactAlarmPermission();
+  const status=$('#adhanStatusText');
+  const exactBtn=$('#adhanExactAlarmBtn');
+  const testBtn=$('#adhanTestBtn');
+  const stopBtn=$('#adhanStopBtn');
+  const soundEnabled=mode!=='notification';
+
+  if(status){
+    status.classList.remove('adhan-ready','adhan-warning');
+    if(!s.enabled || notificationPermission()!=='granted'){
+      status.textContent='Aktifkan Notifikasi Sholat terlebih dahulu.';
+    }else if(!soundEnabled){
+      status.textContent='Hanya notifikasi • tanpa suara adzan.';
+      status.classList.add('adhan-ready');
+    }else if(exact==='granted'){
+      status.textContent=mode==='full'
+        ? 'Adzan lengkap aktif • ketepatan waktu siap.'
+        : 'Pengingat singkat aktif • ketepatan waktu siap.';
+      status.classList.add('adhan-ready');
+    }else{
+      status.textContent='Perlu izin Ketepatan Waktu agar suara berbunyi tepat saat masuk waktu sholat.';
+      status.classList.add('adhan-warning');
+    }
+  }
+  if(exactBtn){
+    exactBtn.classList.toggle('hidden',!soundEnabled || exact==='granted');
+    exactBtn.disabled=!s.enabled || notificationPermission()!=='granted';
+  }
+  if(testBtn)testBtn.disabled=!s.enabled || notificationPermission()!=='granted' || !soundEnabled;
+  if(stopBtn)stopBtn.disabled=!soundEnabled;
+}
+async function setAdhanMode(mode){
+  if(!nativeAdhanSupported())return;
+  mode=['notification','short','full'].includes(mode)?mode:'notification';
+  const s=getNotificationSettings();
+  s.adhanMode=mode;
+  setNotificationSettings(s);
+  try{window.AmaliyahAndroid.setAdhanMode?.(mode);}catch{}
+  syncAdhanUI();
+  if(mode!=='notification' && nativeExactAlarmPermission()!=='granted'){
+    await requestAdhanExactAlarm();
+  }
+  queueNativePrayerScheduleSync();
+}
+async function requestAdhanExactAlarm(){
+  if(!nativeAdhanSupported())return;
+  try{window.AmaliyahAndroid.requestExactAlarmPermission?.();}catch{}
+  setTimeout(()=>syncAdhanUI(),400);
+}
+async function testAdhanSound(){
+  if(!nativeAdhanSupported())return;
+  const mode=getAdhanMode();
+  if(mode==='notification')return appNotice('Pilih Pengingat Singkat atau Adzan Lengkap terlebih dahulu.');
+  try{
+    window.AmaliyahAndroid.previewAdhan?.(mode,'Dzuhur');
+    await appNotice(mode==='full'?'Memutar contoh adzan lengkap.':'Memutar contoh pengingat singkat.');
+  }catch{await appNotice('Suara belum dapat diputar.')}
+}
+function stopAdhanSound(){
+  if(!nativeAdhanSupported())return;
+  try{window.AmaliyahAndroid.stopAdhan?.();}catch{}
+}
+
+let nativePrayerScheduleSyncTimer=null;
+function queueNativePrayerScheduleSync(){
+  if(!nativeAdhanSupported())return;
+  clearTimeout(nativePrayerScheduleSyncTimer);
+  nativePrayerScheduleSyncTimer=setTimeout(()=>syncNativePrayerSchedule(),1200);
+}
+function nativeMonthlyParams(loc,monthKey){
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Makassar';
+  const params=new URLSearchParams({
+    latitude:String(loc.latitude),
+    longitude:String(loc.longitude),
+    month:monthKey,
+    tz
+  });
+  if(loc.regionName)params.set('region',loc.regionName);
+  if(loc.prayerRegionId)params.set('regionId',loc.prayerRegionId);
+  if(loc.city)params.set('city',loc.city);
+  if(loc.province)params.set('province',loc.province);
+  if(Array.isArray(loc.regionCandidates) && loc.regionCandidates.length){
+    params.set('regionCandidates',JSON.stringify(loc.regionCandidates.slice(0,20)));
+  }
+  return params;
+}
+async function fetchNativeMonthlyRows(loc,monthOffset){
+  const d=new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth()+monthOffset);
+  const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const params=nativeMonthlyParams(loc,monthKey);
+  const r=await fetch(`${PUSH_API}/prayer/monthly?${params.toString()}`,{cache:'no-store'});
+  const j=await r.json().catch(()=>null);
+  if(!r.ok || !Array.isArray(j?.rows))throw new Error('native-monthly');
+  return j.rows;
+}
+async function syncNativePrayerSchedule(){
+  if(!nativeAdhanSupported())return;
+  const s=getNotificationSettings();
+  const loc=getSavedLocation();
+  if(!s.enabled || notificationPermission()!=='granted'){
+    try{window.AmaliyahAndroid.clearPrayerSchedule?.();}catch{}
+    return;
+  }
+  if(!loc)return;
+
+  // Jangan hapus jadwal native yang sudah tersimpan hanya karena internet sedang putus.
+  if(!navigator.onLine){
+    try{window.AmaliyahAndroid.rescheduleStoredPrayerAlarms?.();}catch{}
+    return;
+  }
+
+  try{
+    const [currentRows,nextRows]=await Promise.all([
+      fetchNativeMonthlyRows(loc,0),
+      fetchNativeMonthlyRows(loc,1)
+    ]);
+    const byDate=new Map();
+    [...currentRows,...nextRows].forEach(row=>{
+      if(row?.date)byDate.set(row.date,row);
+    });
+    const payload={
+      version:1,
+      enabled:true,
+      timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Makassar',
+      leadMinutes:Number(s.lead||0),
+      adhanMode:getAdhanMode(),
+      prayers:{
+        Subuh:!!s.prayers.Subuh,
+        Dzuhur:!!s.prayers.Dzuhur,
+        Ashar:!!s.prayers.Ashar,
+        Maghrib:!!s.prayers.Maghrib,
+        Isya:!!s.prayers.Isya
+      },
+      location:{
+        latitude:Number(loc.latitude),
+        longitude:Number(loc.longitude),
+        label:loc.label||'',
+        regionId:loc.prayerRegionId||'',
+        regionName:loc.prayerRegionName||loc.regionName||''
+      },
+      rows:[...byDate.values()].sort((a,b)=>String(a.date).localeCompare(String(b.date)))
+    };
+    window.AmaliyahAndroid.syncPrayerSchedule(JSON.stringify(payload));
+  }catch(err){
+    console.warn('Native prayer schedule sync failed',err);
+    try{window.AmaliyahAndroid.rescheduleStoredPrayerAlarms?.();}catch{}
+  }
 }
 function waitForNativeNotificationPermission(){
   return new Promise(resolve=>{
@@ -1884,6 +2068,9 @@ function setNotificationSettings(settings){
   store.setItem(NOTIF_SETTINGS_KEY,JSON.stringify(settings));
   if(nativeNotificationApp()){
     try{window.AmaliyahAndroid.setNotificationEnabled?.(!!settings.enabled);}catch{}
+    if(nativeAdhanSupported()){
+      try{window.AmaliyahAndroid.setAdhanMode?.(settings.adhanMode||'notification');}catch{}
+    }
   }
 }
 function notificationPermission(){
@@ -1926,6 +2113,7 @@ function syncNotificationUI(){
     if(btn){btn.textContent='Aktifkan Izin Notifikasi';btn.disabled=false;btn.classList.remove('hidden');}
   }
   $('#notifBtn')?.classList.toggle('notification-active',permission==='granted'&&s.enabled);
+  syncAdhanUI();
   updatePushStatus();
 }
 async function requestNotifications(){
@@ -1938,6 +2126,7 @@ async function requestNotifications(){
       setNotificationSettings(s);
       syncNotificationUI();
       startPrayerNotificationScheduler();
+      queueNativePrayerScheduleSync();
       await showAppNotification('Amaliyah','Notifikasi berhasil diaktifkan.');
     }else{
       syncNotificationUI();
@@ -1985,6 +2174,7 @@ async function setNotificationMaster(enabled){
   setNotificationSettings(s);
   syncNotificationUI();
   startPrayerNotificationScheduler();
+  queueNativePrayerScheduleSync();
 
   if(enabled){
     if(nativeNotificationApp())return;
@@ -2005,6 +2195,7 @@ function saveNotificationSettings(){
   syncNotificationUI();
   startPrayerNotificationScheduler();
   queuePushSync();
+  queueNativePrayerScheduleSync();
 }
 async function showAppNotification(title,body){
   if(notificationPermission()!=='granted')return;
@@ -2035,6 +2226,7 @@ function startPrayerNotificationScheduler(){
   prayerNotificationTimer=setInterval(check,30000);
 }
 function checkPrayerNotifications(){
+  if(nativeAdhanSupported())return;
   const s=getNotificationSettings();
   if(!s.enabled || notificationPermission()!=='granted' || !latestPrayerTimes)return;
 
@@ -2154,6 +2346,10 @@ function refreshActiveScreen(){
   if(currentScreen==='home')updateHome();
   if(currentScreen==='settings')syncNotificationUI();
 }
+window.addEventListener('amaliyah-exact-alarm-changed',()=>{
+  syncAdhanUI();
+  queueNativePrayerScheduleSync();
+});
 window.addEventListener('pageshow',refreshActiveScreen);
 window.addEventListener('focus',refreshActiveScreen);
 document.addEventListener('visibilitychange',()=>{
@@ -2184,6 +2380,10 @@ window.requestNotifications=requestNotifications;
 window.setNotificationMaster=setNotificationMaster;
 window.saveNotificationSettings=saveNotificationSettings;
 window.testPushNotification=testPushNotification;
+window.setAdhanMode=setAdhanMode;
+window.requestAdhanExactAlarm=requestAdhanExactAlarm;
+window.testAdhanSound=testAdhanSound;
+window.stopAdhanSound=stopAdhanSound;
 window.clearAllHistory=clearAllHistory;
 
 const savedScreen=getSavedScreenState();
@@ -2216,6 +2416,8 @@ if(nativeNotificationApp()){
   }
   try{window.AmaliyahAndroid.retryFcmRegistration?.();}catch{}
   startPrayerNotificationScheduler();
+  syncAdhanUI();
+  queueNativePrayerScheduleSync();
 }else if('serviceWorker'in navigator){
   navigator.serviceWorker.register('./sw.js').then(()=>startPrayerNotificationScheduler()).catch(()=>{});
 }else{

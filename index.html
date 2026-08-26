@@ -249,6 +249,37 @@
   <small class="notification-note" id="notificationPushNote">Perangkat ini akan dihubungkan ke layanan notifikasi Amaliyah agar pengingat sholat tetap dapat diterima saat aplikasi ditutup.</small>
 </div>
 
+<div class="settings-card adhan-settings-card hidden" id="adhanSettings">
+  <div class="notification-head">
+    <div>
+      <h3>Suara Waktu Sholat</h3>
+      <p id="adhanStatusText">Memeriksa kesiapan suara…</p>
+    </div>
+  </div>
+
+  <div class="adhan-mode-grid" role="radiogroup" aria-label="Pilihan suara waktu sholat">
+    <label class="adhan-mode-option">
+      <input type="radio" name="adhanMode" value="notification" onchange="setAdhanMode(this.value)">
+      <span><b>Tanpa Suara</b><small>Hanya notifikasi waktu sholat</small></span>
+    </label>
+    <label class="adhan-mode-option">
+      <input type="radio" name="adhanMode" value="short" onchange="setAdhanMode(this.value)">
+      <span><b>Pengingat Singkat</b><small>Cuplikan adzan sekitar 12 detik</small></span>
+    </label>
+    <label class="adhan-mode-option">
+      <input type="radio" name="adhanMode" value="full" onchange="setAdhanMode(this.value)">
+      <span><b>Adzan Lengkap</b><small>Berbunyi tepat ketika masuk waktu sholat</small></span>
+    </label>
+  </div>
+
+  <div class="notification-action-row adhan-action-row">
+    <button id="adhanExactAlarmBtn" class="primary" type="button" onclick="requestAdhanExactAlarm()">Izinkan Ketepatan Waktu</button>
+    <button id="adhanTestBtn" class="secondary" type="button" onclick="testAdhanSound()">Tes Suara</button>
+    <button id="adhanStopBtn" class="secondary" type="button" onclick="stopAdhanSound()">Hentikan</button>
+  </div>
+  <small class="notification-note">Adzan Subuh menggunakan audio Subuh. Dzuhur, Ashar, Maghrib, dan Isya menggunakan adzan biasa. Pengaturan ini hanya tersedia pada aplikasi Android Amaliyah.</small>
+</div>
+
 <div class="settings-card">
   <h3>Lokasi Sholat</h3>
   <p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p>
@@ -271,13 +302,13 @@
   </div>
   <small class="quran-offline-policy">Khazanah lainnya tetap membutuhkan koneksi internet dan tidak disimpan di perangkat.</small>
 </div>
-
 <div class="settings-card migration-backup-card">
   <h3>Cadangkan Data Aplikasi</h3>
   <p>Simpan progres, favorit, penanda, riwayat, lokasi, dan pengaturan sebelum pindah ke APK baru.</p>
   <a class="primary" href="migration-backup.html" style="display:inline-flex;text-decoration:none;align-items:center;justify-content:center">Buka Cadangan Data</a>
   <small class="quran-offline-policy">Halaman Al-Qur'an yang sudah diunduh tidak ikut dicadangkan dan dapat diunduh ulang nanti.</small>
 </div>
+
 
 <div class="settings-card about-app-card">
   <div class="about-app-mark" aria-label="Logo Amaliyah"><span class="about-app-fallback">A</span><img src="assets/icons/icon-192.png" alt="" onerror="this.remove()"></div>
