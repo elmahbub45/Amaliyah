@@ -527,3 +527,422 @@ html,body{background:linear-gradient(180deg,#efe7d7 0%,#f7f2e9 24%,#f3ecdf 100%)
   background:#1f6a57!important;
   color:#f3d47f!important;
 }
+
+
+/* =========================================================
+   V2.53.9 — QUR'AN LIGHT PREMIUM REFRESH
+   Direktori terang, reader lembut, Mushaf tetap dominan.
+   ========================================================= */
+:root{
+  --q-bg:#f8f5ee;
+  --q-surface:#fffdf8;
+  --q-surface-soft:#fbf8f1;
+  --q-line:#e7ded0;
+  --q-emerald:#1f6a57;
+  --q-emerald-dark:#174d41;
+  --q-emerald-soft:#eaf2ed;
+  --q-gold:#c9a55a;
+  --q-text:#213b34;
+  --q-muted:#827b72;
+}
+
+/* Halaman direktori */
+html,body{
+  background:#eae4d9!important;
+  color:var(--q-text)!important;
+}
+.quran-directory{
+  background:
+    radial-gradient(circle at 88% 4%,rgba(201,165,90,.08),transparent 24%),
+    linear-gradient(180deg,#fbf8f1 0%,#f6f2ea 100%)!important;
+  padding-bottom:42px!important;
+}
+.directory-header{
+  background:rgba(248,245,238,.94)!important;
+  border-bottom:1px solid rgba(231,222,208,.9)!important;
+  box-shadow:0 5px 18px rgba(57,45,28,.035)!important;
+}
+.directory-header span{
+  color:#9a7a42!important;
+}
+.directory-header b{
+  color:var(--q-emerald-dark)!important;
+  font-size:17px!important;
+}
+.round-button{
+  width:38px!important;
+  height:38px!important;
+  border:1px solid var(--q-line)!important;
+  border-radius:50%!important;
+  background:var(--q-surface)!important;
+  color:var(--q-emerald-dark)!important;
+  box-shadow:0 4px 11px rgba(58,45,27,.05)!important;
+}
+
+/* Kartu pembuka Mushaf: terang, bukan blok hijau gelap */
+.mushaf-intro{
+  grid-template-columns:60px minmax(0,1fr)!important;
+  gap:13px!important;
+  margin-top:16px!important;
+  padding:18px!important;
+  border:1px solid #dfd2b9!important;
+  border-radius:24px!important;
+  background:
+    radial-gradient(circle at 90% 12%,rgba(201,165,90,.13),transparent 27%),
+    linear-gradient(145deg,#fffdf7 0%,#f7f1e5 100%)!important;
+  color:var(--q-text)!important;
+  box-shadow:0 11px 28px rgba(61,47,27,.07)!important;
+}
+.mushaf-intro:after{
+  right:-55px!important;
+  top:-88px!important;
+  border-color:rgba(31,106,87,.08)!important;
+  box-shadow:0 0 0 24px rgba(31,106,87,.025),0 0 0 49px rgba(201,165,90,.025)!important;
+}
+.mushaf-seal{
+  width:60px!important;
+  height:72px!important;
+  border:1px solid #cadbd2!important;
+  border-radius:17px!important;
+  background:linear-gradient(180deg,#eef5f1,#e4efe9)!important;
+  color:var(--q-emerald)!important;
+  font-size:31px!important;
+}
+.mushaf-intro-copy>span{
+  color:#9b7a3e!important;
+}
+.mushaf-intro h1{
+  margin:6px 0 5px!important;
+  color:var(--q-emerald-dark)!important;
+  font-size:18px!important;
+}
+.mushaf-intro p{
+  color:#77766f!important;
+  font-size:9px!important;
+}
+.mushaf-intro>button{
+  min-height:42px!important;
+  border:0!important;
+  border-radius:13px!important;
+  background:linear-gradient(180deg,#246d59,#195746)!important;
+  color:#fffdf7!important;
+  box-shadow:0 7px 16px rgba(31,106,87,.15)!important;
+}
+.mushaf-intro>button span{
+  color:#f1d38b!important;
+}
+
+/* Progress */
+.directory-progress-label{
+  color:#786f62!important;
+}
+.directory-progress-label b{
+  color:var(--q-emerald)!important;
+}
+.directory-progress-track{
+  background:#e6ded2!important;
+}
+.directory-progress-track i{
+  background:linear-gradient(90deg,#c5a052,#2b725f)!important;
+}
+
+/* Offline card */
+.quran-offline-card{
+  border:1px solid #dfe5df!important;
+  border-radius:19px!important;
+  background:linear-gradient(180deg,#f1f6f3,#edf3ef)!important;
+  box-shadow:0 7px 20px rgba(42,78,65,.045)!important;
+}
+.quran-offline-card-head span{
+  color:#718279!important;
+}
+.quran-offline-card-head b{
+  color:var(--q-emerald-dark)!important;
+}
+.quran-offline-card-head strong{
+  background:#fffdf8!important;
+  color:var(--q-emerald)!important;
+  border:1px solid #dce6e0!important;
+}
+.quran-offline-card p,
+.quran-offline-meta,
+.quran-offline-card small{
+  color:#748078!important;
+}
+.quran-offline-progress{
+  background:#dbe5df!important;
+}
+.quran-offline-progress i{
+  background:linear-gradient(90deg,#b99750,#2b725f)!important;
+}
+.quran-offline-download{
+  background:var(--q-emerald)!important;
+  color:white!important;
+}
+.quran-offline-clear{
+  border-color:#ddd5ca!important;
+  background:#fffaf4!important;
+  color:#886f61!important;
+}
+
+/* Direktori utama */
+.directory-card{
+  margin-top:14px!important;
+  padding:11px!important;
+  border:1px solid var(--q-line)!important;
+  border-radius:21px!important;
+  background:rgba(255,253,248,.9)!important;
+  box-shadow:0 8px 22px rgba(56,45,29,.045)!important;
+}
+.directory-tabs{
+  gap:4px!important;
+  padding:3px!important;
+  border-radius:13px!important;
+  background:#efede7!important;
+}
+.directory-tabs button{
+  min-height:37px!important;
+  border-radius:10px!important;
+  color:#85847f!important;
+  font-size:9.8px!important;
+}
+.directory-tabs button.active{
+  background:#fffdf9!important;
+  color:var(--q-emerald-dark)!important;
+  box-shadow:0 3px 9px rgba(55,44,29,.055)!important;
+}
+.quran-search{
+  min-height:42px!important;
+  margin:10px 0 8px!important;
+  border-color:var(--q-line)!important;
+  border-radius:13px!important;
+  background:#fffefb!important;
+  color:#9a8b75!important;
+}
+.quran-search input{
+  color:var(--q-text)!important;
+  font-size:10.5px!important;
+}
+
+/* Daftar Surah/Juz */
+.directory-list{
+  gap:7px!important;
+  margin-top:7px!important;
+}
+.directory-item{
+  min-height:69px!important;
+  grid-template-columns:43px minmax(0,1fr) minmax(62px,auto)!important;
+  gap:10px!important;
+  padding:9px 11px!important;
+  border:1px solid var(--q-line)!important;
+  border-radius:16px!important;
+  background:linear-gradient(180deg,#fffefb,#fbf8f1)!important;
+  box-shadow:0 4px 12px rgba(62,48,29,.035)!important;
+}
+.directory-item:after{
+  display:none!important;
+}
+.directory-number{
+  width:42px!important;
+  height:42px!important;
+  border:1px solid #e5d9c4!important;
+  border-radius:13px!important;
+  background:#f7f1e7!important;
+  color:#9b7838!important;
+  box-shadow:none!important;
+}
+.directory-copy em{
+  color:#a1844d!important;
+}
+.directory-copy b{
+  color:#21493e!important;
+  font-size:14px!important;
+}
+.directory-copy small{
+  color:#8a8983!important;
+}
+.directory-arabic{
+  color:#8b6b31!important;
+  font-size:20px!important;
+}
+.directory-arrow{
+  width:31px!important;
+  height:31px!important;
+  border-radius:10px!important;
+  background:var(--q-emerald-soft)!important;
+  color:var(--q-emerald)!important;
+}
+.directory-item.is-last-read{
+  border-color:#ccdcd4!important;
+  background:linear-gradient(180deg,#f4f8f5,#edf4ef)!important;
+  box-shadow:0 6px 15px rgba(31,106,87,.055)!important;
+}
+.directory-item.is-last-read .directory-number{
+  background:var(--q-emerald)!important;
+  border-color:var(--q-emerald)!important;
+  color:#f4d98c!important;
+}
+.quran-attribution{
+  color:#8a8780!important;
+}
+
+/* =========================================================
+   READER — warm paper + light translucent controls
+   ========================================================= */
+.quran-reader{
+  background:#f4eee2!important;
+}
+.quran-stage{
+  background:
+    radial-gradient(circle at 50% 18%,#fffdf6 0%,#f8f1e5 50%,#eee4d4 100%)!important;
+}
+.quran-page-shell{
+  padding:clamp(3px,.7vw,6px)!important;
+}
+.quran-page-shell img{
+  padding:2px!important;
+  border:1px solid rgba(180,149,89,.25)!important;
+  outline:0!important;
+  border-radius:10px!important;
+  background:#fffdf8!important;
+  box-shadow:
+    0 5px 15px rgba(77,58,28,.07),
+    0 0 0 1px rgba(255,255,255,.7) inset!important;
+  mix-blend-mode:normal!important;
+  filter:contrast(1.035)!important;
+}
+
+/* Light glass header/footer */
+.reader-header,
+.reader-footer{
+  color:var(--q-emerald-dark)!important;
+  background:rgba(250,247,239,.82)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(118%)!important;
+  backdrop-filter:blur(10px) saturate(118%)!important;
+  border-color:rgba(217,205,185,.7)!important;
+  box-shadow:0 3px 14px rgba(54,43,28,.07)!important;
+}
+.reader-footer{
+  box-shadow:0 -3px 14px rgba(54,43,28,.07)!important;
+}
+.reader-header button,
+.reader-footer>button{
+  border:1px solid rgba(218,208,192,.9)!important;
+  background:rgba(255,253,248,.72)!important;
+  color:var(--q-emerald-dark)!important;
+  box-shadow:none!important;
+}
+.reader-header b,
+.reader-header small,
+.page-counter span,
+.page-counter b{
+  text-shadow:none!important;
+}
+.reader-header b{
+  color:var(--q-emerald-dark)!important;
+}
+.reader-header small{
+  color:#8b7c61!important;
+}
+.reader-header button.marked{
+  color:#b58b3f!important;
+}
+.page-counter{
+  color:var(--q-emerald-dark)!important;
+}
+.page-counter span{
+  color:#9b8150!important;
+}
+.page-counter b{
+  color:var(--q-emerald-dark)!important;
+}
+
+/* Immersive mode tetap sangat ringan */
+.immersive-meta{
+  color:rgba(57,69,62,.72)!important;
+  text-shadow:0 1px 2px rgba(255,253,247,.94)!important;
+}
+
+/* Quick navigator */
+.page-picker{
+  border:1px solid var(--q-line)!important;
+  border-radius:21px!important;
+  background:#fffdf8!important;
+  color:var(--q-text)!important;
+}
+.page-picker::backdrop{
+  background:rgba(33,40,35,.48)!important;
+}
+.picker-close{
+  background:#f2efe8!important;
+  color:#6f6b64!important;
+}
+.picker-tabs{
+  background:#efede7!important;
+}
+.picker-tabs button.active{
+  background:#fffdf9!important;
+  color:var(--q-emerald-dark)!important;
+}
+.picker-primary,
+#confirmPagePicker{
+  background:var(--q-emerald)!important;
+  color:white!important;
+}
+
+/* Night mode mempertahankan kontrol gelap */
+.quran-reader.night-mode .reader-header,
+.quran-reader.night-mode .reader-footer{
+  background:rgba(17,39,33,.82)!important;
+  border-color:rgba(223,197,137,.12)!important;
+}
+.quran-reader.night-mode .reader-header button,
+.quran-reader.night-mode .reader-footer>button{
+  background:rgba(255,255,255,.07)!important;
+  border-color:rgba(255,255,255,.12)!important;
+  color:#fffdf5!important;
+}
+.quran-reader.night-mode .reader-header b,
+.quran-reader.night-mode .page-counter b{
+  color:#fffdf5!important;
+}
+.quran-reader.night-mode .reader-header small,
+.quran-reader.night-mode .page-counter span{
+  color:#d8c79e!important;
+}
+
+@media(max-width:390px){
+  .quran-directory{
+    padding-left:13px!important;
+    padding-right:13px!important;
+  }
+  .directory-header{
+    margin-left:-13px!important;
+    margin-right:-13px!important;
+    padding-left:13px!important;
+    padding-right:13px!important;
+  }
+  .mushaf-intro{
+    grid-template-columns:52px minmax(0,1fr)!important;
+    padding:15px!important;
+    border-radius:21px!important;
+  }
+  .mushaf-seal{
+    width:52px!important;
+    height:64px!important;
+  }
+  .directory-item{
+    min-height:65px!important;
+    grid-template-columns:40px minmax(0,1fr) minmax(56px,auto)!important;
+  }
+  .directory-number{
+    width:39px!important;
+    height:39px!important;
+  }
+  .directory-copy b{
+    font-size:13.3px!important;
+  }
+  .directory-arabic{
+    font-size:18px!important;
+  }
+}

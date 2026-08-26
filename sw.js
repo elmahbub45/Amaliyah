@@ -1,4 +1,4 @@
-const C='amaliyah-v2-53-8-current-clock';
+const C='amaliyah-v2-53-9-home-reorder-quran-refresh';
 const QURAN_CACHE='amaliyah-quran-pages-v1';
 const EXTERNAL_CACHE='amaliyah-external-v1';
 const A=['./','./index.html','./style.css','./app.js','./icon-library.js','./reader.html','./reader.css','./reader.js','./quran.html','./quran.css','./quran.js','./quran-config.js','./quran-offline.js','./books.json','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png','./assets/home/prayer-mosque.webp','./assets/home/quran-card.webp'];

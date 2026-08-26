@@ -3729,3 +3729,52 @@ body{
     font-size:50px!important;
   }
 }
+
+
+/* =========================================================
+   V2.53.9 — HOME ORDER + CATEGORY TITLE
+   ========================================================= */
+
+/* Setelah kartu Al-Qur'an: Khazanah -> Favorit -> Lanjutkan */
+#app .quran-home-section + .category-section{
+  margin-top:18px!important;
+}
+#app .category-section{
+  margin-top:18px!important;
+}
+#app .category-section > .section-head{
+  display:none!important;
+}
+#app .category-section + .favorites-section{
+  margin-top:20px!important;
+}
+#app .favorites-section + .continue-home-section{
+  margin-top:19px!important;
+}
+
+/* Khazanah tanpa heading tetap terasa sebagai blok mandiri */
+#app .category-section .categories{
+  padding-top:1px!important;
+}
+
+/* Semua Kategori: judul kategori lebih besar */
+.category-directory-copy b{
+  font-size:13.5px!important;
+  line-height:1.2!important;
+  font-weight:750!important;
+  color:#23463b!important;
+}
+.category-directory-copy small{
+  margin-top:4px!important;
+  font-size:8.2px!important;
+}
+.category-directory-card{
+  min-height:76px!important;
+}
+
+/* Di HP sangat kecil tetap terbaca */
+@media(max-width:390px){
+  .category-directory-copy b{
+    font-size:12.7px!important;
+  }
+}

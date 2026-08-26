@@ -76,19 +76,7 @@
         <div class="quran-home-actions"><button class="quran-home-button quran-home-directory" id="quranDirectoryButton" type="button">Daftar Surah</button><button class="quran-home-button quran-home-continue" id="quranHomeButton" type="button">Lanjutkan <span>›</span></button></div>
       </article>
     </section>
-    <section id="favoritesSection" class="favorites-section hidden">
-      <div class="section-head">
-        <b>Favorit</b>
-        <button class="link" type="button" onclick="showFavoritesManager()"><span class="favorite-manage-label">Kelola</span> <span aria-hidden="true">›</span></button>
-      </div>
-      <div id="favoriteBooks" class="favorite-strip" aria-label="Khazanah favorit"></div>
-    </section>
-
     <section class="category-section">
-      <div class="section-head">
-        <b>Khazanah</b>
-        <button class="link" type="button" onclick="showCategories()">Lihat Semua <span aria-hidden="true">›</span></button>
-      </div>
       <div class="categories home-khazanah-seven">
         <button data-category-card="Surah Pilihan" data-display-title="Surah Pilihan">
           <span class="category-icon" aria-hidden="true"></span>
@@ -123,6 +111,14 @@
           <b>Lihat Semua</b><small>Semua Khazanah</small>
         </button>
       </div>
+    </section>
+
+    <section id="favoritesSection" class="favorites-section hidden">
+      <div class="section-head">
+        <b>Favorit</b>
+        <button class="link" type="button" onclick="showFavoritesManager()"><span class="favorite-manage-label">Kelola</span> <span aria-hidden="true">›</span></button>
+      </div>
+      <div id="favoriteBooks" class="favorite-strip" aria-label="Khazanah favorit"></div>
     </section>
 
     <section class="continue-home-section"><div class="section-title">Lanjutkan Membaca</div><article class="reading-card"><div class="home-book-icon" id="continueIcon">و</div><div class="grow"><h3 id="continueTitle">Wirdul Latif</h3><p id="lastPage">Belum dibaca</p><div class="progress"><i id="progressBar"></i></div></div><button class="primary" id="continueBtn">Baca →</button></article></section>
