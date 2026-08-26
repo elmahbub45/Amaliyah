@@ -1,0 +1,1 @@
+# Aturan tambahan belum diperlukan.

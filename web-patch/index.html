@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b4d3b">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <title>Amaliyah</title>
+</head>
+<body>
+<div id="app">
+  <header class="hero">
+    <div class="top">
+      <span class="top-spacer" aria-hidden="true"></span>
+      <div class="brand"><h1>Amaliyah</h1><p>Khazanah Amaliyah Harian</p></div>
+      <button class="icon notif-icon" id="notifBtn" type="button" aria-label="Pengaturan notifikasi" title="Pengaturan notifikasi">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+      </button>
+    </div>
+    <div class="quote"><div class="arabic">خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ</div><p>Sebaik-baik kalian adalah yang mempelajari Al-Qur'an dan mengajarkannya.</p><small>(HR. Bukhari)</small></div>
+  </header>
+
+  <main>
+    <section class="card prayer">
+      <div class="prayer-head">
+        <div class="prayer-heading">
+          <b>JADWAL SHOLAT HARI INI</b>
+          <div id="location">📍 Izinkan lokasi untuk jadwal otomatis</div>
+          <small id="dateText"></small>
+          <small id="hijriDate" class="hijri"></small>
+        </div>
+        <button id="locBtn" class="location-btn" type="button" aria-label="Ubah lokasi"><span aria-hidden="true">⌖</span> Ubah</button>
+      </div>
+      <div id="prayerTimes" class="times"><span>Memuat jadwal…</span></div>
+      <div id="nextPrayer" class="next">Jadwal menggunakan metode KEMENAG RI</div>
+      <button id="monthlyBtn" class="monthly-link" type="button">▣ Lihat Jadwal Bulanan <span>›</span></button>
+    </section>
+
+    <section class="quran-home-section" aria-labelledby="quranHomeTitle">
+      <div class="section-head quran-section-head">
+        <b id="quranHomeTitle">MUSHAF AL-QUR'AN</b>
+        <span class="quran-separate-badge">Mushaf Khusus</span>
+      </div>
+      <article class="quran-home-card">
+        <div class="quran-home-ornament" aria-hidden="true">۞</div>
+        <div class="quran-home-copy">
+          <span class="quran-home-kicker">MUSHAF MADINAH • 604 HALAMAN</span>
+          <h2>Al-Qur'an Al-Karim</h2>
+          <p id="quranHomeMeta">Baca Al-Qur'an dengan susunan halaman seperti mushaf.</p>
+          <div class="quran-home-progress" aria-hidden="true"><i id="quranHomeProgress"></i></div>
+        </div>
+        <div class="quran-home-actions"><button class="quran-home-button quran-home-directory" id="quranDirectoryButton" type="button">Daftar Surah</button><button class="quran-home-button quran-home-continue" id="quranHomeButton" type="button">Lanjutkan <span>›</span></button></div>
+      </article>
+    </section>
+
+    <section class="continue-home-section"><div class="section-title">LANJUTKAN MEMBACA</div><article class="reading-card"><div class="home-book-icon" id="continueIcon">و</div><div class="grow"><h3 id="continueTitle">Wirdul Latif</h3><p id="lastPage">Belum dibaca</p><div class="progress"><i id="progressBar"></i></div></div><button class="primary" id="continueBtn">Baca →</button></article></section>
+
+
+    <section id="favoritesSection" class="favorites-section hidden">
+      <div class="section-head">
+        <b>KHAZANAH FAVORIT</b>
+        <button class="link" type="button" onclick="showFavoritesManager()">Kelola <span aria-hidden="true">›</span></button>
+      </div>
+      <div id="favoriteBooks" class="favorite-strip" aria-label="Khazanah favorit"></div>
+    </section>
+
+    <section class="category-section">
+      <div class="section-head">
+        <b>KATEGORI KHAZANAH</b>
+        <button class="link" type="button" onclick="showCategories()">Lihat Semua <span aria-hidden="true">›</span></button>
+      </div>
+      <div class="categories">
+        <button data-category-card="Al-Qur'an">
+          <span class="category-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H12v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M19 4.5A2.5 2.5 0 0 0 16.5 2H12v18h4.5A2.5 2.5 0 0 1 19 22z"/></svg></span>
+          <b>Al-Qur'an</b><small>114 Surah</small>
+        </button>
+        <button data-category-card="Wirid">
+          <span class="category-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><circle cx="18.5" cy="5.5" r="1.5"/></svg></span>
+          <b>Wirid</b><small>Segera</small>
+        </button>
+        <button data-category-card="Doa">
+          <span class="category-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12.5V8a2 2 0 0 1 4 0v3"/><path d="M12 11V7a2 2 0 0 1 4 0v5"/><path d="M16 12V9a2 2 0 0 1 4 0v5c0 4.5-3.2 7-7.5 7C8 21 5 18.5 5 14.5V12a2 2 0 0 1 3 0z"/></svg></span>
+          <b>Doa Harian</b><small>Segera</small>
+        </button>
+        <button data-category-card="Maulid">
+          <span class="category-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.7 4.2A7.5 7.5 0 1 0 19.8 15 6.2 6.2 0 1 1 16.7 4.2z"/><path d="m17.8 7 .7 1.5 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2z"/></svg></span>
+          <b>Maulid</b><small>Segera</small>
+        </button>
+        <button data-category-card="Dalail">
+          <span class="category-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z"/><path d="M8 4v16M12 8h3M12 12h3"/><path d="m19 5 .6 1.3 1.4.2-1 .9.2 1.4-1.2-.7-1.2.7.2-1.4-1-.9 1.4-.2z"/></svg></span>
+          <b>Dalail</b><small>Segera</small>
+        </button>
+        <button data-category-card="Semua">
+          <span class="category-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></span>
+          <b>Lihat Semua</b><small>Semua Khazanah</small>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Navigasi utama">
+    <button class="active" type="button" onclick="showHome()" aria-label="Beranda">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5M5.5 10.5V20h13v-9.5M9.5 20v-6h5v6"/></svg><span>Beranda</span>
+    </button>
+    <button type="button" onclick="showCategories()" aria-label="Kategori">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>Kategori</span>
+    </button>
+    <button type="button" onclick="showBookmarks()" aria-label="Penanda">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3z"/></svg><span>Penanda</span>
+    </button>
+    <button type="button" onclick="showHistory()" aria-label="Riwayat">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7.5V12l3 2"/></svg><span>Riwayat</span>
+    </button>
+    <button type="button" onclick="showSettings()" aria-label="Pengaturan">
+      <svg class="nav-icon settings-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.7"/><path d="M12 3.2v2.1M12 18.7v2.1M20.8 12h-2.1M5.3 12H3.2M18.22 5.78l-1.49 1.49M7.27 16.73l-1.49 1.49M18.22 18.22l-1.49-1.49M7.27 7.27 5.78 5.78"/></svg><span>Pengaturan</span>
+    </button>
+  </nav>
+</div>
+
+<div id="categoryIndex" class="screen category-index-screen hidden">
+  <div class="screenbar category-index-bar">
+    <button type="button" onclick="goBackInApp()" aria-label="Kembali">‹</button>
+    <b>Semua Kategori</b>
+    <span></span>
+  </div>
+  <div class="category-index-intro">
+    <span class="category-index-intro-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
+    </span>
+    <div><b>Jelajahi Kategori Khazanah</b><p>Pilih kategori untuk melihat khazanah yang tersedia.</p></div>
+  </div>
+  <div id="categoryDirectory" class="category-directory" aria-label="Daftar semua kategori"></div>
+  <button id="allBooksCollectionBtn" class="all-books-collection" type="button" onclick="showLibrary('Semua')">
+    <span class="all-books-collection-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H12v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M19 4.5A2.5 2.5 0 0 0 16.5 2H12v18h4.5A2.5 2.5 0 0 1 19 22z"/></svg>
+    </span>
+    <span class="all-books-collection-copy"><b>Koleksi Semua Khazanah</b><small id="allBooksCollectionCount">Lihat seluruh khazanah</small></span>
+    <span class="all-books-collection-arrow" aria-hidden="true">›</span>
+  </button>
+</div>
+
+<div id="library" class="screen hidden">
+  <div class="screenbar">
+    <button type="button" onclick="goBackInApp()">‹</button>
+    <b>Daftar Khazanah</b>
+    <button id="searchToggleBtn" class="icon-btn search-toggle" type="button" onclick="toggleSearch()" aria-label="Cari khazanah" title="Cari khazanah">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+    </button>
+  </div>
+  <div id="searchBox" class="search-box hidden">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+    <input id="searchInput" type="search" autocomplete="off" placeholder="Cari judul khazanah atau tulisan Arab…" oninput="filterBooks()">
+    <button id="clearSearchBtn" type="button" onclick="clearSearch()" aria-label="Hapus pencarian">×</button>
+  </div>
+  <div class="chips" id="categoryChips"></div>
+  <div id="bookList" class="book-list"></div>
+</div>
+
+
+<div id="favoritesManager" class="screen favorites-manager-screen hidden">
+  <div class="screenbar favorites-manager-bar">
+    <button type="button" onclick="goBackInApp()" aria-label="Kembali">‹</button>
+    <b>Kelola Favorit</b>
+    <span></span>
+  </div>
+  <section class="favorites-manager-intro">
+    <div class="favorites-manager-mark" aria-hidden="true">★</div>
+    <div>
+      <b>Atur Khazanah Favorit</b>
+      <p>Urutan di halaman ini juga menjadi urutan Favorit di beranda.</p>
+    </div>
+  </section>
+  <div id="favoritesManagerList" class="favorites-manager-list" aria-live="polite"></div>
+  <p class="favorites-manager-help">Tekan dan geser pada komputer. Di HP, gunakan tombol ↑ dan ↓ untuk mengatur urutan dengan pasti.</p>
+</div>
+
+<div id="collection" class="screen hidden">
+  <div class="screenbar">
+    <button type="button" onclick="goBackInApp()">‹</button>
+    <b id="collectionTitle">Koleksi</b>
+    <span></span>
+  </div>
+  <div id="collectionMeta" class="collection-meta"></div>
+  <div id="collectionList" class="book-list"></div>
+</div>
+
+<div id="monthly" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Jadwal Sholat Bulanan</b><span></span></div><div class="month-switch"><button type="button" onclick="changeMonth(-1)">‹</button><b id="monthlyTitle"></b><button type="button" onclick="changeMonth(1)">›</button></div><div id="monthlyTable"></div></div>
+
+<div id="bookmarks" class="screen hidden">
+  <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Penanda</b><span></span></div>
+  <div class="bookmark-kind-tabs" role="tablist" aria-label="Jenis penanda">
+    <button class="active" id="bookmarkPdfTab" type="button" role="tab" aria-selected="true" onclick="showBookmarkKind('pdf')">Khazanah</button>
+    <button id="bookmarkQuranTab" type="button" role="tab" aria-selected="false" onclick="showBookmarkKind('quran')">Al-Qur'an</button>
+  </div>
+  <div id="bookmarkList" class="list-wrap"></div>
+</div>
+<div id="history" class="screen hidden">
+  <div class="screenbar history-screenbar">
+    <button onclick="goBackScreen()">‹</button>
+    <b>Riwayat Khazanah</b>
+    <button id="clearHistoryBtn" class="screen-action-btn" type="button" onclick="clearAllHistory()" aria-label="Hapus semua riwayat" title="Hapus semua riwayat">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>
+    </button>
+  </div>
+  <div id="historyList" class="list-wrap"></div>
+</div>
+<div id="settings" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Pengaturan</b><span></span></div><div class="settings-card notification-card" id="notificationSettings">
+  <div class="notification-head">
+    <div>
+      <h3>Notifikasi Sholat</h3>
+      <p id="notificationStatusText">Memeriksa status notifikasi…</p>
+    </div>
+    <label class="switch" aria-label="Aktifkan notifikasi sholat">
+      <input id="notificationMaster" type="checkbox" onchange="setNotificationMaster(this.checked)">
+      <span class="switch-track"></span>
+    </label>
+  </div>
+
+  <div id="notificationControls" class="notification-controls">
+    <div class="notification-label">Waktu yang diingatkan</div>
+    <div class="prayer-toggle-grid">
+      <label><input type="checkbox" data-prayer-notif="Subuh"> <span>Subuh</span></label>
+      <label><input type="checkbox" data-prayer-notif="Dzuhur"> <span>Dzuhur</span></label>
+      <label><input type="checkbox" data-prayer-notif="Ashar"> <span>Ashar</span></label>
+      <label><input type="checkbox" data-prayer-notif="Maghrib"> <span>Maghrib</span></label>
+      <label><input type="checkbox" data-prayer-notif="Isya"> <span>Isya</span></label>
+    </div>
+    <label class="notification-reminder">
+      <span>Waktu pengingat</span>
+      <select id="notificationLead" onchange="saveNotificationSettings()">
+        <option value="0">Tepat waktu sholat</option>
+        <option value="5">5 menit sebelumnya</option>
+        <option value="10">10 menit sebelumnya</option>
+        <option value="15">15 menit sebelumnya</option>
+      </select>
+    </label>
+
+    <div class="notification-sound-section">
+      <div class="notification-label">Suara pengingat</div>
+      <div class="notification-sound-grid" role="radiogroup" aria-label="Pilih suara pengingat sholat">
+        <label class="notification-sound-option">
+          <input type="radio" name="notificationSound" value="notification" onchange="saveNotificationSettings()">
+          <span><b>Notifikasi</b><small>Bunyi singkat perangkat</small></span>
+        </label>
+        <label class="notification-sound-option native-prayer-sound">
+          <input type="radio" name="notificationSound" value="short" onchange="saveNotificationSettings()">
+          <span><b>Pengingat Singkat</b><small>Potongan adzan ±12 detik</small></span>
+        </label>
+        <label class="notification-sound-option native-prayer-sound">
+          <input type="radio" name="notificationSound" value="adhan" onchange="saveNotificationSettings()">
+          <span><b>Adzan Lengkap</b><small>Subuh memakai adzan Subuh khusus</small></span>
+        </label>
+      </div>
+      <div class="notification-sound-preview-row">
+        <button id="notificationSoundPreview" class="secondary notification-sound-preview" type="button" onclick="previewPrayerSound()">Dengarkan Contoh</button>
+        <small id="notificationSoundHint">Pilih suara yang ingin digunakan.</small>
+      </div>
+      <div id="notificationTimingAccess" class="notification-timing-access hidden">
+        <div>
+          <b>Ketepatan waktu</b>
+          <small id="notificationTimingText">Izinkan Amaliyah agar pengingat dapat berbunyi tepat waktu saat aplikasi ditutup.</small>
+        </div>
+        <button id="notificationTimingBtn" class="secondary" type="button" onclick="requestPrayerTimingAccess()">Izinkan</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification-action-row">
+    <button id="notificationPermissionBtn" class="primary notification-permission-btn" type="button" onclick="requestNotifications()">Aktifkan Izin Notifikasi</button>
+    <button id="notificationTestBtn" class="secondary notification-test-btn" type="button" onclick="testPushNotification()">Tes Notifikasi</button>
+  </div>
+  <small class="notification-note" id="notificationPushNote">Perangkat ini akan dihubungkan ke layanan notifikasi Amaliyah agar pengingat sholat tetap dapat diterima saat aplikasi ditutup.</small>
+</div>
+
+<div class="settings-card">
+  <h3>Lokasi Sholat</h3>
+  <p id="settingsLocation">Gunakan lokasi perangkat untuk jadwal sholat.</p>
+  <button class="primary" type="button" onclick="getPrayerTimes()">Gunakan Lokasi Saya</button>
+</div>
+
+<div class="settings-card quran-offline-settings" data-quran-offline-ui>
+  <div class="quran-offline-settings-head">
+    <div>
+      <h3>Al-Qur'an Tanpa Internet</h3>
+      <p data-quran-offline-status>Memeriksa penyimpanan Al-Qur'an…</p>
+    </div>
+    <strong data-quran-offline-percent>0%</strong>
+  </div>
+  <div class="settings-offline-progress"><i data-quran-offline-progress></i></div>
+  <div class="settings-offline-count"><span data-quran-offline-count>0 / 604 halaman</span><span>Hanya Mushaf</span></div>
+  <div class="settings-offline-actions">
+    <button class="primary" data-quran-offline-download type="button">Unduh Al-Qur'an</button>
+    <button class="secondary" data-quran-offline-clear type="button" hidden>Hapus Data Tersimpan</button>
+  </div>
+  <small class="quran-offline-policy">Khazanah lainnya tetap membutuhkan koneksi internet dan tidak disimpan di perangkat.</small>
+</div>
+
+<div class="settings-card about-app-card">
+  <div class="about-app-mark" aria-label="Logo Amaliyah"><span class="about-app-fallback">A</span><img src="assets/icons/icon-192.png" alt="" onerror="this.remove()"></div>
+  <div class="about-app-copy">
+    <span class="about-app-kicker">TENTANG APLIKASI</span>
+    <h3>Amaliyah</h3>
+    <p>Khazanah amaliyah harian.</p>
+    <div class="developer-line">
+      <span>Dikembangkan oleh</span>
+      <strong>elmahbub.my.id</strong>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="icon-library.js"></script>
+<script src="quran-config.js"></script>
+<script src="quran-offline.js"></script>
+<script type="module" src="app.js"></script>
+<script>
+/* V2.38.7 — ikon Bacaan Terakhir/Favorit mengikuti kategori.
+   Diletakkan di index agar pembaruan website langsung berlaku di APK. */
+(()=>{
+  const iconOptions=window.AMALIYAH_CATEGORY_ICON_OPTIONS||[];
+  const icons=Object.fromEntries(iconOptions.map(icon=>[icon.key,icon.svg]));
+  let items=[];
+  let categoryIcons={};
+
+  function categoryKey(value){
+    const configured=String(categoryIcons[value]||'').toLocaleLowerCase('id-ID');
+    if(Object.prototype.hasOwnProperty.call(icons,configured))return configured;
+    const text=String(value||'').toLocaleLowerCase('id-ID');
+    if(text.includes('qur'))return 'quran';
+    if(text.includes('wirid'))return 'wirid';
+    if(text.includes('doa'))return 'doa';
+    if(text.includes('maulid'))return 'maulid';
+    if(text.includes('dalail'))return 'dalail';
+    if(text.includes('syair'))return 'syair';
+    if(text.includes('khutbah'))return 'khutbah';
+    return 'other';
+  }
+  function decorate(node,category){
+    if(!node)return;
+    const key=categoryKey(category);
+    if(node.dataset.categoryIcon===key && node.querySelector('svg'))return;
+    node.dataset.categoryIcon=key;
+    node.setAttribute('aria-label',`Kategori ${category||'Lainnya'}`);
+    node.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${icons[key]||icons.other||''}</svg>`;
+  }
+  function itemFromFavoriteKey(key){
+    const value=String(key||'');
+    const id=value.startsWith('item:')
+      ? value.slice(5)
+      : value.startsWith('part:') ? value.slice(5).split(':')[0] : '';
+    return items.find(item=>item.id===id);
+  }
+  function refreshCategoryIcons(){
+    if(!items.length)return;
+    const lastId=localStorage.getItem('amaliyah:lastItem');
+    const lastItem=items.find(item=>item.id===lastId);
+    if(lastItem)decorate(document.querySelector('#continueIcon'),lastItem.category);
+    document.querySelectorAll('#favoriteBooks [data-fav-key]').forEach(card=>{
+      const item=itemFromFavoriteKey(card.dataset.favKey);
+      if(item)decorate(card.querySelector('.favorite-icon'),item.category);
+    });
+  }
+
+  new MutationObserver(refreshCategoryIcons).observe(document.body,{
+    childList:true,subtree:true,characterData:true
+  });
+  fetch('./books.json',{cache:'no-store'})
+    .then(response=>response.json())
+    .then(catalog=>{
+      items=Array.isArray(catalog.items)?catalog.items:[];
+      categoryIcons=catalog.categoryIcons&&typeof catalog.categoryIcons==='object'?catalog.categoryIcons:{};
+      refreshCategoryIcons();
+    })
+    .catch(()=>{});
+})();
+</script>
+</body>
+</html>

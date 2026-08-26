@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Amaliyah</string>
+    <string name="loading_error">Amaliyah tidak dapat dimuat. Periksa koneksi internet lalu coba lagi.</string>
+</resources>

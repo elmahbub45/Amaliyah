@@ -1,0 +1,48 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+
+def previewKeystore = file('../tools/signing/preview.keystore')
+
+android {
+    namespace 'id.my.elmahbub.amaliyah'
+    compileSdk 35
+    buildToolsVersion '35.0.0'
+
+    defaultConfig {
+        applicationId 'id.my.elmahbub.amaliyah'
+        minSdk 23
+        targetSdk 35
+        versionCode 10400
+        versionName '1.4.0'
+    }
+
+    signingConfigs {
+        if (previewKeystore.exists()) {
+            previewRelease {
+                storeFile previewKeystore
+                storePassword 'amaliyah-preview'
+                keyAlias 'amaliyah-preview'
+                keyPassword 'amaliyah-preview'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (previewKeystore.exists()) {
+                signingConfig signingConfigs.previewRelease
+            }
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation 'com.google.firebase:firebase-messaging:24.1.0'
+}
