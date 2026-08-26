@@ -3778,3 +3778,21 @@ body{
     font-size:12.7px!important;
   }
 }
+
+
+/* =========================================================
+   V2.53.10 — KHAZANAH TITLES FROM books.json
+   ========================================================= */
+#app .home-khazanah-seven button b{
+  min-height:22px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.12!important;
+}
+#app .home-khazanah-seven button small{
+  white-space:nowrap!important;
+}

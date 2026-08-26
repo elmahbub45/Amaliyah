@@ -558,8 +558,8 @@ function updateCategoryCounts(){
     const count=isAll ? items.length : items.filter(b=>b.category===cat).length;
     const title=el.querySelector('b');
     if(title){
-      const customTitle=String(el.dataset.displayTitle||'').trim();
-      title.textContent=isAll?'Lihat Semua':(customTitle||categoryDisplayName(cat));
+      // Judul kartu Beranda selalu mengikuti nama kategori aktual dari books.json.
+      title.textContent=isAll?'Lihat Semua':String(cat||'');
     }
     const label=el.querySelector('small');
     if(label){
