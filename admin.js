@@ -5073,3 +5073,499 @@ boot().catch(err=>{
     </div>
   `;
 });
+
+
+/* =========================================================
+   V2.57.0 — KELOLA PENGUMUMAN SERVER
+   Tempel blok ini di PALING BAWAH admin.js.
+   Tidak perlu menghapus fungsi lama.
+   ========================================================= */
+
+const V257_ANNOUNCEMENT_LIMIT=20;
+
+function v257EnsureAnnouncementManagerStyles(){
+  if(document.getElementById('v257AnnouncementManagerStyles'))return;
+
+  const style=document.createElement('style');
+  style.id='v257AnnouncementManagerStyles';
+  style.textContent=`
+    .server-announcement-row{
+      display:grid !important;
+      grid-template-columns:34px minmax(0,1fr) auto !important;
+      align-items:center !important;
+      gap:10px !important;
+    }
+
+    .server-announcement-row .notification-history-copy{
+      min-width:0;
+    }
+
+    .server-announcement-delete{
+      min-width:70px;
+      height:34px;
+      padding:0 12px;
+      border:1px solid #ead4d0;
+      border-radius:11px;
+      background:#fff8f7;
+      color:#a8483f;
+      font:700 11px/1 system-ui;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+
+    .server-announcement-delete:hover{
+      background:#fceeed;
+      border-color:#ddb9b3;
+    }
+
+    .server-announcement-delete:disabled{
+      opacity:.5;
+      cursor:wait;
+    }
+
+    .server-announcement-loading{
+      padding:24px 14px;
+      text-align:center;
+      color:#748079;
+      font-size:12px;
+    }
+
+    @media(max-width:620px){
+      .server-announcement-row{
+        grid-template-columns:30px minmax(0,1fr) !important;
+      }
+
+      .server-announcement-delete{
+        grid-column:2;
+        justify-self:start;
+        margin-top:2px;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function v257ConfigureAnnouncementSection(){
+  v257EnsureAnnouncementManagerStyles();
+
+  const list=$('#notificationHistoryList');
+  const section=list?.closest('.notification-history-section');
+  if(!section)return;
+
+  const head=section.querySelector('.notification-section-head');
+  const eyebrow=head?.querySelector('small');
+  const title=head?.querySelector('b');
+  const copy=head?.querySelector('p');
+  const clear=$('#clearNotificationHistoryBtn');
+
+  if(eyebrow)eyebrow.textContent='PENGUMUMAN SERVER';
+  if(title)title.textContent='Kelola Pengumuman';
+  if(copy){
+    copy.textContent=
+      'Daftar pengumuman yang masih tersedia di aplikasi pengguna. '+
+      'Hapus satu per satu atau hapus semuanya dari server.';
+  }
+
+  if(clear){
+    clear.textContent='Hapus Semua';
+    clear.title='Hapus semua pengumuman dari aplikasi';
+  }
+}
+
+function v257NotificationWorkerUrl(){
+  const input=$('#notificationWorkerUrl');
+  const raw=String(
+    input?.value||
+    localStorage.getItem(NOTIFICATION_WORKER_KEY)||
+    ''
+  ).trim();
+
+  return raw.replace(/\/+$/,'');
+}
+
+function v257AdminSecret(){
+  return String(
+    $('#notificationAdminSecret')?.value||
+    ''
+  ).trim();
+}
+
+function v257AnnouncementDate(value){
+  try{
+    const date=new Date(value);
+    if(Number.isNaN(date.getTime()))return '—';
+
+    return new Intl.DateTimeFormat(
+      'id-ID',
+      {
+        dateStyle:'medium',
+        timeStyle:'short'
+      }
+    ).format(date);
+  }catch{
+    return '—';
+  }
+}
+
+openNotificationDialog=function(){
+  const saved=
+    localStorage.getItem(
+      NOTIFICATION_WORKER_KEY
+    )||'';
+
+  $('#notificationWorkerUrl').value=saved;
+  $('#notificationAdminSecret').value='';
+
+  setNotificationConnectionState(
+    'neutral',
+    'Belum dicek'
+  );
+
+  v257ConfigureAnnouncementSection();
+  renderNotificationPreview();
+  renderNotificationHistory();
+
+  $('#notificationDialog').showModal();
+};
+
+renderNotificationHistory=async function(){
+  v257ConfigureAnnouncementSection();
+
+  const wrap=$('#notificationHistoryList');
+  const clear=$('#clearNotificationHistoryBtn');
+
+  if(!wrap)return;
+
+  const worker=v257NotificationWorkerUrl();
+
+  if(!worker){
+    wrap.innerHTML=`
+      <div class="notification-history-empty">
+        Isi Alamat Worker terlebih dahulu untuk memuat pengumuman.
+      </div>
+    `;
+
+    if(clear)clear.disabled=true;
+    return;
+  }
+
+  wrap.innerHTML=`
+    <div class="server-announcement-loading">
+      Memuat pengumuman dari server…
+    </div>
+  `;
+
+  if(clear)clear.disabled=true;
+
+  try{
+    const response=await fetch(
+      `${worker}/announcements?limit=${V257_ANNOUNCEMENT_LIMIT}`,
+      {
+        method:'GET',
+        cache:'no-store'
+      }
+    );
+
+    const payload=
+      await response
+        .json()
+        .catch(()=>({}));
+
+    if(!response.ok || !payload.ok){
+      throw new Error(
+        payload?.error||
+        `HTTP ${response.status}`
+      );
+    }
+
+    const rows=
+      Array.isArray(payload.announcements)
+        ? payload.announcements
+        : [];
+
+    const section=
+      wrap.closest(
+        '.notification-history-section'
+      );
+
+    const eyebrow=
+      section
+        ?.querySelector(
+          '.notification-section-head small'
+        );
+
+    if(eyebrow){
+      eyebrow.textContent=
+        `PENGUMUMAN SERVER • ${rows.length}/${V257_ANNOUNCEMENT_LIMIT}`;
+    }
+
+    if(clear){
+      clear.disabled=
+        rows.length===0;
+    }
+
+    if(!rows.length){
+      wrap.innerHTML=`
+        <div class="notification-history-empty">
+          Belum ada pengumuman aktif di server.
+        </div>
+      `;
+      return;
+    }
+
+    wrap.innerHTML=
+      rows.map(row=>`
+        <article class="notification-history-row server-announcement-row">
+
+          <span class="notification-history-mark">
+            ✦
+          </span>
+
+          <span class="notification-history-copy">
+            <b>
+              ${esc(row.title||'Pengumuman Amaliyah')}
+            </b>
+
+            <small>
+              ${esc(row.body||'')}
+            </small>
+
+            <em>
+              ${esc(v257AnnouncementDate(row.createdAt))}
+            </em>
+          </span>
+
+          <button
+            class="server-announcement-delete"
+            type="button"
+            data-delete-announcement="${esc(row.id||'')}"
+          >
+            Hapus
+          </button>
+
+        </article>
+      `).join('');
+
+    $$(
+      '[data-delete-announcement]',
+      wrap
+    ).forEach(button=>{
+      button.onclick=()=>{
+        v257DeleteAnnouncement(
+          button.dataset.deleteAnnouncement,
+          button
+        );
+      };
+    });
+
+  }catch(error){
+    wrap.innerHTML=`
+      <div class="notification-history-empty">
+        Gagal memuat pengumuman:
+        ${esc(error?.message||'Kesalahan tidak diketahui')}
+      </div>
+    `;
+
+    if(clear)clear.disabled=true;
+  }
+};
+
+async function v257DeleteAnnouncement(
+  id,
+  button=null
+){
+  const worker=
+    v257NotificationWorkerUrl();
+
+  const secret=
+    v257AdminSecret();
+
+  if(!worker){
+    toast(
+      'Alamat Worker belum diisi.',
+      'warn'
+    );
+    $('#notificationWorkerUrl')?.focus();
+    return;
+  }
+
+  if(!secret){
+    toast(
+      'Isi Kunci Admin untuk menghapus pengumuman.',
+      'warn'
+    );
+    $('#notificationAdminSecret')?.focus();
+    return;
+  }
+
+  const ok=
+    await confirmInternal(
+      'Hapus pengumuman?',
+      'Pengumuman ini akan dihapus dari daftar Pengumuman Amaliyah untuk semua pengguna.\n\nNotifikasi Android yang sudah masuk ke status bar tidak dapat ditarik kembali.',
+      'Hapus',
+      'Batal'
+    );
+
+  if(!ok)return;
+
+  if(button){
+    button.disabled=true;
+    button.textContent='Menghapus…';
+  }
+
+  try{
+    const response=
+      await fetch(
+        `${worker}/announcements/${encodeURIComponent(id)}`,
+        {
+          method:'DELETE',
+          headers:{
+            'Authorization':
+              `Bearer ${secret}`
+          }
+        }
+      );
+
+    const payload=
+      await response
+        .json()
+        .catch(()=>({}));
+
+    if(!response.ok || !payload.ok){
+      throw new Error(
+        payload?.error||
+        `HTTP ${response.status}`
+      );
+    }
+
+    toast(
+      'Pengumuman berhasil dihapus.',
+      'ok'
+    );
+
+    await renderNotificationHistory();
+
+  }catch(error){
+    toast(
+      `Gagal menghapus pengumuman: ${
+        error?.message||
+        'Kesalahan tidak diketahui'
+      }`,
+      'error'
+    );
+
+    if(button){
+      button.disabled=false;
+      button.textContent='Hapus';
+    }
+  }
+}
+
+clearNotificationHistory=async function(){
+  const worker=
+    v257NotificationWorkerUrl();
+
+  const secret=
+    v257AdminSecret();
+
+  if(!worker){
+    toast(
+      'Alamat Worker belum diisi.',
+      'warn'
+    );
+    $('#notificationWorkerUrl')?.focus();
+    return;
+  }
+
+  if(!secret){
+    toast(
+      'Isi Kunci Admin untuk menghapus semua pengumuman.',
+      'warn'
+    );
+    $('#notificationAdminSecret')?.focus();
+    return;
+  }
+
+  const ok=
+    await confirmInternal(
+      'Hapus semua pengumuman?',
+      'Semua pengumuman yang tersimpan di server akan dihapus dari aplikasi pengguna.\n\nNotifikasi Android yang sudah terkirim tidak dapat ditarik kembali.',
+      'Hapus Semua',
+      'Batal'
+    );
+
+  if(!ok)return;
+
+  const button=
+    $('#clearNotificationHistoryBtn');
+
+  if(button){
+    button.disabled=true;
+    button.textContent='Menghapus…';
+  }
+
+  try{
+    const response=
+      await fetch(
+        `${worker}/announcements`,
+        {
+          method:'DELETE',
+          headers:{
+            'Authorization':
+              `Bearer ${secret}`
+          }
+        }
+      );
+
+    const payload=
+      await response
+        .json()
+        .catch(()=>({}));
+
+    if(!response.ok || !payload.ok){
+      throw new Error(
+        payload?.error||
+        `HTTP ${response.status}`
+      );
+    }
+
+    toast(
+      payload.deleted
+        ? `${payload.deleted} pengumuman berhasil dihapus.`
+        : 'Tidak ada pengumuman yang perlu dihapus.',
+      'ok'
+    );
+
+    await renderNotificationHistory();
+
+  }catch(error){
+    toast(
+      `Gagal menghapus semua pengumuman: ${
+        error?.message||
+        'Kesalahan tidak diketahui'
+      }`,
+      'error'
+    );
+
+    if(button){
+      button.disabled=false;
+      button.textContent='Hapus Semua';
+    }
+  }
+};
+
+/*
+ * Pastikan tombol memakai fungsi V2.57 jika boot() sudah sempat
+ * memasang handler versi lama.
+ */
+queueMicrotask(()=>{
+  v257ConfigureAnnouncementSection();
+
+  const clear=
+    $('#clearNotificationHistoryBtn');
+
+  if(clear){
+    clear.onclick=
+      clearNotificationHistory;
+  }
+});
