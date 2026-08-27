@@ -247,6 +247,24 @@
       "coverText": "Khawatim"
     },
     {
+      "id": "doa-fajar-9b7c6f",
+      "title": "Doa Fajar",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-fajar.pdf",
+      "pages": 5,
+      "coverText": "Doa Fajar"
+    },
+    {
+      "id": "doa-hari-asyura-6b1997",
+      "title": "Doa Hari Asyura",
+      "category": "Doa",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-hari-asyura.pdf",
+      "pages": 2,
+      "coverText": "Doa Hari Asyura"
+    },
+    {
       "id": "doa-akhir-awal-tahun",
       "title": "Doa Akhir & Awal Tahun",
       "category": "Doa",
@@ -266,15 +284,6 @@
           "pages": 1
         }
       ]
-    },
-    {
-      "id": "doa-hari-asyura-6b1997",
-      "title": "Doa Hari Asyura",
-      "category": "Doa",
-      "type": "single",
-      "file": "assets/pdf-v2/doa/doa-hari-asyura.pdf",
-      "pages": 2,
-      "coverText": "Doa Hari Asyura"
     },
     {
       "id": "amaliyah-bulan-shafar",
@@ -313,28 +322,6 @@
       "coverText": "Amaliyah Malam Nishfu Sya'ban"
     },
     {
-      "id": "sholat-tasbih",
-      "title": "Sholat Tasbih",
-      "category": "Sholat",
-      "type": "collection",
-      "coverText": "Sholat Tasbih",
-      "parts": [
-        {
-          "id": "tata-cara-sholat-tasbih-1b934e",
-          "title": "Tata Cara Sholat Tasbih",
-          "file": "assets/pdf-v2/doa/sholat-tasbih/tata-cara-sholat-tasbih.pdf",
-          "pages": 2
-        },
-        {
-          "id": "do-a-sholat-tasbih-2c217f",
-          "title": "Doa Sholat Tasbih",
-          "file": "assets/pdf-v2/doa/sholat-tasbih/doa-sholat-tasbih.pdf",
-          "pages": 3
-        }
-      ],
-      "hidden": false
-    },
-    {
       "id": "amaliyah-ramadhan",
       "title": "Amaliyah Ramadhan",
       "category": "Doa",
@@ -366,6 +353,70 @@
           "pages": 5
         }
       ]
+    },
+    {
+      "id": "do-a-sholat-dhuha-15d3e7",
+      "title": "Doa Sholat Dhuha",
+      "category": "Sholat",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/doa-sholat-dhuha.pdf",
+      "pages": 1,
+      "coverText": "Doa Sholat Dhuha",
+      "hidden": false
+    },
+    {
+      "id": "shalat-sunnat-taubat-d74fe5",
+      "title": "Shalat Sunnat Taubat",
+      "category": "Sholat",
+      "type": "single",
+      "file": "assets/pdf-v2/doa/shalat-sunnat-taubat.pdf",
+      "pages": 3,
+      "coverText": "Shalat Sunnat Taubat",
+      "hidden": false
+    },
+    {
+      "id": "sholat-hajat",
+      "title": "Sholat Hajat",
+      "category": "Sholat",
+      "type": "collection",
+      "coverText": "Sholat Hajat",
+      "parts": [
+        {
+          "id": "tata-cara-sholat-hajat-c4ac02",
+          "title": "Tata Cara Sholat Hajat",
+          "file": "assets/pdf-v2/doa/sholat-hajat/tata-cara-sholat-hajat.pdf",
+          "pages": 2
+        },
+        {
+          "id": "do-a-sholat-hajat-45dfa5",
+          "title": "Doa Sholat Hajat",
+          "file": "assets/pdf-v2/doa/sholat-hajat/doa-sholat-hajat.pdf",
+          "pages": 2
+        }
+      ],
+      "hidden": false
+    },
+    {
+      "id": "sholat-tasbih",
+      "title": "Sholat Tasbih",
+      "category": "Sholat",
+      "type": "collection",
+      "coverText": "Sholat Tasbih",
+      "parts": [
+        {
+          "id": "tata-cara-sholat-tasbih-1b934e",
+          "title": "Tata Cara Sholat Tasbih",
+          "file": "assets/pdf-v2/doa/sholat-tasbih/tata-cara-sholat-tasbih.pdf",
+          "pages": 2
+        },
+        {
+          "id": "do-a-sholat-tasbih-2c217f",
+          "title": "Doa Sholat Tasbih",
+          "file": "assets/pdf-v2/doa/sholat-tasbih/doa-sholat-tasbih.pdf",
+          "pages": 3
+        }
+      ],
+      "hidden": false
     },
     {
       "id": "sholat-witir",
@@ -571,16 +622,6 @@
       ]
     },
     {
-      "id": "do-a-sholat-dhuha-15d3e7",
-      "title": "Doa Sholat Dhuha",
-      "category": "Sholat",
-      "type": "single",
-      "file": "assets/pdf-v2/doa/doa-sholat-dhuha.pdf",
-      "pages": 1,
-      "coverText": "Doa Sholat Dhuha",
-      "hidden": false
-    },
-    {
       "id": "doa-mempermudah-persalinan-8922be",
       "title": "Doa Mempermudah Persalinan",
       "category": "Doa",
@@ -626,40 +667,6 @@
       "coverText": "Sholawat Kamilah"
     },
     {
-      "id": "jamak-qashar-takhir",
-      "title": "Jamak Qashar Takhir",
-      "category": "Sholat",
-      "type": "collection",
-      "coverText": "Jamak Qashar Takhir",
-      "parts": [
-        {
-          "id": "zhuhur-b1bd60",
-          "title": "Dzuhur",
-          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/dzuhur.pdf",
-          "pages": 1
-        },
-        {
-          "id": "ashar-67ce2e",
-          "title": "Ashar",
-          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/ashar.pdf",
-          "pages": 1
-        },
-        {
-          "id": "maghrib-295ec2",
-          "title": "Maghrib",
-          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/maghrib.pdf",
-          "pages": 1
-        },
-        {
-          "id": "isya-0b97f9",
-          "title": "Isya",
-          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/isya.pdf",
-          "pages": 1
-        }
-      ],
-      "hidden": false
-    },
-    {
       "id": "jamak-qashar-taqdim",
       "title": "Jamak Qashar Taqdim",
       "category": "Sholat",
@@ -694,23 +701,35 @@
       "hidden": false
     },
     {
-      "id": "sholat-hajat",
-      "title": "Sholat Hajat",
+      "id": "jamak-qashar-takhir",
+      "title": "Jamak Qashar Takhir",
       "category": "Sholat",
       "type": "collection",
-      "coverText": "Sholat Hajat",
+      "coverText": "Jamak Qashar Takhir",
       "parts": [
         {
-          "id": "tata-cara-sholat-hajat-c4ac02",
-          "title": "Tata Cara Sholat Hajat",
-          "file": "assets/pdf-v2/doa/sholat-hajat/tata-cara-sholat-hajat.pdf",
-          "pages": 2
+          "id": "zhuhur-b1bd60",
+          "title": "Dzuhur",
+          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/dzuhur.pdf",
+          "pages": 1
         },
         {
-          "id": "do-a-sholat-hajat-45dfa5",
-          "title": "Doa Sholat Hajat",
-          "file": "assets/pdf-v2/doa/sholat-hajat/doa-sholat-hajat.pdf",
-          "pages": 2
+          "id": "ashar-67ce2e",
+          "title": "Ashar",
+          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/ashar.pdf",
+          "pages": 1
+        },
+        {
+          "id": "maghrib-295ec2",
+          "title": "Maghrib",
+          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/maghrib.pdf",
+          "pages": 1
+        },
+        {
+          "id": "isya-0b97f9",
+          "title": "Isya",
+          "file": "assets/pdf-v2/doa/jamak-qashar-takhir/isya.pdf",
+          "pages": 1
         }
       ],
       "hidden": false
@@ -824,33 +843,6 @@
         }
       ],
       "hidden": false
-    },
-    {
-      "id": "tahlil",
-      "title": "Tahlil",
-      "category": "Doa",
-      "type": "collection",
-      "coverText": "Tahlil",
-      "parts": [
-        {
-          "id": "tahlil-bacaan-tahlil-1cc909",
-          "title": "Tahlil - Bacaan Tahlil",
-          "file": "assets/pdf-v2/doa/tahlil/tahlil-bacaan-tahlil.pdf",
-          "pages": 6
-        },
-        {
-          "id": "tahlil-do-a-tahlil-2920f7",
-          "title": "Tahlil - Doa Tahlil",
-          "file": "assets/pdf-v2/doa/tahlil/tahlil-doa-tahlil.pdf",
-          "pages": 2
-        },
-        {
-          "id": "do-a-arwah-760d52",
-          "title": "Doa Arwah",
-          "file": "assets/pdf-v2/doa/tahlil/doa-arwah.pdf",
-          "pages": 7
-        }
-      ]
     },
     {
       "id": "adh-dhiya-al-lami",
@@ -1096,15 +1088,6 @@
       ]
     },
     {
-      "id": "doa-fajar-9b7c6f",
-      "title": "Doa Fajar",
-      "category": "Doa",
-      "type": "single",
-      "file": "assets/pdf-v2/doa/doa-fajar.pdf",
-      "pages": 5,
-      "coverText": "Doa Fajar"
-    },
-    {
       "id": "doa-khatamil-qur-an-a4e0aa",
       "title": "Doa Khatamil Qur'an",
       "category": "Doa",
@@ -1123,6 +1106,33 @@
       "coverText": "Doa Musafir"
     },
     {
+      "id": "tahlil",
+      "title": "Tahlil",
+      "category": "Doa",
+      "type": "collection",
+      "coverText": "Tahlil",
+      "parts": [
+        {
+          "id": "tahlil-bacaan-tahlil-1cc909",
+          "title": "Tahlil - Bacaan Tahlil",
+          "file": "assets/pdf-v2/doa/tahlil/tahlil-bacaan-tahlil.pdf",
+          "pages": 6
+        },
+        {
+          "id": "tahlil-do-a-tahlil-2920f7",
+          "title": "Tahlil - Doa Tahlil",
+          "file": "assets/pdf-v2/doa/tahlil/tahlil-doa-tahlil.pdf",
+          "pages": 2
+        },
+        {
+          "id": "do-a-arwah-760d52",
+          "title": "Doa Arwah",
+          "file": "assets/pdf-v2/doa/tahlil/doa-arwah.pdf",
+          "pages": 7
+        }
+      ]
+    },
+    {
       "id": "hizb-al-bahr-5928ea",
       "title": "Hizb Al-Bahr",
       "category": "Wirid",
@@ -1139,15 +1149,6 @@
       "file": "assets/pdf-v2/wirid/hizb-nashr.pdf",
       "pages": 6,
       "coverText": "Hizb Nashr"
-    },
-    {
-      "id": "shalat-sunnat-taubat-d74fe5",
-      "title": "Shalat Sunnat Taubat",
-      "category": "Doa",
-      "type": "single",
-      "file": "assets/pdf-v2/doa/shalat-sunnat-taubat.pdf",
-      "pages": 3,
-      "coverText": "Shalat Sunnat Taubat"
     },
     {
       "id": "talqin-mayyit-laki-laki-a33599",
