@@ -4575,3 +4575,45 @@ body{
     padding-bottom:7px!important;
   }
 }
+
+
+/* =========================================================
+   V2.54.2 — MONTHLY IMSAK
+   Tgl + Imsak + 5 waktu sholat
+   ========================================================= */
+#monthlyTable .monthly-grid{
+  grid-template-columns:31px repeat(6,minmax(0,1fr))!important;
+  gap:1px!important;
+  padding:9px 2px!important;
+  font-size:9.6px!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+#monthlyTable .monthly-head{
+  font-size:8.4px!important;
+  letter-spacing:-.015em!important;
+}
+
+#monthlyTable .monthly-head b,
+#monthlyTable .monthly-grid span{
+  min-width:0!important;
+  white-space:nowrap!important;
+  text-align:center!important;
+}
+
+#monthlyTable .monthly-grid span:first-child,
+#monthlyTable .monthly-head b:first-child{
+  font-weight:800!important;
+}
+
+@media(max-width:390px){
+  #monthlyTable .monthly-grid{
+    grid-template-columns:27px repeat(6,minmax(0,1fr))!important;
+    padding-left:1px!important;
+    padding-right:1px!important;
+    font-size:8.9px!important;
+  }
+  #monthlyTable .monthly-head{
+    font-size:7.7px!important;
+  }
+}

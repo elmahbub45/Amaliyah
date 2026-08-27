@@ -1,4 +1,4 @@
-/* V2.54.0 — UX & Design System Finalization; core reading/adhan/catalog logic preserved. */
+/* V2.54.2 — Monthly Imsak; existing stable functions preserved. */
 const $ = s => document.querySelector(s);
 const store = localStorage;
 
@@ -1851,15 +1851,29 @@ async function loadMonthlyPrayerTimes(){
 
     const today=dateKey();
 
+    const monthlyImsakTime=timings=>{
+      const sourceImsak=cleanTime(timings?.Imsak);
+      if(/^\d{2}:\d{2}$/.test(sourceImsak))return sourceImsak;
+
+      // Samakan fallback dengan kartu waktu sholat di Beranda:
+      // bila sumber tidak mengirim Imsak, tampilkan 10 menit sebelum Subuh.
+      const fajr=cleanTime(timings?.Fajr);
+      if(!/^\d{2}:\d{2}$/.test(fajr))return '—';
+      const [h,m]=fajr.split(':').map(Number);
+      const total=(h*60+m-10+1440)%1440;
+      return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;
+    };
+
     $('#monthlyTable').innerHTML=
       `<div class="monthly-grid monthly-head">`+
-      `<b>Tgl</b><b>Subuh</b><b>Dzuhur</b><b>Ashar</b><b>Maghrib</b><b>Isya</b>`+
+      `<b>Tgl</b><b>Imsak</b><b>Subuh</b><b>Dzuhur</b><b>Ashar</b><b>Maghrib</b><b>Isya</b>`+
       `</div>`+
       j.rows.map(row=>{
         const day=Number(String(row.date||'').slice(-2));
         const t=row.timings||{};
         return `<div class="monthly-grid ${row.date===today?'today':''}">`+
           `<span>${day||''}</span>`+
+          `<span>${monthlyImsakTime(t)}</span>`+
           `<span>${cleanTime(t.Fajr)}</span>`+
           `<span>${cleanTime(t.Dhuhr)}</span>`+
           `<span>${cleanTime(t.Asr)}</span>`+
