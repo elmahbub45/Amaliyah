@@ -51,6 +51,12 @@ let pathRepairLastScan=null;
 // V2.51.1 — Admin Maintenance Pack
 let pendingBackupRestore=null;
 
+// V2.55.0 — Remote Notification Admin
+const NOTIFICATION_WORKER_KEY='amaliyah:admin:notification-worker:v1';
+const NOTIFICATION_HISTORY_KEY='amaliyah:admin:notification-history:v1';
+const MAX_NOTIFICATION_HISTORY=12;
+let notificationSending=false;
+
 async function boot(){
   original=await fetchBooks();
   data=clone(original);
@@ -220,6 +226,16 @@ function bind(){
   $$('[data-maintenance-action]').forEach(btn=>{
     btn.onclick=()=>runMaintenanceAction(btn.dataset.maintenanceAction);
   });
+
+  $('#closeNotificationDialogBtn').onclick=()=>$('#notificationDialog').close();
+  $('#testNotificationWorkerBtn').onclick=testNotificationWorker;
+  $('#sendNotificationBtn').onclick=sendRemoteNotification;
+  $('#clearNotificationFormBtn').onclick=clearNotificationForm;
+  $('#clearNotificationHistoryBtn').onclick=clearNotificationHistory;
+  $('#notificationTitleInput').addEventListener('input',renderNotificationPreview);
+  $('#notificationBodyInput').addEventListener('input',renderNotificationPreview);
+  $('#notificationImageInput').addEventListener('input',renderNotificationPreview);
+  $('#notificationWorkerUrl').addEventListener('change',persistNotificationWorkerUrl);
 
   $('#saveDraftBtn').onclick=()=>saveDraft('Draft disimpan manual');
   $('#backupBtn').onclick=openBackupDialog;
@@ -860,11 +876,297 @@ function renderMaintenanceHub(){
 function runMaintenanceAction(action){
   $('#maintenanceDialog').close();
   if(action==='health')return openHealthCheckDialog();
+  if(action==='notification')return openNotificationDialog();
   if(action==='backup')return openBackupDialog();
   if(action==='path')return openPathRepairDialog();
   if(action==='rebuild')return openRebuildDialog();
   if(action==='validate')return openValidationDialog(false);
   if(action==='reload')return reloadServer();
+}
+
+
+/* ===================== V2.55.0 — REMOTE NOTIFICATION ADMIN ===================== */
+function normalizeWorkerUrl(value=''){
+  return String(value||'').trim().replace(/\/+$/,'');
+}
+
+function getNotificationWorkerUrl(){
+  return normalizeWorkerUrl($('#notificationWorkerUrl')?.value||localStorage.getItem(NOTIFICATION_WORKER_KEY)||'');
+}
+
+function persistNotificationWorkerUrl(){
+  const url=getNotificationWorkerUrl();
+  if(url)localStorage.setItem(NOTIFICATION_WORKER_KEY,url);
+  else localStorage.removeItem(NOTIFICATION_WORKER_KEY);
+}
+
+function getNotificationSecret(){
+  return String($('#notificationAdminSecret')?.value||'').trim();
+}
+
+function readNotificationHistory(){
+  try{
+    const raw=localStorage.getItem(NOTIFICATION_HISTORY_KEY);
+    const parsed=raw?JSON.parse(raw):[];
+    return Array.isArray(parsed)?parsed:[];
+  }catch(_){
+    return [];
+  }
+}
+
+function writeNotificationHistory(rows){
+  try{
+    localStorage.setItem(
+      NOTIFICATION_HISTORY_KEY,
+      JSON.stringify((Array.isArray(rows)?rows:[]).slice(0,MAX_NOTIFICATION_HISTORY))
+    );
+  }catch(_){}
+}
+
+function openNotificationDialog(){
+  const saved=localStorage.getItem(NOTIFICATION_WORKER_KEY)||'';
+  $('#notificationWorkerUrl').value=saved;
+  $('#notificationAdminSecret').value='';
+  setNotificationConnectionState('neutral','Belum dicek');
+  renderNotificationPreview();
+  renderNotificationHistory();
+  $('#notificationDialog').showModal();
+}
+
+function setNotificationConnectionState(level='neutral',label='Belum dicek'){
+  const badge=$('#notificationConnectionBadge');
+  if(!badge)return;
+  badge.className=`notification-badge ${level}`;
+  badge.textContent=label;
+}
+
+function renderNotificationPreview(){
+  const title=String($('#notificationTitleInput')?.value||'').trim();
+  const body=String($('#notificationBodyInput')?.value||'').trim();
+  const image=String($('#notificationImageInput')?.value||'').trim();
+
+  $('#notificationTitleCount').textContent=`${title.length} / 80`;
+  $('#notificationBodyCount').textContent=`${body.length} / 240`;
+  $('#notificationPreviewTitle').textContent=title||'Judul notifikasi';
+  $('#notificationPreviewBody').textContent=body||'Isi pesan akan tampil di sini.';
+
+  const img=$('#notificationPreviewImage');
+  if(/^https:\/\//i.test(image)){
+    img.src=image;
+    img.classList.remove('hidden');
+    img.onerror=()=>img.classList.add('hidden');
+  }else{
+    img.removeAttribute('src');
+    img.classList.add('hidden');
+  }
+}
+
+function clearNotificationForm(){
+  $('#notificationTitleInput').value='';
+  $('#notificationBodyInput').value='';
+  $('#notificationImageInput').value='';
+  renderNotificationPreview();
+  $('#notificationTitleInput').focus();
+}
+
+function formatNotificationHistoryDate(value){
+  try{
+    return new Intl.DateTimeFormat('id-ID',{
+      day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'
+    }).format(new Date(value));
+  }catch(_){
+    return '—';
+  }
+}
+
+function renderNotificationHistory(){
+  const wrap=$('#notificationHistoryList');
+  const rows=readNotificationHistory();
+  if(!rows.length){
+    wrap.innerHTML=`
+      <div class="notification-history-empty">
+        <span>✦</span>
+        <b>Belum ada pengiriman dari Admin ini</b>
+        <small>Notifikasi yang berhasil dikirim akan dicatat di sini.</small>
+      </div>`;
+    return;
+  }
+
+  wrap.innerHTML=rows.map(row=>`
+    <article class="notification-history-row">
+      <span class="notification-history-mark">✓</span>
+      <span class="notification-history-copy">
+        <b>${esc(row.title||'Amaliyah')}</b>
+        <small>${esc(row.body||'')}</small>
+        <em>${esc(formatNotificationHistoryDate(row.at))}</em>
+      </span>
+      ${row.image?'<i title="Menggunakan gambar">▧</i>':''}
+    </article>
+  `).join('');
+}
+
+async function clearNotificationHistory(){
+  const rows=readNotificationHistory();
+  if(!rows.length)return toast('Riwayat notifikasi masih kosong','warn');
+
+  const ok=await confirmInternal(
+    'Bersihkan riwayat notifikasi?',
+    'Riwayat lokal di browser Admin ini akan dihapus. Notifikasi yang sudah terkirim ke pengguna tidak terpengaruh.',
+    'Bersihkan',
+    'Batal'
+  );
+  if(!ok)return;
+  localStorage.removeItem(NOTIFICATION_HISTORY_KEY);
+  renderNotificationHistory();
+  toast('Riwayat notifikasi dibersihkan');
+}
+
+function validateNotificationConnection(){
+  const worker=getNotificationWorkerUrl();
+  const secret=getNotificationSecret();
+
+  if(!/^https:\/\/[^/]+/i.test(worker)){
+    toast('Isi alamat Worker HTTPS terlebih dahulu','bad');
+    $('#notificationWorkerUrl').focus();
+    return null;
+  }
+  if(secret.length<12){
+    toast('Masukkan Kunci Admin yang benar','bad');
+    $('#notificationAdminSecret').focus();
+    return null;
+  }
+  persistNotificationWorkerUrl();
+  return {worker,secret};
+}
+
+async function testNotificationWorker(){
+  const config=validateNotificationConnection();
+  if(!config)return;
+
+  const btn=$('#testNotificationWorkerBtn');
+  const previous=btn.textContent;
+  btn.disabled=true;
+  btn.textContent='Mengecek…';
+  setNotificationConnectionState('neutral','Mengecek…');
+
+  try{
+    const r=await fetch(`${config.worker}/health`,{
+      method:'GET',
+      headers:{Authorization:`Bearer ${config.secret}`},
+      cache:'no-store',
+      credentials:'omit'
+    });
+
+    const payload=await r.json().catch(()=>({}));
+    if(!r.ok || !payload.ok){
+      throw new Error(payload.error||`HTTP ${r.status}`);
+    }
+
+    setNotificationConnectionState('good','Terhubung');
+    toast('Worker notifikasi terhubung');
+  }catch(error){
+    setNotificationConnectionState('bad','Gagal');
+    toast(`Koneksi gagal: ${error.message||'tidak diketahui'}`,'bad');
+  }finally{
+    btn.disabled=false;
+    btn.textContent=previous;
+  }
+}
+
+function notificationPayload(){
+  return {
+    title:String($('#notificationTitleInput').value||'').trim(),
+    body:String($('#notificationBodyInput').value||'').trim(),
+    image:String($('#notificationImageInput').value||'').trim()
+  };
+}
+
+function validateNotificationPayload(payload){
+  if(!payload.title){
+    toast('Judul notifikasi belum diisi','bad');
+    $('#notificationTitleInput').focus();
+    return false;
+  }
+  if(!payload.body){
+    toast('Isi pesan notifikasi belum diisi','bad');
+    $('#notificationBodyInput').focus();
+    return false;
+  }
+  if(payload.title.length>80 || payload.body.length>240){
+    toast('Judul atau isi pesan terlalu panjang','bad');
+    return false;
+  }
+  if(payload.image && !/^https:\/\//i.test(payload.image)){
+    toast('Alamat gambar harus menggunakan HTTPS','bad');
+    $('#notificationImageInput').focus();
+    return false;
+  }
+  return true;
+}
+
+async function sendRemoteNotification(){
+  if(notificationSending)return;
+
+  const config=validateNotificationConnection();
+  if(!config)return;
+
+  const payload=notificationPayload();
+  if(!validateNotificationPayload(payload))return;
+
+  const ok=await confirmInternal(
+    'Kirim ke semua pengguna?',
+    `Notifikasi ini akan dikirim ke semua perangkat Amaliyah yang sudah terhubung.\n\nJudul: ${payload.title}\n\nSetelah dikirim, pesan tidak dapat ditarik kembali.`,
+    'Kirim Sekarang',
+    'Batal'
+  );
+  if(!ok)return;
+
+  const btn=$('#sendNotificationBtn');
+  const previous=btn.textContent;
+  notificationSending=true;
+  btn.disabled=true;
+  btn.textContent='Mengirim…';
+  setNotificationConnectionState('neutral','Mengirim…');
+
+  try{
+    const r=await fetch(`${config.worker}/send`,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        Authorization:`Bearer ${config.secret}`
+      },
+      body:JSON.stringify(payload),
+      cache:'no-store',
+      credentials:'omit'
+    });
+
+    const response=await r.json().catch(()=>({}));
+    if(!r.ok || !response.ok){
+      throw new Error(response.error||`HTTP ${r.status}`);
+    }
+
+    const rows=readNotificationHistory();
+    rows.unshift({
+      at:new Date().toISOString(),
+      title:payload.title,
+      body:payload.body,
+      image:payload.image||'',
+      messageId:String(response.messageId||'')
+    });
+    writeNotificationHistory(rows);
+
+    setNotificationConnectionState('good','Terhubung');
+    renderNotificationHistory();
+    clearNotificationForm();
+    toast('Notifikasi berhasil dikirim ke semua pengguna');
+  }catch(error){
+    setNotificationConnectionState('bad','Gagal');
+    toast(`Notifikasi gagal dikirim: ${error.message||'tidak diketahui'}`,'bad');
+  }finally{
+    notificationSending=false;
+    btn.disabled=false;
+    btn.textContent=previous;
+  }
 }
 
 /* ===================== V2.51.1 — BACKUP & RESTORE ===================== */

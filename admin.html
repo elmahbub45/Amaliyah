@@ -624,6 +624,11 @@
           <span><b>Cek Sebelum Publish</b><small>Periksa katalog, R2, Qur'an, dan file inti sebelum rilis.</small></span>
           <i>Disarankan</i>
         </button>
+        <button type="button" class="maintenance-tool notification-tool" data-maintenance-action="notification">
+          <span class="maintenance-tool-icon">✦</span>
+          <span><b>Kirim Notifikasi</b><small>Kirim pengumuman ke semua pengguna aplikasi Amaliyah melalui Firebase.</small></span>
+          <i>Semua pengguna</i>
+        </button>
         <button type="button" class="maintenance-tool" data-maintenance-action="backup">
           <span class="maintenance-tool-icon">↺</span>
           <span><b>Backup & Pulihkan</b><small>Download cadangan, simpan snapshot lokal, atau pulihkan dari file.</small></span>
@@ -654,6 +659,119 @@
       <div class="maintenance-safety-note">
         <b>Pengaman tetap aktif</b>
         <span>Backup otomatis dibuat sebelum perubahan besar. Pusat Perawatan tidak pernah memindahkan, mengunggah, atau menghapus object R2 secara diam-diam.</span>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- V2.55.0 — Remote Notification Admin -->
+  <dialog id="notificationDialog" class="wide-dialog notification-dialog">
+    <div class="dialog-card notification-card">
+      <div class="dialog-head">
+        <div>
+          <small>KIRIM NOTIFIKASI</small>
+          <h3>Pengumuman Amaliyah</h3>
+        </div>
+        <button id="closeNotificationDialogBtn" class="icon-btn dark" type="button" aria-label="Tutup">✕</button>
+      </div>
+
+      <div class="notification-target">
+        <span class="notification-target-icon" aria-hidden="true">✦</span>
+        <span>
+          <small>TARGET</small>
+          <b>Semua Pengguna Amaliyah</b>
+          <p>Dikirim ke perangkat Android yang sudah terhubung ke topik <code>amaliyah_semua</code>.</p>
+        </span>
+        <i>FCM</i>
+      </div>
+
+      <section class="notification-connection">
+        <div class="notification-section-head">
+          <div>
+            <small>KONEKSI AMAN</small>
+            <b>Cloudflare Worker Notifikasi</b>
+            <p>Kunci Firebase tidak disimpan di halaman Admin maupun repository.</p>
+          </div>
+          <span id="notificationConnectionBadge" class="notification-badge neutral">Belum dicek</span>
+        </div>
+
+        <div class="notification-connection-grid">
+          <label class="field span-2">
+            <span>Alamat Worker</span>
+            <input id="notificationWorkerUrl" type="url" placeholder="https://amaliyah-notify....workers.dev" autocomplete="off">
+            <small>Alamat ini boleh disimpan di browser Admin.</small>
+          </label>
+
+          <label class="field span-2">
+            <span>Kunci Admin</span>
+            <input id="notificationAdminSecret" type="password" placeholder="Masukkan kunci setiap kali membuka Admin" autocomplete="off">
+            <small>Kunci hanya berada di memori halaman ini dan tidak disimpan ke localStorage.</small>
+          </label>
+        </div>
+
+        <div class="notification-connection-actions">
+          <button id="testNotificationWorkerBtn" class="ghost" type="button">Tes Koneksi</button>
+        </div>
+      </section>
+
+      <div class="notification-compose-layout">
+        <section class="notification-compose">
+          <div class="notification-section-head compact">
+            <div><small>PESAN</small><b>Tulis Notifikasi</b></div>
+          </div>
+
+          <label class="field">
+            <span>Judul <small id="notificationTitleCount">0 / 80</small></span>
+            <input id="notificationTitleInput" type="text" maxlength="80" placeholder="Contoh: Amaliyah Ramadhan" autocomplete="off">
+          </label>
+
+          <label class="field">
+            <span>Isi Pesan <small id="notificationBodyCount">0 / 240</small></span>
+            <textarea id="notificationBodyInput" rows="5" maxlength="240" placeholder="Tulis informasi yang ingin dikirim ke pengguna…"></textarea>
+          </label>
+
+          <label class="field">
+            <span>Gambar <small>opsional</small></span>
+            <input id="notificationImageInput" type="url" maxlength="2048" placeholder="https://.../gambar.jpg" autocomplete="off">
+            <small>Gunakan JPG/PNG/WebP publik HTTPS, idealnya di bawah 1 MB.</small>
+          </label>
+        </section>
+
+        <aside class="notification-preview-wrap">
+          <div class="notification-section-head compact">
+            <div><small>PREVIEW</small><b>Tampilan Notifikasi</b></div>
+          </div>
+
+          <div class="notification-phone-preview">
+            <div class="notification-preview-app">
+              <span class="notification-preview-logo">A</span>
+              <span><b>Amaliyah</b><small>sekarang</small></span>
+            </div>
+            <b id="notificationPreviewTitle">Judul notifikasi</b>
+            <p id="notificationPreviewBody">Isi pesan akan tampil di sini.</p>
+            <img id="notificationPreviewImage" class="hidden" alt="">
+          </div>
+
+          <small class="notification-preview-note">Tampilan akhir dapat sedikit berbeda tergantung versi Android.</small>
+        </aside>
+      </div>
+
+      <section class="notification-history-section">
+        <div class="notification-section-head">
+          <div>
+            <small>RIWAYAT LOKAL</small>
+            <b>Pengiriman Terakhir</b>
+            <p>Disimpan hanya di browser Admin ini. Riwayat tidak berisi Kunci Admin.</p>
+          </div>
+          <button id="clearNotificationHistoryBtn" class="ghost small" type="button">Bersihkan</button>
+        </div>
+        <div id="notificationHistoryList" class="notification-history-list"></div>
+      </section>
+
+      <div class="dialog-actions sticky-dialog-actions notification-actions">
+        <button id="clearNotificationFormBtn" class="ghost" type="button">Kosongkan Pesan</button>
+        <button id="sendNotificationBtn" class="primary notification-send-btn" type="button">
+          Kirim ke Semua Pengguna
+        </button>
       </div>
     </div>
   </dialog>
