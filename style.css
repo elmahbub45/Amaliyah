@@ -4254,3 +4254,324 @@ body{
     height:42px;
   }
 }
+
+
+/* =========================================================
+   V2.54.1 — FINAL UX AUDIT FIX
+   Berdasarkan audit tampilan nyata di HP.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   1. Root destination header:
+   Kategori / Penanda / Riwayat / Pengaturan
+   --------------------------------------------------------- */
+.root-destination-screen{
+  padding-top:calc(8px + env(safe-area-inset-top))!important;
+}
+
+.root-screenbar{
+  min-height:44px!important;
+  margin-bottom:9px!important;
+  grid-template-columns:38px minmax(0,1fr) 38px!important;
+}
+
+.root-screenbar .root-screen-spacer{
+  width:38px!important;
+  height:38px!important;
+  display:block!important;
+}
+
+.root-screenbar>b,
+.root-screenbar .settings-title-wrap>b{
+  font-family:Georgia,'Times New Roman',serif!important;
+  font-size:20px!important;
+  line-height:1.12!important;
+  color:var(--am-emerald-dark)!important;
+  font-weight:500!important;
+}
+
+/* Root pages no longer look like child pages. */
+#categoryIndex .category-index-intro{
+  margin-top:3px!important;
+  margin-bottom:10px!important;
+}
+#bookmarks .bookmark-kind-tabs{
+  margin-top:3px!important;
+  margin-bottom:10px!important;
+}
+#historyList.list-wrap,
+#bookmarkList.list-wrap{
+  padding-top:7px!important;
+}
+
+/* ---------------------------------------------------------
+   2. Settings sticky header:
+   opaque, compact, no content bleeding behind it.
+   --------------------------------------------------------- */
+.settings-minimal-modern .settings-topbar.root-screenbar{
+  position:sticky!important;
+  top:0!important;
+  z-index:30!important;
+  margin:calc(-8px - env(safe-area-inset-top)) -13px 10px!important;
+  padding:calc(10px + env(safe-area-inset-top)) 13px 10px!important;
+  min-height:61px!important;
+  background:rgba(248,245,238,.985)!important;
+  border-bottom:1px solid rgba(231,222,208,.92)!important;
+  box-shadow:0 6px 16px rgba(55,43,25,.035)!important;
+  backdrop-filter:blur(15px)!important;
+  -webkit-backdrop-filter:blur(15px)!important;
+}
+
+.settings-title-wrap{
+  min-width:0!important;
+  text-align:center!important;
+}
+.settings-title-wrap>small{
+  margin-top:3px!important;
+  font-size:7.8px!important;
+  line-height:1.2!important;
+  color:#8b847a!important;
+}
+
+/* ---------------------------------------------------------
+   3. Settings density:
+   same functions, less vertical weight.
+   --------------------------------------------------------- */
+.settings-section-label{
+  margin:15px 3px 7px!important;
+  font-size:10px!important;
+}
+
+.settings-panel{
+  padding:11px!important;
+  border-radius:17px!important;
+  margin-bottom:9px!important;
+}
+
+.settings-row-head{
+  gap:9px!important;
+}
+.settings-row-icon{
+  width:35px!important;
+  height:35px!important;
+  border-radius:11px!important;
+}
+.settings-row-copy h3{
+  font-size:11px!important;
+}
+.settings-row-copy p{
+  font-size:8px!important;
+  line-height:1.38!important;
+}
+
+.settings-inner-block{
+  margin-top:8px!important;
+  padding-top:8px!important;
+}
+
+.settings-minimal-modern .notification-label{
+  margin-bottom:6px!important;
+  font-size:8.5px!important;
+}
+
+.settings-minimal-modern .prayer-toggle-grid{
+  gap:4px!important;
+}
+.settings-minimal-modern .prayer-toggle-grid label{
+  min-height:31px!important;
+  padding:4px 4px!important;
+  border-radius:9px!important;
+  font-size:8.2px!important;
+}
+.settings-minimal-modern .prayer-toggle-grid input[type="checkbox"]{
+  width:15px!important;
+  height:15px!important;
+}
+
+.settings-select-row{
+  margin-top:8px!important;
+  padding:8px 9px!important;
+  border-radius:12px!important;
+}
+.settings-select-row span b{
+  font-size:8.8px!important;
+}
+.settings-select-row span small{
+  font-size:7.4px!important;
+}
+.settings-select-row select{
+  min-height:35px!important;
+  padding-top:5px!important;
+  padding-bottom:5px!important;
+}
+
+/* Permission granted becomes a status chip, not a giant disabled action. */
+.notification-action-row:has(#notificationPermissionBtn.permission-granted){
+  grid-template-columns:auto minmax(0,1fr)!important;
+  align-items:center!important;
+}
+#notificationPermissionBtn.permission-granted{
+  width:auto!important;
+  min-width:0!important;
+  min-height:31px!important;
+  padding:0 10px!important;
+  border:1px solid #cfe1d8!important;
+  border-radius:999px!important;
+  background:#edf5f1!important;
+  color:#286753!important;
+  opacity:1!important;
+  font-size:8.2px!important;
+  box-shadow:none!important;
+}
+#notificationPermissionBtn.permission-denied{
+  min-height:33px!important;
+  font-size:8.2px!important;
+}
+.notification-test-btn{
+  min-height:35px!important;
+}
+
+/* Adzan choices become denser but stay easy to tap. */
+.settings-choice-list{
+  gap:5px!important;
+}
+.settings-choice-list .adhan-mode-option{
+  min-height:42px!important;
+  padding:6px 8px!important;
+  border-radius:11px!important;
+}
+.settings-choice-list .adhan-mode-option input{
+  width:18px!important;
+  height:18px!important;
+}
+.settings-choice-list .adhan-mode-option b{
+  font-size:9.2px!important;
+}
+.settings-choice-list .adhan-mode-option small{
+  margin-top:2px!important;
+  font-size:7.4px!important;
+}
+
+.settings-action-row{
+  margin-top:8px!important;
+}
+.settings-action-row button,
+.settings-wide-button,
+.settings-offline-actions button{
+  min-height:36px!important;
+}
+.settings-note{
+  margin-top:6px!important;
+  font-size:7.4px!important;
+}
+
+.settings-wide-button{
+  margin-top:9px!important;
+}
+.settings-offline-progress{
+  margin-top:8px!important;
+}
+.settings-help-button{
+  min-height:52px!important;
+  margin-bottom:8px!important;
+}
+
+/* ---------------------------------------------------------
+   4. Safe space above global floating navigation.
+   Last content must always be fully scrollable above footer.
+   --------------------------------------------------------- */
+.screen{
+  padding-bottom:calc(126px + env(safe-area-inset-bottom))!important;
+}
+.settings-minimal-modern{
+  padding-bottom:calc(132px + env(safe-area-inset-bottom))!important;
+}
+#monthlyTable{
+  padding-bottom:22px!important;
+}
+#allBooksCollectionBtn{
+  margin-bottom:12px!important;
+}
+#historyList,
+#bookmarkList,
+#favoritesManagerList,
+#collectionList,
+#bookList{
+  padding-bottom:16px!important;
+}
+
+/* ---------------------------------------------------------
+   5. Category page density:
+   titles stay prominent, cards use less vertical space.
+   --------------------------------------------------------- */
+.category-directory{
+  gap:7px!important;
+}
+.category-directory-card{
+  min-height:63px!important;
+  grid-template-columns:32px minmax(0,1fr) 14px!important;
+  gap:8px!important;
+  padding:7px 9px!important;
+  border-radius:14px!important;
+}
+.category-directory-icon{
+  width:32px!important;
+  height:32px!important;
+  border-radius:10px!important;
+}
+.category-directory-icon svg{
+  width:19px!important;
+  height:19px!important;
+}
+.category-directory-copy b{
+  font-size:13px!important;
+  line-height:1.15!important;
+}
+.category-directory-copy small{
+  margin-top:3px!important;
+  font-size:7.8px!important;
+}
+.all-books-collection{
+  min-height:58px!important;
+  padding:8px 10px!important;
+}
+.all-books-collection-icon{
+  width:35px!important;
+  height:35px!important;
+}
+.all-books-collection-copy b{
+  font-size:10.5px!important;
+}
+
+/* ---------------------------------------------------------
+   6. Monthly schedule
+   --------------------------------------------------------- */
+#monthly .screenbar{
+  margin-bottom:10px!important;
+}
+#monthly .month-switch{
+  margin-bottom:10px!important;
+}
+
+/* ---------------------------------------------------------
+   Small phones
+   --------------------------------------------------------- */
+@media(max-width:390px){
+  .root-screenbar>b,
+  .root-screenbar .settings-title-wrap>b{
+    font-size:19px!important;
+  }
+
+  .settings-minimal-modern .adhan-action-row{
+    grid-template-columns:1fr 1fr!important;
+  }
+  .settings-minimal-modern #adhanExactAlarmBtn{
+    grid-column:1/-1!important;
+  }
+
+  .category-directory-card{
+    min-height:61px!important;
+    padding-top:7px!important;
+    padding-bottom:7px!important;
+  }
+}

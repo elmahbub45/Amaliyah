@@ -130,9 +130,9 @@
 
 </div>
 
-<div id="categoryIndex" class="screen category-index-screen hidden">
-  <div class="screenbar category-index-bar">
-    <button type="button" onclick="goBackInApp()" aria-label="Kembali">‹</button>
+<div id="categoryIndex" class="screen category-index-screen root-destination-screen hidden">
+  <div class="screenbar category-index-bar root-screenbar">
+    <span class="root-screen-spacer" aria-hidden="true"></span>
     <b>Semua Kategori</b>
     <span></span>
   </div>
@@ -199,17 +199,17 @@
 
 <div id="monthly" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Jadwal Sholat Bulanan</b><span></span></div><div class="month-switch"><button type="button" onclick="changeMonth(-1)">‹</button><b id="monthlyTitle"></b><button type="button" onclick="changeMonth(1)">›</button></div><div id="monthlyTable" aria-live="polite"></div></div>
 
-<div id="bookmarks" class="screen hidden">
-  <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Penanda</b><span></span></div>
+<div id="bookmarks" class="screen root-destination-screen hidden">
+  <div class="screenbar root-screenbar"><span class="root-screen-spacer" aria-hidden="true"></span><b>Penanda</b><span></span></div>
   <div class="bookmark-kind-tabs" role="tablist" aria-label="Jenis penanda">
     <button class="active" id="bookmarkPdfTab" type="button" role="tab" aria-selected="true" onclick="showBookmarkKind('pdf')">Khazanah</button>
     <button id="bookmarkQuranTab" type="button" role="tab" aria-selected="false" onclick="showBookmarkKind('quran')">Al-Qur'an</button>
   </div>
   <div id="bookmarkList" class="list-wrap"></div>
 </div>
-<div id="history" class="screen hidden">
-  <div class="screenbar history-screenbar">
-    <button onclick="goBackScreen()">‹</button>
+<div id="history" class="screen root-destination-screen hidden">
+  <div class="screenbar history-screenbar root-screenbar">
+    <span class="root-screen-spacer" aria-hidden="true"></span>
     <b>Riwayat Khazanah</b>
     <button id="clearHistoryBtn" class="screen-action-btn" type="button" onclick="clearAllHistory()" aria-label="Hapus semua riwayat" title="Hapus semua riwayat">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>
@@ -217,9 +217,9 @@
   </div>
   <div id="historyList" class="list-wrap"></div>
 </div>
-<div id="settings" class="screen hidden settings-screen settings-minimal-modern">
-  <div class="screenbar settings-topbar">
-    <button type="button" onclick="goBackInApp()" aria-label="Kembali">‹</button>
+<div id="settings" class="screen root-destination-screen hidden settings-screen settings-minimal-modern">
+  <div class="screenbar settings-topbar root-screenbar">
+    <span class="root-screen-spacer" aria-hidden="true"></span>
     <div class="settings-title-wrap"><b>Pengaturan</b><small>Atur Amaliyah sesuai kebutuhanmu</small></div>
     <span></span>
   </div>

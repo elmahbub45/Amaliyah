@@ -1053,3 +1053,74 @@ html,body{
 .picker-heading span{
   color:#9b7a42!important;
 }
+
+
+/* =========================================================
+   V2.54.1 — QUR'AN DIRECTORY DENSITY POLISH
+   Reader/Mushaf tidak dirombak.
+   ========================================================= */
+.directory-list{
+  gap:6px!important;
+}
+
+.directory-item{
+  min-height:60px!important;
+  grid-template-columns:38px minmax(0,1fr) minmax(54px,auto)!important;
+  gap:9px!important;
+  padding:7px 10px!important;
+  border-radius:15px!important;
+}
+
+.directory-number{
+  width:37px!important;
+  height:37px!important;
+  border-radius:11px!important;
+  font-size:12px!important;
+}
+
+.directory-copy em{
+  margin-bottom:2px!important;
+  font-size:6.2px!important;
+}
+.directory-copy b{
+  font-size:13.3px!important;
+  line-height:1.15!important;
+}
+.directory-copy small{
+  margin-top:3px!important;
+  font-size:7.9px!important;
+}
+.directory-arabic{
+  font-size:18px!important;
+}
+.directory-arrow{
+  width:28px!important;
+  height:28px!important;
+  border-radius:9px!important;
+}
+
+.directory-card{
+  padding:10px!important;
+}
+.quran-search{
+  min-height:40px!important;
+  margin-top:9px!important;
+}
+
+@media(max-width:390px){
+  .directory-item{
+    min-height:58px!important;
+    grid-template-columns:36px minmax(0,1fr) minmax(50px,auto)!important;
+    padding:7px 9px!important;
+  }
+  .directory-number{
+    width:35px!important;
+    height:35px!important;
+  }
+  .directory-copy b{
+    font-size:12.8px!important;
+  }
+  .directory-arabic{
+    font-size:17px!important;
+  }
+}
