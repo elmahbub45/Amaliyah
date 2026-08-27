@@ -1,4 +1,4 @@
-/* V2.53.2 — Theme Unification + Settings UI only; functional logic preserved. */
+/* V2.54.0 — UX & Design System Finalization; core reading/adhan/catalog logic preserved. */
 const $ = s => document.querySelector(s);
 const store = localStorage;
 
@@ -16,13 +16,13 @@ function ensureAppDialogStyles(){
       align-items:center;
       justify-content:center;
       padding:22px;
-      background:rgba(8,29,24,.58);
+      background:rgba(28,38,33,.48);
       backdrop-filter:blur(4px);
       -webkit-backdrop-filter:blur(4px);
     }
     .amaliyah-dialog-card{
       width:min(100%,390px);
-      border-radius:26px;
+      border-radius:22px;
       padding:24px 22px 18px;
       background:#fffdf8;
       color:#24352f;
@@ -37,7 +37,7 @@ function ensureAppDialogStyles(){
       margin-bottom:14px;
       font-size:19px;
       font-weight:800;
-      color:#0d5b49;
+      color:#1f6a57;
     }
     .amaliyah-dialog-mark{
       width:38px;
@@ -45,7 +45,7 @@ function ensureAppDialogStyles(){
       border-radius:13px;
       display:grid;
       place-items:center;
-      background:#0d5b49;
+      background:#1f6a57;
       color:#e5bd63;
       font-family:Georgia,serif;
       font-size:21px;
@@ -73,7 +73,7 @@ function ensureAppDialogStyles(){
       cursor:pointer;
     }
     .amaliyah-dialog-btn.primary{
-      background:#0d5b49;
+      background:#1f6a57;
       color:#fff;
     }
     .amaliyah-dialog-btn.secondary{
@@ -161,9 +161,87 @@ function appConfirm(message,options={}){
 }
 
 
+function uxStateMarkup({
+  icon='◇',
+  title='Belum ada data',
+  text='',
+  actionText='',
+  action=''
+}={}){
+  return `<section class="ux-state" role="status">
+    <span class="ux-state-icon" aria-hidden="true">${icon}</span>
+    <div class="ux-state-copy"><b>${title}</b>${text?`<p>${text}</p>`:''}</div>
+    ${actionText&&action?`<button class="ux-state-action" type="button" onclick="${action}">${actionText}<span aria-hidden="true">›</span></button>`:''}
+  </section>`;
+}
+
+const ONBOARDING_KEY='amaliyah:onboarding:v2.54.0';
+
+function closeOnboarding(markSeen=true){
+  document.querySelector('.amaliyah-onboarding-backdrop')?.remove();
+  if(markSeen)store.setItem(ONBOARDING_KEY,'1');
+}
+
+function showOnboarding(force=false){
+  if(!force && store.getItem(ONBOARDING_KEY)==='1')return;
+  document.querySelector('.amaliyah-onboarding-backdrop')?.remove();
+
+  const backdrop=document.createElement('div');
+  backdrop.className='amaliyah-onboarding-backdrop';
+  backdrop.innerHTML=`
+    <section class="amaliyah-onboarding" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+      <button class="onboarding-close" type="button" aria-label="Tutup petunjuk">×</button>
+      <div class="onboarding-brand"><span>ا</span><div><small>SELAMAT DATANG</small><b id="onboardingTitle">Amaliyah</b></div></div>
+      <p class="onboarding-lead">Empat hal utama agar Amaliyah langsung nyaman digunakan.</p>
+      <div class="onboarding-grid">
+        <article><i>۞</i><div><b>Al-Qur'an</b><p>Mushaf terpisah dari Khazanah dan dapat disiapkan untuk dibaca tanpa internet.</p></div></article>
+        <article><i>▦</i><div><b>Khazanah</b><p>Jelajahi atau cari bacaan berdasarkan judul, bagian, kategori, dan tulisan Arab.</p></div></article>
+        <article><i>★</i><div><b>Favorit &amp; Penanda</b><p>Favorit menyimpan bacaan pilihan. Penanda menyimpan halaman yang ingin dibuka kembali.</p></div></article>
+        <article><i>⌁</i><div><b>Tanpa Internet</b><p>Aplikasi dan Mushaf yang sudah diunduh tetap dapat digunakan. Khazanah PDF memerlukan internet.</p></div></article>
+      </div>
+      <button class="onboarding-primary" type="button">Mulai Menggunakan</button>
+    </section>`;
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('.onboarding-close')?.addEventListener('click',()=>closeOnboarding(true));
+  backdrop.querySelector('.onboarding-primary')?.addEventListener('click',()=>closeOnboarding(true));
+  backdrop.addEventListener('click',event=>{
+    if(event.target===backdrop)closeOnboarding(true);
+  });
+}
+
+function maybeShowOnboarding(){
+  if(store.getItem(ONBOARDING_KEY)==='1')return;
+  setTimeout(()=>showOnboarding(false),650);
+}
+
+function showCatalogLoadState(){
+  if(!catalogLoadError)return;
+  const homeMain=document.querySelector('#app main');
+  if(!homeMain || document.querySelector('#catalogLoadState'))return;
+  const state=document.createElement('div');
+  state.id='catalogLoadState';
+  state.innerHTML=uxStateMarkup({
+    icon:'⌁',
+    title:'Khazanah belum dapat dimuat',
+    text:navigator.onLine
+      ? 'Data katalog belum berhasil dibaca. Muat ulang aplikasi untuk mencoba kembali.'
+      : 'Sambungkan internet lalu muat ulang. Mushaf Al-Qur\'an yang sudah diunduh tetap dapat digunakan.',
+    actionText:'Muat Ulang',
+    action:'location.reload()'
+  });
+  const quranSection=homeMain.querySelector('.quran-home-section');
+  quranSection?.insertAdjacentElement('afterend',state);
+}
+
+
+let catalogLoadError=null;
 const catalog = await fetch('./books.json', {cache:'no-store'}).then(r=>{
   if(!r.ok) throw new Error('books.json gagal dimuat');
   return r.json();
+}).catch(error=>{
+  catalogLoadError=error;
+  return {items:[],categories:['Semua']};
 });
 const items = catalog.items || [];
 const categories = catalog.categories || ['Semua'];
@@ -397,7 +475,7 @@ function openPart(itemId,partId,options={}){
 
   if(!navigator.onLine){
     appNotice(
-      'Khazanah ini membutuhkan koneksi internet. Untuk menjaga konten tetap aman, khazanah tidak disimpan di perangkat.',
+      'Khazanah ini membutuhkan koneksi internet. Mushaf Al-Qur\'an yang sudah diunduh tetap dapat dibaca tanpa internet.',
       {title:'Koneksi Internet Diperlukan',confirmText:'Mengerti'}
     );
     return;
@@ -436,10 +514,45 @@ function continueItem(id){
   openPart(item.id,partId,{resume:true});
 }
 
+function normalizeSearchText(value=''){
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[\u064B-\u065F\u0670]/g,'')
+    .replace(/[أإآٱ]/g,'ا')
+    .replace(/ى/g,'ي')
+    .replace(/ة/g,'ه')
+    .toLocaleLowerCase('id-ID')
+    .replace(/[^\p{L}\p{N}]+/gu,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
 function itemSearchText(item){
-  const parts=(item.parts||[]).flatMap(p=>[p.title,p.arabicTitle]).filter(Boolean);
-  return [item.title,item.arabicTitle,item.category,...parts]
-    .filter(Boolean).join(' ').toLocaleLowerCase('id-ID');
+  const parts=(item.parts||[]).flatMap(p=>[
+    p.title,p.arabicTitle,p.coverText
+  ]).filter(Boolean);
+  return normalizeSearchText([
+    item.title,item.arabicTitle,item.coverText,item.category,...parts
+  ].filter(Boolean).join(' '));
+}
+
+function itemMatchesSearch(item,query=''){
+  const normalized=normalizeSearchText(query);
+  if(!normalized)return true;
+  const haystack=itemSearchText(item);
+  return normalized.split(' ').filter(Boolean).every(token=>haystack.includes(token));
+}
+
+function matchingPartTitle(item,query=''){
+  const normalized=normalizeSearchText(query);
+  if(!normalized || !Array.isArray(item.parts))return '';
+  const tokens=normalized.split(' ').filter(Boolean);
+  const found=item.parts.find(part=>{
+    const text=normalizeSearchText([part.title,part.arabicTitle,part.coverText].filter(Boolean).join(' '));
+    return tokens.every(token=>text.includes(token));
+  });
+  return found?.title||'';
 }
 
 function updateHome(){
@@ -708,12 +821,27 @@ function renderLibrary(category=activeLibraryCategory||'Semua'){
   renderChips(category);
   const list=$('#bookList');if(!list)return;
   initLibrarySwipe();
-  const q=(librarySearchQuery||'').trim().toLocaleLowerCase('id-ID');
-  let filtered=category==='Semua'?items:items.filter(x=>x.category===category);
-  if(q) filtered=filtered.filter(item=>itemSearchText(item).includes(q));
+  const q=(librarySearchQuery||'').trim();
+  // Saat pencarian aktif, cari ke seluruh katalog termasuk judul bagian.
+  let filtered=q ? items : (category==='Semua'?items:items.filter(x=>x.category===category));
+  if(q)filtered=filtered.filter(item=>itemMatchesSearch(item,q));
 
   if(!filtered.length){
-    list.innerHTML=`<div class="empty-state"><b>${q?'Khazanah tidak ditemukan':'Belum ada khazanah'}</b><p>${q?'Coba kata kunci lain atau pilih kategori Semua.':'Belum ada khazanah pada kategori ini.'}</p></div>`;
+    list.innerHTML=q
+      ? uxStateMarkup({
+          icon:'⌕',
+          title:'Tidak menemukan khazanah',
+          text:`Tidak ada hasil untuk “${q}”. Coba kata yang lebih pendek atau nama bagian lain.`,
+          actionText:'Hapus Pencarian',
+          action:'clearSearch()'
+        })
+      : uxStateMarkup({
+          icon:'▦',
+          title:'Belum ada khazanah',
+          text:'Kategori ini belum memiliki bacaan yang dapat ditampilkan.',
+          actionText:'Lihat Semua',
+          action:"showLibrary('Semua')"
+        });
     return;
   }
 
@@ -723,9 +851,12 @@ function renderLibrary(category=activeLibraryCategory||'Semua'){
     const meta=item.type==='single'
       ? (pr.page>1?`Terakhir hal. ${pr.page}`:`${pr.total} halaman`)
       : `${item.parts?.length||0} bagian`;
-    const typeLabel=item.type==='collection'?'Koleksi':item.type==='group'?'Kelompok':item.category;
+    const matchedPart=q?matchingPartTitle(item,q):'';
+    const typeLabel=matchedPart
+      ? `Ditemukan di: ${matchedPart}`
+      : (item.type==='collection'?'Koleksi':item.type==='group'?'Kelompok':item.category);
 
-    return `<div class="book-row library-book-row">
+    return `<div class="book-row library-book-row ${q?'search-result-row':''}">
       <button class="book-main" type="button" data-open-item="${item.id}">
         <div class="book-icon">${item.icon||'▣'}</div>
         <div class="book-copy"><b>${item.title}</b><small>${typeLabel}</small></div>
@@ -868,7 +999,13 @@ function renderFavoritesManager(){
   if(!wrap)return;
   const entries=getFavorites().map(resolveFavoriteEntry).filter(Boolean);
   if(!entries.length){
-    wrap.innerHTML=`<div class="favorites-manager-empty"><span>☆</span><b>Belum ada favorit</b><p>Tambahkan khazanah ke Favorit terlebih dahulu. Setelah itu urutannya bisa diatur di sini.</p></div>`;
+    wrap.innerHTML=uxStateMarkup({
+      icon:'☆',
+      title:'Belum ada favorit',
+      text:'Tambahkan bacaan yang sering dibuka. Setelah itu urutannya dapat diatur di sini.',
+      actionText:'Jelajahi Khazanah',
+      action:'showCategories()'
+    });
     return;
   }
   wrap.innerHTML=entries.map((entry,index)=>{
@@ -1158,7 +1295,13 @@ function renderHistory(){
   $('#clearHistoryBtn')?.classList.toggle('hidden',!normalized.length);
 
   if(!normalized.length){
-    wrap.innerHTML='<div class="empty-state"><b>Belum ada riwayat</b><p>Khazanah yang dibuka akan tercatat otomatis di sini.</p></div>';return;
+    wrap.innerHTML=uxStateMarkup({
+      icon:'◷',
+      title:'Belum ada riwayat',
+      text:'Bacaan yang dibuka akan tercatat otomatis agar mudah ditemukan kembali.',
+      actionText:'Jelajahi Khazanah',
+      action:'showCategories()'
+    });return;
   }
 
   wrap.innerHTML=normalized.map((x,i)=>`<div class="history-row">
@@ -1655,7 +1798,13 @@ async function loadMonthlyPrayerTimes(){
 
   if(!loc){
     $('#monthlyTable').innerHTML=
-      '<div class="empty-state">Aktifkan lokasi terlebih dahulu dari Beranda atau Pengaturan.</div>';
+      uxStateMarkup({
+        icon:'⌖',
+        title:'Lokasi belum aktif',
+        text:'Aktifkan lokasi agar jadwal sholat bulanan dapat ditampilkan.',
+        actionText:'Buka Pengaturan',
+        action:'showSettings()'
+      });
     return;
   }
 
@@ -1667,7 +1816,11 @@ async function loadMonthlyPrayerTimes(){
     `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 
   $('#monthlyTable').innerHTML=
-    '<div class="empty-state">Memuat jadwal bulanan Kemenag…</div>';
+    uxStateMarkup({
+      icon:'◌',
+      title:'Memuat jadwal',
+      text:'Mengambil jadwal sholat bulanan untuk lokasi aktif.'
+    });
 
   try{
     const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Makassar';
@@ -1717,7 +1870,13 @@ async function loadMonthlyPrayerTimes(){
 
   }catch{
     $('#monthlyTable').innerHTML=
-      '<div class="empty-state">Jadwal bulanan gagal dimuat.</div>';
+      uxStateMarkup({
+        icon:'!',
+        title:'Jadwal belum dapat dimuat',
+        text:navigator.onLine?'Coba lagi beberapa saat.':'Sambungkan internet untuk memperbarui jadwal bulanan.',
+        actionText:'Coba Lagi',
+        action:'loadMonthlyPrayerTimes()'
+      });
   }
 }
 function changeMonth(step){monthlyOffset+=step;renderMonthlyHeader();loadMonthlyPrayerTimes();}
@@ -2451,6 +2610,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 window.showHome=showHome;
+window.showOnboarding=showOnboarding;
 window.showCategories=showCategories;
 window.showLibrary=showLibrary;
 window.showFavoritesManager=showFavoritesManager;
@@ -2501,6 +2661,8 @@ navigateScreen(initialState.screen,{
 renderLibrary(initialState.category||'Semua');
 syncSettingsLocation();
 syncNotificationUI();
+showCatalogLoadState();
+maybeShowOnboarding();
 bootPrayer();
 if(nativeNotificationApp()){
   // V2.50.1: wrapper Android tetap mempertahankan Service Worker/cache shell.

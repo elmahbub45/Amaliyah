@@ -162,11 +162,11 @@
   </div>
   <div id="searchBox" class="search-box hidden">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
-    <input id="searchInput" type="search" autocomplete="off" placeholder="Cari judul khazanah atau tulisan Arab…" oninput="filterBooks()">
+    <input id="searchInput" type="search" autocomplete="off" placeholder="Cari judul, bagian, kategori, atau tulisan Arab…" oninput="filterBooks()">
     <button id="clearSearchBtn" type="button" onclick="clearSearch()" aria-label="Hapus pencarian">×</button>
   </div>
   <div class="chips" id="categoryChips"></div>
-  <div id="bookList" class="book-list"></div>
+  <div id="bookList" class="book-list" aria-live="polite"></div>
 </div>
 
 
@@ -197,7 +197,7 @@
   <div id="collectionList" class="book-list"></div>
 </div>
 
-<div id="monthly" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Jadwal Sholat Bulanan</b><span></span></div><div class="month-switch"><button type="button" onclick="changeMonth(-1)">‹</button><b id="monthlyTitle"></b><button type="button" onclick="changeMonth(1)">›</button></div><div id="monthlyTable"></div></div>
+<div id="monthly" class="screen hidden"><div class="screenbar"><button type="button" onclick="goBackInApp()">‹</button><b>Jadwal Sholat Bulanan</b><span></span></div><div class="month-switch"><button type="button" onclick="changeMonth(-1)">‹</button><b id="monthlyTitle"></b><button type="button" onclick="changeMonth(1)">›</button></div><div id="monthlyTable" aria-live="polite"></div></div>
 
 <div id="bookmarks" class="screen hidden">
   <div class="screenbar"><button onclick="goBackScreen()">‹</button><b>Penanda</b><span></span></div>
@@ -224,7 +224,7 @@
     <span></span>
   </div>
 
-  <div class="settings-section-label">WAKTU SHOLAT &amp; ADZAN</div>
+  <div class="settings-section-label">Sholat &amp; Adzan</div>
   <section class="settings-panel notification-card" id="notificationSettings">
     <div class="settings-row-head">
       <span class="settings-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
@@ -283,7 +283,7 @@
     <small class="notification-note settings-note">Subuh memakai audio Subuh. Sholat lainnya memakai adzan biasa.</small>
   </section>
 
-  <div class="settings-section-label">LOKASI &amp; AL-QUR'AN</div>
+  <div class="settings-section-label">Lokasi &amp; Al-Qur'an</div>
   <section class="settings-panel settings-simple-panel">
     <div class="settings-row-head settings-row-head-static">
       <span class="settings-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s7-6 7-12a7 7 0 1 0-14 0c0 6 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/></svg></span>
@@ -304,7 +304,7 @@
     <small class="quran-offline-policy settings-note">Khazanah lainnya tetap membutuhkan koneksi internet.</small>
   </section>
 
-  <div class="settings-section-label">DATA APLIKASI</div>
+  <div class="settings-section-label">Data Aplikasi</div>
   <section class="settings-panel migration-backup-card">
     <div class="settings-row-head settings-row-head-static">
       <span class="settings-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.8 8.4 7 10 4.2-1.6 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span>
@@ -314,11 +314,16 @@
     <small class="quran-offline-policy settings-note">Halaman Al-Qur'an yang diunduh dapat diunduh ulang dan tidak ikut cadangan.</small>
   </section>
 
-  <div class="settings-section-label">TENTANG</div>
+  <div class="settings-section-label">Tentang</div>
   <section class="settings-panel about-app-card settings-about-panel">
     <div class="about-app-mark" aria-label="Logo Amaliyah"><span class="about-app-fallback">A</span><img src="assets/icons/icon-192.png" alt="" onerror="this.remove()"></div>
     <div class="about-app-copy"><span class="about-app-kicker">AMALIYAH</span><h3>Khazanah Harian Muslim</h3><p>Teman untuk membaca, mengingat, dan menjaga amaliyah harian.</p><div class="developer-line"><span>Dikembangkan oleh</span><strong>elmahbub.my.id</strong></div></div>
   </section>
+  <button class="settings-help-button" type="button" onclick="showOnboarding(true)">
+    <span aria-hidden="true">?</span>
+    <span><b>Petunjuk Singkat</b><small>Lihat kembali cara menggunakan bagian utama Amaliyah.</small></span>
+    <i aria-hidden="true">›</i>
+  </button>
 </div>
 
 
