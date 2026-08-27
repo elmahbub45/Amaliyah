@@ -1410,20 +1410,12 @@
 
     overlay.innerHTML = `
 
-      <section
-        class="
-          announcement-panel
-        "
-        role="
-          dialog
-        "
-        aria-modal="
-          true
-        "
-        aria-labelledby="
-          announcementPanelTitle
-        "
-      >
+<section
+  class="announcement-panel"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="announcementPanelTitle"
+>
 
         <header
           class="
@@ -1453,13 +1445,9 @@
               AMALIYAH
             </small>
 
-            <b
-              id="
-                announcementPanelTitle
-              "
-            >
-              Pengumuman
-            </b>
+<b id="announcementPanelTitle">
+  Pengumuman
+</b>
 
           </div>
 
