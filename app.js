@@ -1,4 +1,4 @@
-/* V2.54.2 — Monthly Imsak; existing stable functions preserved. */
+/* V2.56.1 — Android Adzan Bridge Fix; existing stable functions preserved. */
 const $ = s => document.querySelector(s);
 const store = localStorage;
 
@@ -1197,7 +1197,6 @@ function renderBookmarks(){
     const partText=isSingle
       ? 'Khazanah'
       : String(x.part.title||'Bagian');
-
     return `
       <button class="bookmark-card" type="button" data-bookmark="${x.part.id}">
         <span class="bookmark-card-icon" aria-hidden="true">${icon}</span>
@@ -1397,7 +1396,6 @@ function setLocationLabel(label){
   $('#location').textContent=`📍 ${label}`;
   $('#settingsLocation').textContent=`Lokasi aktif: ${label}`;
 }
-
 async function reverseGeocode(latitude,longitude){
   try{
     const r=await fetch(
@@ -1915,22 +1913,36 @@ function nativeNotificationApp(){
     typeof window.AmaliyahAndroid.getNotificationPermission==='function');
 }
 function nativeAdhanSupported(){
-  return !!(nativeNotificationApp() &&
-    typeof window.AmaliyahAndroid.syncPrayerSchedule==='function' &&
-    typeof window.AmaliyahAndroid.getAdhanMode==='function');
+  if(!nativeNotificationApp())return false;
+  const bridge=window.AmaliyahAndroid;
+  const hasScheduler=typeof bridge.syncPrayerSchedule==='function';
+  const hasTimingAccess=
+    typeof bridge.getPrayerTimingAccess==='function' ||
+    typeof bridge.getExactAlarmPermission==='function';
+  return !!(hasScheduler && hasTimingAccess);
 }
 function nativeExactAlarmPermission(){
   if(!nativeAdhanSupported())return 'unsupported';
-  try{return window.AmaliyahAndroid.getExactAlarmPermission?.()||'required';}
-  catch{return 'required'}
+  try{
+    if(typeof window.AmaliyahAndroid.getPrayerTimingAccess==='function'){
+      const state=String(window.AmaliyahAndroid.getPrayerTimingAccess()||'needed');
+      return state==='granted'?'granted':'required';
+    }
+    const state=String(window.AmaliyahAndroid.getExactAlarmPermission?.()||'required');
+    return state==='granted'?'granted':'required';
+  }catch{
+    return 'required';
+  }
 }
 function getAdhanMode(){
   const fallback=getNotificationSettings().adhanMode||'notification';
-  if(!nativeAdhanSupported())return fallback;
   try{
-    const mode=String(window.AmaliyahAndroid.getAdhanMode?.()||fallback);
-    return ['notification','short','full'].includes(mode)?mode:fallback;
-  }catch{return fallback}
+    if(typeof window.AmaliyahAndroid?.getAdhanMode==='function'){
+      const mode=String(window.AmaliyahAndroid.getAdhanMode()||fallback);
+      if(['notification','short','full'].includes(mode))return mode;
+    }
+  }catch{}
+  return ['notification','short','full'].includes(fallback)?fallback:'notification';
 }
 function syncAdhanUI(){
   const card=$('#adhanSettings');
@@ -1983,7 +1995,10 @@ async function setAdhanMode(mode){
   const s=getNotificationSettings();
   s.adhanMode=mode;
   setNotificationSettings(s);
+
+  // Kompatibilitas dengan APK yang mungkin menyediakan penyimpanan mode native.
   try{window.AmaliyahAndroid.setAdhanMode?.(mode);}catch{}
+
   syncAdhanUI();
   if(mode!=='notification' && nativeExactAlarmPermission()!=='granted'){
     await requestAdhanExactAlarm();
@@ -1992,21 +2007,42 @@ async function setAdhanMode(mode){
 }
 async function requestAdhanExactAlarm(){
   if(!nativeAdhanSupported())return;
-  try{window.AmaliyahAndroid.requestExactAlarmPermission?.();}catch{}
-  setTimeout(()=>syncAdhanUI(),400);
+  try{
+    if(typeof window.AmaliyahAndroid.requestPrayerTimingAccess==='function'){
+      window.AmaliyahAndroid.requestPrayerTimingAccess();
+    }else{
+      window.AmaliyahAndroid.requestExactAlarmPermission?.();
+    }
+  }catch{}
+  setTimeout(()=>syncAdhanUI(),500);
 }
 async function testAdhanSound(){
   if(!nativeAdhanSupported())return;
   const mode=getAdhanMode();
   if(mode==='notification')return appNotice('Pilih Pengingat Singkat atau Adzan Lengkap terlebih dahulu.');
+
+  const nativeMode=mode==='full'?'adhan':'short';
+
   try{
-    window.AmaliyahAndroid.previewAdhan?.(mode,'Dzuhur');
+    if(typeof window.AmaliyahAndroid.previewPrayerSound==='function'){
+      window.AmaliyahAndroid.previewPrayerSound(nativeMode,'Dzuhur');
+    }else{
+      window.AmaliyahAndroid.previewAdhan?.(mode,'Dzuhur');
+    }
     await appNotice(mode==='full'?'Memutar contoh adzan lengkap.':'Memutar contoh pengingat singkat.');
-  }catch{await appNotice('Suara belum dapat diputar.')}
+  }catch{
+    await appNotice('Suara belum dapat diputar.');
+  }
 }
 function stopAdhanSound(){
   if(!nativeAdhanSupported())return;
-  try{window.AmaliyahAndroid.stopAdhan?.();}catch{}
+  try{
+    if(typeof window.AmaliyahAndroid.stopPrayerSoundPreview==='function'){
+      window.AmaliyahAndroid.stopPrayerSoundPreview();
+    }else{
+      window.AmaliyahAndroid.stopAdhan?.();
+    }
+  }catch{}
 }
 
 let nativePrayerScheduleSyncTimer=null;
@@ -2045,35 +2081,46 @@ async function fetchNativeMonthlyRows(loc,monthOffset){
 }
 async function syncNativePrayerSchedule(){
   if(!nativeAdhanSupported())return;
+
   const s=getNotificationSettings();
   const loc=getSavedLocation();
+
   if(!s.enabled || notificationPermission()!=='granted'){
-    try{window.AmaliyahAndroid.clearPrayerSchedule?.();}catch{}
+    try{window.AmaliyahAndroid.cancelPrayerAlarms?.();}catch{}
     return;
   }
+
   if(!loc)return;
 
-  // Jangan hapus jadwal native yang sudah tersimpan hanya karena internet sedang putus.
-  if(!navigator.onLine){
-    try{window.AmaliyahAndroid.rescheduleStoredPrayerAlarms?.();}catch{}
-    return;
-  }
+  const sendTodaySchedule=(timings,date=dateKey())=>{
+    const schedule={
+      Subuh:cleanTime(timings?.Fajr),
+      Dzuhur:cleanTime(timings?.Dhuhr),
+      Ashar:cleanTime(timings?.Asr),
+      Maghrib:cleanTime(timings?.Maghrib),
+      Isya:cleanTime(timings?.Isha)
+    };
 
-  try{
-    const [currentRows,nextRows]=await Promise.all([
-      fetchNativeMonthlyRows(loc,0),
-      fetchNativeMonthlyRows(loc,1)
-    ]);
-    const byDate=new Map();
-    [...currentRows,...nextRows].forEach(row=>{
-      if(row?.date)byDate.set(row.date,row);
-    });
+    const validTimes=Object.values(schedule).every(value=>/^\d{2}:\d{2}$/.test(value));
+    if(!validTimes)throw new Error('Jadwal sholat native belum lengkap.');
+
+    const mode=getAdhanMode();
+    const soundMode=
+      mode==='full'
+        ? 'adhan'
+        : mode==='short'
+          ? 'short'
+          : 'notification';
+
     const payload={
       version:1,
       enabled:true,
+      date,
       timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Makassar',
       leadMinutes:Number(s.lead||0),
-      adhanMode:getAdhanMode(),
+      soundMode,
+      // Dipertahankan juga untuk kompatibilitas dengan wrapper generasi berikutnya.
+      adhanMode:mode,
       prayers:{
         Subuh:!!s.prayers.Subuh,
         Dzuhur:!!s.prayers.Dzuhur,
@@ -2086,16 +2133,52 @@ async function syncNativePrayerSchedule(){
         longitude:Number(loc.longitude),
         label:loc.label||'',
         regionId:loc.prayerRegionId||'',
-        regionName:loc.prayerRegionName||loc.regionName||''
+        regionName:loc.prayerRegionName||loc.regionName||'',
+        regionCandidates:Array.isArray(loc.regionCandidates)
+          ? loc.regionCandidates.slice(0,20)
+          : [],
+        city:loc.city||'',
+        province:loc.province||''
       },
-      rows:[...byDate.values()].sort((a,b)=>String(a.date).localeCompare(String(b.date)))
+      schedule
     };
+
     window.AmaliyahAndroid.syncPrayerSchedule(JSON.stringify(payload));
+  };
+
+  // Jadwal yang sudah tampil di Beranda adalah sumber tercepat dan sudah
+  // sesuai tanggal hari ini. Tetap bisa disinkronkan walau sesudahnya offline.
+  if(latestPrayerTimes){
+    try{
+      sendTodaySchedule(latestPrayerTimes,dateKey());
+    }catch(err){
+      console.warn('Native prayer schedule sync failed',err);
+    }
+    return;
+  }
+
+  // Jika offline dan belum ada jadwal web hari ini, jangan membatalkan jadwal
+  // yang sudah tersimpan di Android.
+  if(!navigator.onLine)return;
+
+  try{
+    const data=await fetchPrayerTimes(
+      loc.latitude,
+      loc.longitude,
+      loc.regionName||'',
+      loc.prayerRegionId||'',
+      loc.regionCandidates||[],
+      loc.city||'',
+      loc.province||''
+    );
+
+    sendTodaySchedule(data?.timings||{},dateKey());
+
   }catch(err){
     console.warn('Native prayer schedule sync failed',err);
-    try{window.AmaliyahAndroid.rescheduleStoredPrayerAlarms?.();}catch{}
   }
 }
+
 function waitForNativeNotificationPermission(){
   return new Promise(resolve=>{
     const started=Date.now();
@@ -2334,9 +2417,6 @@ function setNotificationSettings(settings){
   store.setItem(NOTIF_SETTINGS_KEY,JSON.stringify(settings));
   if(nativeNotificationApp()){
     try{window.AmaliyahAndroid.setNotificationEnabled?.(!!settings.enabled);}catch{}
-    if(nativeAdhanSupported()){
-      try{window.AmaliyahAndroid.setAdhanMode?.(settings.adhanMode||'notification');}catch{}
-    }
   }
 }
 function notificationPermission(){
@@ -2613,10 +2693,12 @@ function refreshActiveScreen(){
   if(currentScreen==='home')updateHome();
   if(currentScreen==='settings')syncNotificationUI();
 }
-window.addEventListener('amaliyah-exact-alarm-changed',()=>{
+const handlePrayerTimingAccessChanged=()=>{
   syncAdhanUI();
   queueNativePrayerScheduleSync();
-});
+};
+window.addEventListener('amaliyah-exact-alarm-changed',handlePrayerTimingAccessChanged);
+window.addEventListener('amaliyah-prayer-timing-access-changed',handlePrayerTimingAccessChanged);
 window.addEventListener('pageshow',refreshActiveScreen);
 window.addEventListener('focus',refreshActiveScreen);
 document.addEventListener('visibilitychange',()=>{
