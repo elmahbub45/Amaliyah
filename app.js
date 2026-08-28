@@ -3385,16 +3385,12 @@ async function v258TestPrayer(prayer){
     await appNotice('Aktifkan izin notifikasi terlebih dahulu.');
     return;
   }
-  if(nativeNotificationApp()){
-    try{
-      if(mode==='notification'){
-        window.AmaliyahAndroid.testPrayerNotification?.('notification',prayer);
-      }else{
-        window.AmaliyahAndroid.previewPrayerSound?.(mode,prayer);
-      }
-      return;
-    }catch{}
-  }
+if(nativeNotificationApp()){
+  try{
+    window.AmaliyahAndroid.testPrayerNotification?.(mode,prayer);
+    return;
+  }catch{}
+}
   await showAppNotification(`Tes ${prayer}`,`Mode ${v258ModeCopy(mode)} • pengaturan tersimpan.`);
 }
 
