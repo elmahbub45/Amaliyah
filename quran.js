@@ -56,13 +56,21 @@
   const nearestSurah=page=>[...surahs].reverse().find(item=>item[3]<=page)||surahs[0];
   const approximateJuz=page=>Math.max(1,juzPages.findIndex((start,index)=>page>=start&&(index===29||page<juzPages[index+1]))+1);
   const fallbackMeta=page=>{const surah=nearestSurah(page);return {surah:surah[1],juz:approximateJuz(page)};};
+  const canonicalMeta=(page,saved={})=>{
+    const fallback=fallbackMeta(page);
+    return {
+      ...saved,
+      surah:fallback.surah,
+      juz:saved?.juz||fallback.juz
+    };
+  };
   const progressPercent=page=>Math.min(100,Math.max(0,(clampPage(page)/total)*100));
 
   function updateIntro(){
     const page=storedLastPage();
     const hasProgress=store.getItem('amaliyah:quran:last-page')!==null;
     let meta={};try{meta=JSON.parse(store.getItem('amaliyah:quran:last-meta')||'{}')||{}}catch{}
-    const safeMeta={...fallbackMeta(page),...meta};
+    const safeMeta=canonicalMeta(page,meta);
     const detail=[safeMeta.surah?`Surah ${safeMeta.surah}`:'',safeMeta.juz?`Juz ${safeMeta.juz}`:''].filter(Boolean).join(' • ');
     const percent=Math.round(progressPercent(page));
     $('#lastReadSummary').textContent=hasProgress?`Terakhir: halaman ${page} • ${detail} • ${percent}%`:`${total} halaman • Tampilan halaman mushaf`;
@@ -92,8 +100,16 @@
       const percent=Math.round(progressPercent(lastPage));
       html=`<div class="directory-page-jump"><div class="page-jump-icon">604</div><div class="page-jump-copy"><b>Langsung ke halaman</b><p>Masukkan nomor halaman 1–${total}. Terakhir dibaca: ${hasProgress?`halaman ${lastPage} (${percent}%)`:'belum ada'}.</p></div><div class="page-jump-form"><input id="directoryPageInput" type="number" min="1" max="${total}" inputmode="numeric" value="${hasProgress?lastPage:1}" aria-label="Nomor halaman"><button id="directoryPageOpen" type="button">Buka Halaman</button></div></div>`;
     }else{
-      const meta=pageMetadata(); const pages=bookmarks().sort((a,b)=>a-b);
-      html=pages.map(page=>{const info=meta[page]||{};const detail=[info.surah?`Surah ${info.surah}`:'',info.juz?`Juz ${info.juz}`:''].filter(Boolean).join(' • ')||'Mushaf Madinah';return directoryItem('۞',`Halaman ${page}`,detail,'›',page,{kind:'bookmark'});}).join('');
+      const meta=pageMetadata();
+      const pages=bookmarks().sort((a,b)=>a-b);
+      html=pages.map(page=>{
+        const info=canonicalMeta(page,meta[page]||{});
+        const detail=[
+          `Halaman ${page}`,
+          info.juz?`Juz ${info.juz}`:''
+        ].filter(Boolean).join(' • ');
+        return directoryItem('۞',`Surah ${info.surah}`,detail,'›',page,{kind:'bookmark'});
+      }).join('');
       if(!pages.length)html='<div class="directory-empty"><span>۞</span><b>Belum ada penanda</b><p>Saat membaca, tekan ikon penanda di kanan atas.</p></div>';
     }
     list.innerHTML=html||'<div class="directory-empty"><b>Surah tidak ditemukan</b><p>Coba nama atau nomor yang berbeda.</p></div>';
@@ -105,13 +121,42 @@
   function setActiveTab(tab){activeTab=['surah','juz','page','bookmarks'].includes(tab)?tab:'surah';$$('[data-quran-tab]').forEach(button=>button.classList.toggle('active',button.dataset.quranTab===activeTab));renderDirectory();}
   function showControls(autoHide=true){$('#quranReader').classList.remove('controls-hidden');clearTimeout(controlsTimer);if(autoHide)controlsTimer=setTimeout(()=>$('#quranReader').classList.add('controls-hidden'),3200);}
   function updateBookmarkButton(){const marked=bookmarks().includes(currentPage);$('#toggleQuranBookmark').classList.toggle('marked',marked);$('#toggleQuranBookmark').setAttribute('aria-label',marked?'Hapus penanda halaman':'Tandai halaman');}
-  function applyReaderMeta(info,page){const surah=info.surah||nearestSurah(page)[1];const juz=info.juz||approximateJuz(page);$('#readerSurah').textContent=`Surah ${surah}`;$('#readerMeta').textContent=`Juz ${juz} • Halaman ${page}`;$('#immersiveSurah').textContent=`Surah ${surah}`;$('#immersiveJuz').textContent=`Juz ${juz}`;$('#immersivePage').textContent=`Halaman ${page}`;}
-  function commitLastRead(page=currentPage){const committed=clampPage(page);const info={...fallbackMeta(committed),...(pageMetadata()[committed]||{})};store.setItem('amaliyah:quran:last-page',String(committed));store.setItem('amaliyah:quran:last-meta',JSON.stringify(info));store.setItem('amaliyah:quran:last-seen-at',String(Date.now()));}
+  function applyReaderMeta(info,page){const canonical=canonicalMeta(page,info);const surah=canonical.surah;const juz=canonical.juz;$('#readerSurah').textContent=`Surah ${surah}`;$('#readerMeta').textContent=`Juz ${juz} • Halaman ${page}`;$('#immersiveSurah').textContent=`Surah ${surah}`;$('#immersiveJuz').textContent=`Juz ${juz}`;$('#immersivePage').textContent=`Halaman ${page}`;}
+  function commitLastRead(page=currentPage){const committed=clampPage(page);const info=canonicalMeta(committed,pageMetadata()[committed]||{});store.setItem('amaliyah:quran:last-page',String(committed));store.setItem('amaliyah:quran:last-meta',JSON.stringify(info));store.setItem('amaliyah:quran:last-seen-at',String(Date.now()));}
 
   async function loadMetadata(page){
-    const fallback=nearestSurah(page);let info={surah:fallback[1],juz:approximateJuz(page)};applyReaderMeta(info,page);
-    try{const response=await fetch(`${config.metadataApi}/page/${page}/quran-uthmani`);if(response.ok){const body=await response.json();const ayah=body?.data?.ayahs?.[0];if(ayah)info={surah:ayah.surah?.englishName||fallback[1],juz:ayah.juz||approximateJuz(page)};}}catch{}
-    if(page!==currentPage)return;applyReaderMeta(info,page);const all=pageMetadata();all[page]=info;store.setItem('amaliyah:quran:page-meta',JSON.stringify(all));if(Number(store.getItem('amaliyah:quran:last-page'))===page)store.setItem('amaliyah:quran:last-meta',JSON.stringify(info));
+    const fallback=nearestSurah(page);
+    let info={surah:fallback[1],juz:approximateJuz(page)};
+    applyReaderMeta(info,page);
+
+    try{
+      const response=await fetch(`${config.metadataApi}/page/${page}/quran-uthmani`);
+      if(response.ok){
+        const body=await response.json();
+        const ayah=body?.data?.ayahs?.[0];
+        if(ayah){
+          // Nama surah mengikuti awal halaman Mushaf Madinah.
+          // Contoh halaman 293: Al-Kahf, walaupun bagian atas
+          // masih memuat ayat terakhir Al-Israa.
+          info={
+            surah:fallback[1],
+            juz:ayah.juz||approximateJuz(page)
+          };
+        }
+      }
+    }catch{}
+
+    if(page!==currentPage)return;
+    info=canonicalMeta(page,info);
+    applyReaderMeta(info,page);
+
+    const all=pageMetadata();
+    all[page]=info;
+    store.setItem('amaliyah:quran:page-meta',JSON.stringify(all));
+
+    if(Number(store.getItem('amaliyah:quran:last-page'))===page){
+      store.setItem('amaliyah:quran:last-meta',JSON.stringify(info));
+    }
   }
 
   function prefetch(page){[page-1,page+1].filter(x=>x>=1&&x<=total).forEach(x=>{const image=new Image();image.src=pageUrl(x)});}
