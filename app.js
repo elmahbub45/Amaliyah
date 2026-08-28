@@ -2775,3 +2775,661 @@ if(nativeNotificationApp()){
 }else{
   startPrayerNotificationScheduler();
 }
+
+
+/* =========================================================
+   V2.58.0 — PENGATURAN SHOLAT INDIVIDUAL
+   Tempel seluruh blok ini di PALING BAWAH app.js root.
+
+   Fitur:
+   - Mode per sholat: notifikasi / pendek / adzan lengkap
+   - Koreksi waktu per sholat: -5 sampai +5 menit
+   - Koreksi memengaruhi Beranda, countdown, jadwal bulanan,
+     Web Push, dan alarm native Android.
+   - UI Pengaturan Sholat baru, lebih ringkas dan premium.
+   ========================================================= */
+
+const V258_PRAYERS=[
+  {name:'Subuh',key:'Fajr',mark:'☾'},
+  {name:'Dzuhur',key:'Dhuhr',mark:'◉'},
+  {name:'Ashar',key:'Asr',mark:'◌'},
+  {name:'Maghrib',key:'Maghrib',mark:'◇'},
+  {name:'Isya',key:'Isha',mark:'✦'}
+];
+const V258_DEFAULT_MODES={
+  Subuh:'notification',Dzuhur:'notification',Ashar:'notification',Maghrib:'notification',Isya:'notification'
+};
+const V258_DEFAULT_OFFSETS={
+  Subuh:0,Dzuhur:0,Ashar:0,Maghrib:0,Isya:0
+};
+let v258RawPrayerTimes=latestPrayerTimes?{...latestPrayerTimes}:null;
+
+function v258ClampOffset(value){
+  return Math.max(-5,Math.min(5,Math.round(Number(value)||0)));
+}
+function v258NormalizeMode(value){
+  value=String(value||'notification');
+  if(value==='full')value='adhan';
+  return ['notification','short','adhan'].includes(value)?value:'notification';
+}
+function v258LegacyMode(value){
+  return v258NormalizeMode(value);
+}
+function v258NormalizeSettings(saved={}){
+  const legacyMode=v258LegacyMode(saved?.adhanMode||'notification');
+  const prayerModes={};
+  const offsetMinutes={};
+  const prayers={};
+
+  for(const prayer of V258_PRAYERS){
+    prayerModes[prayer.name]=v258NormalizeMode(
+      saved?.prayerModes?.[prayer.name] ?? legacyMode
+    );
+    offsetMinutes[prayer.name]=v258ClampOffset(
+      saved?.offsetMinutes?.[prayer.name] ?? 0
+    );
+    prayers[prayer.name]=saved?.prayers?.[prayer.name]!==false;
+  }
+
+  return {
+    enabled:!!saved?.enabled,
+    lead:[0,5,10,15].includes(Number(saved?.lead))?Number(saved.lead):0,
+    adhanMode:legacyMode==='adhan'?'full':legacyMode,
+    prayers,
+    prayerModes,
+    offsetMinutes
+  };
+}
+function v258ShiftTime(value,delta=0){
+  const tm=cleanTime(value);
+  if(!/^\d{2}:\d{2}$/.test(tm))return tm;
+  const [h,m]=tm.split(':').map(Number);
+  if(!Number.isFinite(h)||!Number.isFinite(m))return tm;
+  const totalMinutes=(h*60+m+Number(delta||0)+1440*3)%1440;
+  return `${String(Math.floor(totalMinutes/60)).padStart(2,'0')}:${String(totalMinutes%60).padStart(2,'0')}`;
+}
+function v258AdjustedTimings(raw,settings=getNotificationSettings()){
+  if(!raw)return null;
+  const out={...raw};
+  for(const prayer of V258_PRAYERS){
+    out[prayer.key]=v258ShiftTime(
+      raw[prayer.key],
+      settings.offsetMinutes?.[prayer.name]||0
+    );
+  }
+  return out;
+}
+function v258RawFromAdjusted(adjusted,settings=getNotificationSettings()){
+  if(!adjusted)return null;
+  const out={...adjusted};
+  for(const prayer of V258_PRAYERS){
+    out[prayer.key]=v258ShiftTime(
+      adjusted[prayer.key],
+      -(settings.offsetMinutes?.[prayer.name]||0)
+    );
+  }
+  return out;
+}
+function v258NativeSchedulerVersion(){
+  if(!nativeNotificationApp())return 0;
+  try{
+    const value=Number(window.AmaliyahAndroid.getPrayerSchedulerVersion?.()||1);
+    return Number.isFinite(value)&&value>0?value:1;
+  }catch{return 1}
+}
+function v258ModeCopy(mode){
+  if(mode==='adhan')return 'Adzan';
+  if(mode==='short')return 'Pendek';
+  return 'Notifikasi';
+}
+function v258OffsetCopy(value){
+  value=v258ClampOffset(value);
+  if(value===0)return '0 menit';
+  return `${value>0?'+':''}${value} menit`;
+}
+
+// ---------- Settings storage + migration ----------
+getNotificationSettings=function(){
+  let saved={};
+  try{saved=JSON.parse(store.getItem(NOTIF_SETTINGS_KEY)||'{}')||{};}catch{}
+  const settings=v258NormalizeSettings(saved);
+
+  if(nativeNotificationApp() && typeof window.AmaliyahAndroid.getNotificationEnabledState==='function'){
+    try{
+      const nativeState=window.AmaliyahAndroid.getNotificationEnabledState();
+      if(nativeState==='true'||nativeState==='false')settings.enabled=nativeState==='true';
+      else window.AmaliyahAndroid.setNotificationEnabled?.(!!settings.enabled);
+    }catch{}
+  }
+  return settings;
+};
+setNotificationSettings=function(settings){
+  const normalized=v258NormalizeSettings(settings||{});
+  store.setItem(NOTIF_SETTINGS_KEY,JSON.stringify(normalized));
+  if(nativeNotificationApp()){
+    try{window.AmaliyahAndroid.setNotificationEnabled?.(!!normalized.enabled);}catch{}
+  }
+};
+
+// ---------- Display adjusted prayer times ----------
+renderPrayerData=function(data){
+  v258RawPrayerTimes=data?.timings?{...data.timings}:null;
+  const settings=getNotificationSettings();
+  latestPrayerTimes=v258AdjustedTimings(v258RawPrayerTimes,settings);
+  renderPrayers(latestPrayerTimes);
+
+  const loc=getSavedLocation();
+  if(loc?.label){
+    const source=data?.source==='kemenag'
+      ? ' • Kemenag'
+      : data?.source==='aladhan-fallback'
+        ? ' • Cadangan'
+        : '';
+    $('#location').textContent=`📍 ${loc.label}${source}`;
+    $('#settingsLocation').textContent=
+      `Lokasi aktif: ${loc.label}${data?.region?.name?` • ${data.region.name}`:''}`;
+  }
+
+  queuePushSync();
+  queueNativePrayerScheduleSync();
+  startPrayerNotificationScheduler();
+  const hijri=data?.date?.hijri;
+  if(hijri){
+    const h=`${hijri.day} ${hijri.month?.en||''} ${hijri.year} H`;
+    $('#hijriDate').textContent=h;
+  }
+  v258SyncPrayerCards();
+};
+function v258RefreshPrayerDisplay(){
+  const settings=getNotificationSettings();
+  if(!v258RawPrayerTimes && latestPrayerTimes){
+    v258RawPrayerTimes=v258RawFromAdjusted(latestPrayerTimes,settings);
+  }
+  if(v258RawPrayerTimes){
+    latestPrayerTimes=v258AdjustedTimings(v258RawPrayerTimes,settings);
+    renderPrayers(latestPrayerTimes);
+  }
+  v258SyncPrayerCards();
+}
+
+// ---------- Monthly schedule also follows personal correction ----------
+loadMonthlyPrayerTimes=async function(){
+  const loc=getSavedLocation();
+  if(!loc){
+    $('#monthlyTable').innerHTML=uxStateMarkup({
+      icon:'⌖',title:'Lokasi belum aktif',
+      text:'Aktifkan lokasi agar jadwal sholat bulanan dapat ditampilkan.',
+      actionText:'Buka Pengaturan',action:'showSettings()'
+    });
+    return;
+  }
+
+  const d=new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth()+monthlyOffset);
+  const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  $('#monthlyTable').innerHTML=uxStateMarkup({
+    icon:'◌',title:'Memuat jadwal',text:'Mengambil jadwal sholat bulanan untuk lokasi aktif.'
+  });
+
+  try{
+    const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Makassar';
+    const params=new URLSearchParams({
+      latitude:String(loc.latitude),longitude:String(loc.longitude),month:monthKey,tz
+    });
+    if(loc.regionName)params.set('region',loc.regionName);
+    if(loc.prayerRegionId)params.set('regionId',loc.prayerRegionId);
+    if(loc.city)params.set('city',loc.city);
+    if(loc.province)params.set('province',loc.province);
+    if(Array.isArray(loc.regionCandidates)&&loc.regionCandidates.length){
+      params.set('regionCandidates',JSON.stringify(loc.regionCandidates.slice(0,20)));
+    }
+
+    const r=await fetch(`${PUSH_API}/prayer/monthly?${params.toString()}`,{cache:'no-store'});
+    const j=await r.json().catch(()=>null);
+    if(!r.ok||!Array.isArray(j?.rows))throw new Error('monthly');
+
+    const today=dateKey();
+    const settings=getNotificationSettings();
+    const monthlyImsakTime=timings=>{
+      const sourceImsak=cleanTime(timings?.Imsak);
+      if(/^\d{2}:\d{2}$/.test(sourceImsak))return sourceImsak;
+      const fajr=cleanTime(timings?.Fajr);
+      if(!/^\d{2}:\d{2}$/.test(fajr))return '—';
+      return v258ShiftTime(fajr,-10);
+    };
+
+    $('#monthlyTable').innerHTML=
+      `<div class="monthly-grid monthly-head">`+
+      `<b>Tgl</b><b>Imsak</b><b>Subuh</b><b>Dzuhur</b><b>Ashar</b><b>Maghrib</b><b>Isya</b>`+
+      `</div>`+
+      j.rows.map(row=>{
+        const day=Number(String(row.date||'').slice(-2));
+        const t=row.timings||{};
+        return `<div class="monthly-grid ${row.date===today?'today':''}">`+
+          `<span>${day||''}</span>`+
+          `<span>${monthlyImsakTime(t)}</span>`+
+          `<span>${v258ShiftTime(t.Fajr,settings.offsetMinutes.Subuh)}</span>`+
+          `<span>${v258ShiftTime(t.Dhuhr,settings.offsetMinutes.Dzuhur)}</span>`+
+          `<span>${v258ShiftTime(t.Asr,settings.offsetMinutes.Ashar)}</span>`+
+          `<span>${v258ShiftTime(t.Maghrib,settings.offsetMinutes.Maghrib)}</span>`+
+          `<span>${v258ShiftTime(t.Isha,settings.offsetMinutes.Isya)}</span>`+
+          `</div>`;
+      }).join('');
+  }catch{
+    $('#monthlyTable').innerHTML=uxStateMarkup({
+      icon:'!',title:'Jadwal belum dapat dimuat',
+      text:navigator.onLine?'Coba lagi beberapa saat.':'Sambungkan internet untuk memperbarui jadwal bulanan.',
+      actionText:'Coba Lagi',action:'loadMonthlyPrayerTimes()'
+    });
+  }
+};
+
+// ---------- Native scheduler payload V2 ----------
+syncNativePrayerSchedule=async function(){
+  if(!nativeAdhanSupported())return;
+  const s=getNotificationSettings();
+  const loc=getSavedLocation();
+
+  if(!s.enabled||notificationPermission()!=='granted'){
+    try{window.AmaliyahAndroid.cancelPrayerAlarms?.();}catch{}
+    return;
+  }
+  if(!loc)return;
+
+  const sendTodaySchedule=(rawTimings,date=dateKey())=>{
+    const rawSchedule={
+      Subuh:cleanTime(rawTimings?.Fajr),
+      Dzuhur:cleanTime(rawTimings?.Dhuhr),
+      Ashar:cleanTime(rawTimings?.Asr),
+      Maghrib:cleanTime(rawTimings?.Maghrib),
+      Isya:cleanTime(rawTimings?.Isha)
+    };
+    const validTimes=Object.values(rawSchedule).every(v=>/^\d{2}:\d{2}$/.test(v));
+    if(!validTimes)throw new Error('Jadwal sholat native belum lengkap.');
+
+    const schedulerVersion=v258NativeSchedulerVersion();
+    const modes={...s.prayerModes};
+    const offsets={...s.offsetMinutes};
+    let schedule=rawSchedule;
+
+    // APK lama belum mengerti offset/per-mode. Agar koreksi waktu tetap
+    // berguna sebelum APK diperbarui, kirim jadwal yang sudah dikoreksi.
+    if(schedulerVersion<2){
+      schedule={};
+      for(const prayer of V258_PRAYERS){
+        schedule[prayer.name]=v258ShiftTime(
+          rawSchedule[prayer.name],
+          offsets[prayer.name]
+        );
+      }
+    }
+
+    const enabledModes=V258_PRAYERS
+      .filter(p=>s.prayers[p.name])
+      .map(p=>modes[p.name]);
+    const sameMode=enabledModes.length&&enabledModes.every(m=>m===enabledModes[0]);
+    const legacySound=sameMode?enabledModes[0]:'notification';
+
+    const payload={
+      version:2,
+      enabled:true,
+      date,
+      timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Makassar',
+      leadMinutes:Number(s.lead||0),
+      soundMode:legacySound,
+      adhanMode:legacySound==='adhan'?'full':legacySound,
+      prayers:{...s.prayers},
+      prayerModes:modes,
+      offsetMinutes:schedulerVersion>=2?offsets:{Subuh:0,Dzuhur:0,Ashar:0,Maghrib:0,Isya:0},
+      location:{
+        latitude:Number(loc.latitude),longitude:Number(loc.longitude),label:loc.label||'',
+        regionId:loc.prayerRegionId||'',regionName:loc.prayerRegionName||loc.regionName||'',
+        regionCandidates:Array.isArray(loc.regionCandidates)?loc.regionCandidates.slice(0,20):[],
+        city:loc.city||'',province:loc.province||''
+      },
+      schedule
+    };
+    window.AmaliyahAndroid.syncPrayerSchedule(JSON.stringify(payload));
+  };
+
+  if(!v258RawPrayerTimes&&latestPrayerTimes){
+    v258RawPrayerTimes=v258RawFromAdjusted(latestPrayerTimes,s);
+  }
+  if(v258RawPrayerTimes){
+    try{sendTodaySchedule(v258RawPrayerTimes,dateKey());}
+    catch(err){console.warn('Native prayer schedule V2 sync failed',err);}
+    return;
+  }
+  if(!navigator.onLine)return;
+
+  try{
+    const data=await fetchPrayerTimes(
+      loc.latitude,loc.longitude,loc.regionName||'',loc.prayerRegionId||'',
+      loc.regionCandidates||[],loc.city||'',loc.province||''
+    );
+    v258RawPrayerTimes=data?.timings?{...data.timings}:null;
+    sendTodaySchedule(v258RawPrayerTimes||{},dateKey());
+  }catch(err){
+    console.warn('Native prayer schedule V2 sync failed',err);
+  }
+};
+
+// ---------- New Settings UI ----------
+function v258InjectPrayerSettingsStyles(){
+  if(document.getElementById('v258PrayerSettingsStyles'))return;
+  const style=document.createElement('style');
+  style.id='v258PrayerSettingsStyles';
+  style.textContent=`
+    #settings.settings-screen{background:#f7f3eb}
+    .v258-prayer-panel{overflow:visible!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+    .v258-master-card,.v258-lead-card,.v258-prayer-card,.v258-timing-card{
+      border:1px solid #e6dccd;background:#fffdf9;box-shadow:0 7px 22px rgba(66,51,31,.045)
+    }
+    .v258-master-card{padding:17px;border-radius:22px}
+    .v258-master-head{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:12px;align-items:center}
+    .v258-master-icon{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:#eaf4ef;color:#17614e}
+    .v258-master-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+    .v258-master-copy{min-width:0}.v258-master-copy h3{margin:0;color:#29483d;font-size:15px}.v258-master-copy p{margin:4px 0 0;color:#7a837e;font-size:10.5px;line-height:1.4}
+    .v258-status-strip{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:12px;border-top:1px solid #eee6db}
+    .v258-status-chip{display:inline-flex;align-items:center;gap:5px;min-height:27px;padding:0 9px;border-radius:999px;background:#f3f0e8;color:#6e756f;font-size:8.8px;font-weight:750}
+    .v258-status-chip.ready{background:#eaf4ef;color:#1b664f}.v258-status-chip.warn{background:#fff2dc;color:#94651e}
+    .v258-compat-note{margin-top:11px;padding:10px 11px;border-radius:13px;background:#fff4df;color:#865f24;font-size:9.5px;line-height:1.5}
+    .v258-lead-card{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:12px;align-items:center;margin-top:11px;padding:13px 14px;border-radius:18px}
+    .v258-lead-copy b,.v258-lead-copy small{display:block}.v258-lead-copy b{font-size:11.5px;color:#30483f}.v258-lead-copy small{margin-top:3px;color:#858b87;font-size:9px;line-height:1.35}
+    .v258-lead-card select{width:100%;min-height:40px;border:1px solid #e4dacb;border-radius:12px;background:#faf7f1;color:#305247;padding:0 10px;font:inherit;font-size:10.5px;font-weight:700}
+    .v258-prayer-heading{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:18px 2px 9px}
+    .v258-prayer-heading div b{display:block;color:#345248;font-size:12.5px}.v258-prayer-heading div small{display:block;margin-top:3px;color:#8a8f8b;font-size:9px}.v258-prayer-heading>span{font-size:8px;font-weight:800;letter-spacing:.08em;color:#ad8743}
+    .v258-prayer-list{display:grid;gap:9px}
+    .v258-prayer-card{padding:13px;border-radius:19px;transition:.18s ease}
+    .v258-prayer-card.is-disabled{opacity:.58}.v258-prayer-card.is-disabled .v258-mode-grid,.v258-prayer-card.is-disabled .v258-offset-row{pointer-events:none}
+    .v258-prayer-card-head{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:10px;align-items:center}
+    .v258-prayer-mark{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:#edf5f1;color:#1d6652;font-size:17px}
+    .v258-prayer-title{min-width:0}.v258-prayer-title b{display:block;color:#2d493f;font-size:13px}.v258-prayer-title small{display:block;margin-top:3px;color:#939792;font-size:8.8px}
+    .v258-prayer-time{font-family:Georgia,'Times New Roman',serif;color:#1b624f;font-size:19px;font-weight:600;white-space:nowrap}
+    .v258-prayer-time small{display:block;margin-top:1px;color:#a0a19d;font-family:Inter,system-ui,sans-serif;font-size:7.5px;font-weight:500;text-align:right}
+    .v258-card-tools{display:flex;align-items:center;gap:8px;margin-top:11px}
+    .v258-prayer-switch{margin-left:auto;display:flex;align-items:center;gap:6px;color:#65746e;font-size:9px;font-weight:750}
+    .v258-prayer-switch input{width:18px;height:18px;accent-color:#17614e}
+    .v258-mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:11px;padding:4px;border-radius:14px;background:#f3f0ea}
+    .v258-mode-option{position:relative;min-width:0}.v258-mode-option input{position:absolute;opacity:0;pointer-events:none}
+    .v258-mode-option span{min-height:38px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;color:#6f756f;font-size:8.5px;font-weight:750;cursor:pointer}
+    .v258-mode-option span small{margin-top:2px;font-size:7px;font-weight:600;color:#9a9d99}
+    .v258-mode-option input:checked+span{background:#fff;color:#185f4d;box-shadow:0 3px 10px rgba(49,64,57,.09)}
+    .v258-mode-option input:disabled+span{opacity:.42;cursor:not-allowed}
+    .v258-offset-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #eee7dd}
+    .v258-offset-copy b,.v258-offset-copy small{display:block}.v258-offset-copy b{font-size:9.8px;color:#52655d}.v258-offset-copy small{margin-top:2px;color:#969a96;font-size:7.8px}
+    .v258-stepper{display:grid;grid-template-columns:32px 66px 32px;align-items:center;border:1px solid #e5dacb;border-radius:12px;overflow:hidden;background:#faf7f1}
+    .v258-stepper button{width:32px;height:34px;border:0;background:transparent;color:#285f50;font-size:18px}.v258-stepper output{text-align:center;color:#345249;font-size:8.8px;font-weight:800}
+    .v258-test-prayer{min-width:52px;height:34px;border:1px solid #dce8e2;border-radius:11px;background:#eef6f2;color:#1b654f;font-size:8.5px;font-weight:800}
+    .v258-timing-card{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:10px;align-items:center;margin-top:11px;padding:12px 13px;border-radius:18px}
+    .v258-timing-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#f5eddf;color:#a27831;font-size:17px}
+    .v258-timing-copy b{display:block;color:#344d44;font-size:11px}.v258-timing-copy p{margin:3px 0 0;color:#858b87;font-size:8.7px;line-height:1.35}
+    .v258-timing-card button{min-height:36px;padding:0 11px;border:0;border-radius:11px;background:#17614e;color:#fff;font-size:8.8px;font-weight:800}
+    .v258-settings-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+    .v258-settings-actions button{min-height:42px;border-radius:13px;font-size:9.5px;font-weight:800}
+    .v258-settings-actions .secondary{border:1px solid #e4dacb;background:#fffdf9;color:#3a554b}
+    .v258-settings-note{display:block;margin:10px 2px 0;color:#8a8e89;font-size:8.6px;line-height:1.5}
+    #adhanSettings.v258-old-adhan-hidden{display:none!important}
+    @media(max-width:390px){
+      .v258-lead-card{grid-template-columns:1fr}.v258-lead-card select{width:100%}
+      .v258-mode-option span{font-size:8px}.v258-stepper{grid-template-columns:30px 62px 30px}.v258-stepper button{width:30px}
+      .v258-settings-actions{grid-template-columns:1fr}.v258-prayer-card{padding:12px}
+    }
+  `;
+  document.head.appendChild(style);
+}
+function v258PrayerCardMarkup(prayer){
+  return `
+    <article class="v258-prayer-card" data-v258-prayer="${prayer.name}">
+      <div class="v258-prayer-card-head">
+        <span class="v258-prayer-mark" aria-hidden="true">${prayer.mark}</span>
+        <div class="v258-prayer-title"><b>${prayer.name}</b><small data-v258-mode-summary>Notifikasi</small></div>
+        <div class="v258-prayer-time"><span data-v258-time>--:--</span><small data-v258-base-time></small></div>
+      </div>
+      <div class="v258-card-tools">
+        <label class="v258-prayer-switch"><input type="checkbox" data-v258-enabled> Aktif</label>
+      </div>
+      <div class="v258-mode-grid" role="radiogroup" aria-label="Mode ${prayer.name}">
+        <label class="v258-mode-option"><input type="radio" name="v258-mode-${prayer.name}" value="notification"><span>Notifikasi<small>tanpa adzan</small></span></label>
+        <label class="v258-mode-option"><input type="radio" name="v258-mode-${prayer.name}" value="short"><span>Pendek<small>±12 detik</small></span></label>
+        <label class="v258-mode-option"><input type="radio" name="v258-mode-${prayer.name}" value="adhan"><span>Adzan<small>lengkap</small></span></label>
+      </div>
+      <div class="v258-offset-row">
+        <div class="v258-offset-copy"><b>Koreksi jadwal</b><small>Beranda + alarm • −5 s/d +5 menit</small></div>
+        <div class="v258-stepper">
+          <button type="button" data-v258-step="-1" aria-label="Kurangi satu menit">−</button>
+          <output data-v258-offset>0 menit</output>
+          <button type="button" data-v258-step="1" aria-label="Tambah satu menit">+</button>
+        </div>
+        <button class="v258-test-prayer" type="button" data-v258-test>Tes</button>
+      </div>
+    </article>`;
+}
+function v258InstallPrayerSettingsUI(){
+  const card=$('#notificationSettings');
+  if(!card)return;
+  if(card.dataset.v258Installed==='1')return;
+  card.dataset.v258Installed='1';
+  card.classList.add('v258-prayer-panel');
+  v258InjectPrayerSettingsStyles();
+
+  const schedulerVersion=v258NativeSchedulerVersion();
+  const compatibility=nativeNotificationApp()&&schedulerVersion<2
+    ? `<div class="v258-compat-note" id="v258CompatibilityNote"><b>APK perlu diperbarui.</b> Pengaturan individual sudah dapat disimpan, tetapi mode suara per sholat baru aktif penuh pada APK Amaliyah 1.5.</div>`
+    : '';
+
+  card.innerHTML=`
+    <div class="v258-master-card">
+      <div class="v258-master-head">
+        <span class="v258-master-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
+        <div class="v258-master-copy"><h3>Pengingat Waktu Sholat</h3><p id="notificationStatusText">Memeriksa kesiapan notifikasi…</p></div>
+        <label class="switch" aria-label="Aktifkan pengingat waktu sholat"><input id="notificationMaster" type="checkbox"><span class="switch-track"></span></label>
+      </div>
+      <div class="v258-status-strip">
+        <span class="v258-status-chip" id="v258NotifPermissionBadge">Izin notifikasi</span>
+        <span class="v258-status-chip" id="v258TimingBadge">Ketepatan alarm</span>
+      </div>
+      ${compatibility}
+    </div>
+
+    <div id="notificationControls">
+      <div class="v258-lead-card">
+        <div class="v258-lead-copy"><b>Pengingat lebih awal</b><small>Berlaku untuk mode Notifikasi dan Pendek. Adzan lengkap selalu tepat pada waktu yang sudah dikoreksi.</small></div>
+        <select id="notificationLead" aria-label="Waktu pengingat">
+          <option value="0">Tepat waktu</option><option value="5">5 menit sebelum</option><option value="10">10 menit sebelum</option><option value="15">15 menit sebelum</option>
+        </select>
+      </div>
+
+      <div class="v258-prayer-heading"><div><b>Atur per waktu sholat</b><small>Pilih suara dan koreksi jadwal masing-masing.</small></div><span>INDIVIDUAL</span></div>
+      <div class="v258-prayer-list">${V258_PRAYERS.map(v258PrayerCardMarkup).join('')}</div>
+
+      <div class="v258-timing-card">
+        <span class="v258-timing-icon" aria-hidden="true">⌚</span>
+        <div class="v258-timing-copy"><b>Ketepatan Alarm Android</b><p id="adhanStatusText">Memeriksa izin ketepatan waktu…</p></div>
+        <button id="adhanExactAlarmBtn" type="button">Izinkan</button>
+      </div>
+
+      <div class="v258-settings-actions">
+        <button id="notificationPermissionBtn" class="primary" type="button">Izin Notifikasi</button>
+        <button id="notificationTestBtn" class="secondary" type="button">Tes Notifikasi</button>
+        <button id="adhanStopBtn" class="secondary" type="button">Hentikan Suara</button>
+      </div>
+      <small class="v258-settings-note" id="notificationPushNote">Koreksi jadwal mengubah waktu yang tampil di Beranda sekaligus waktu alarm. Subuh tetap memakai audio adzan Subuh khusus.</small>
+    </div>`;
+
+  $('#adhanSettings')?.classList.add('v258-old-adhan-hidden');
+
+  $('#notificationMaster')?.addEventListener('change',event=>setNotificationMaster(event.currentTarget.checked));
+  $('#notificationLead')?.addEventListener('change',saveNotificationSettings);
+  $('#notificationPermissionBtn')?.addEventListener('click',requestNotifications);
+  $('#notificationTestBtn')?.addEventListener('click',testPushNotification);
+  $('#adhanExactAlarmBtn')?.addEventListener('click',requestAdhanExactAlarm);
+  $('#adhanStopBtn')?.addEventListener('click',stopAdhanSound);
+
+  document.querySelectorAll('[data-v258-prayer]').forEach(cardEl=>{
+    const prayer=cardEl.dataset.v258Prayer;
+    cardEl.querySelector('[data-v258-enabled]')?.addEventListener('change',saveNotificationSettings);
+    cardEl.querySelectorAll(`input[name="v258-mode-${prayer}"]`).forEach(input=>input.addEventListener('change',saveNotificationSettings));
+    cardEl.querySelectorAll('[data-v258-step]').forEach(button=>button.addEventListener('click',()=>{
+      const s=getNotificationSettings();
+      s.offsetMinutes[prayer]=v258ClampOffset(s.offsetMinutes[prayer]+Number(button.dataset.v258Step||0));
+      setNotificationSettings(s);
+      v258RefreshPrayerDisplay();
+      syncNotificationUI();
+      queuePushSync();
+      queueNativePrayerScheduleSync();
+      if(currentScreen==='monthly')loadMonthlyPrayerTimes();
+    }));
+    cardEl.querySelector('[data-v258-test]')?.addEventListener('click',()=>v258TestPrayer(prayer));
+  });
+}
+function v258SyncPrayerCards(){
+  const settings=getNotificationSettings();
+  for(const prayer of V258_PRAYERS){
+    const card=document.querySelector(`[data-v258-prayer="${prayer.name}"]`);
+    if(!card)continue;
+    const enabled=!!settings.prayers[prayer.name];
+    const mode=settings.prayerModes[prayer.name];
+    const offset=settings.offsetMinutes[prayer.name];
+    const raw=cleanTime(v258RawPrayerTimes?.[prayer.key]||'');
+    const adjusted=cleanTime(latestPrayerTimes?.[prayer.key]||v258ShiftTime(raw,offset));
+
+    card.classList.toggle('is-disabled',!enabled);
+    const enabledBox=card.querySelector('[data-v258-enabled]');
+    if(enabledBox)enabledBox.checked=enabled;
+    card.querySelectorAll(`input[name="v258-mode-${prayer.name}"]`).forEach(input=>{
+      input.checked=input.value===mode;
+      input.disabled=!nativeNotificationApp()&&input.value!=='notification';
+    });
+    const summary=card.querySelector('[data-v258-mode-summary]');
+    if(summary)summary.textContent=v258ModeCopy(mode)+(offset?` • ${v258OffsetCopy(offset)}`:'');
+    const time=card.querySelector('[data-v258-time]');
+    if(time)time.textContent=/^\d{2}:\d{2}$/.test(adjusted)?adjusted:'--:--';
+    const base=card.querySelector('[data-v258-base-time]');
+    if(base)base.textContent=offset&&/^\d{2}:\d{2}$/.test(raw)?`jadwal dasar ${raw}`:'';
+    const output=card.querySelector('[data-v258-offset]');
+    if(output)output.textContent=v258OffsetCopy(offset);
+  }
+}
+function v258SyncExactStatus(){
+  const status=$('#adhanStatusText');
+  const button=$('#adhanExactAlarmBtn');
+  const badge=$('#v258TimingBadge');
+  if(!nativeNotificationApp()){
+    if(status)status.textContent='Ketepatan alarm khusus tersedia di aplikasi Android.';
+    if(button)button.style.display='none';
+    if(badge){badge.textContent='Web / PWA';badge.className='v258-status-chip';}
+    return;
+  }
+  const exact=nativeExactAlarmPermission();
+  if(exact==='granted'){
+    if(status)status.textContent='Siap membunyikan alarm lebih tepat, termasuk saat layar mati.';
+    if(button)button.style.display='none';
+    if(badge){badge.textContent='Alarm tepat waktu';badge.className='v258-status-chip ready';}
+  }else{
+    if(status)status.textContent='Izinkan Alarm & pengingat agar waktu tidak mudah tertunda oleh Android.';
+    if(button){button.style.display='';button.textContent='Izinkan';}
+    if(badge){badge.textContent='Perlu izin alarm';badge.className='v258-status-chip warn';}
+  }
+}
+
+syncNotificationUI=function(){
+  v258InstallPrayerSettingsUI();
+  const s=getNotificationSettings();
+  const permission=notificationPermission();
+  const master=$('#notificationMaster');
+  if(master)master.checked=!!s.enabled&&permission==='granted';
+  const lead=$('#notificationLead');
+  if(lead)lead.value=String(s.lead||0);
+
+  const permissionBtn=$('#notificationPermissionBtn');
+  const permissionBadge=$('#v258NotifPermissionBadge');
+  if(permissionBtn){
+    permissionBtn.textContent=permission==='granted'?'Izin Notifikasi Aktif':'Aktifkan Izin Notifikasi';
+    permissionBtn.disabled=permission==='granted';
+  }
+  if(permissionBadge){
+    permissionBadge.textContent=permission==='granted'?'Notifikasi diizinkan':'Notifikasi belum diizinkan';
+    permissionBadge.className=`v258-status-chip ${permission==='granted'?'ready':'warn'}`;
+  }
+
+  v258SyncPrayerCards();
+  v258SyncExactStatus();
+  updatePushStatus().catch(()=>{});
+};
+
+saveNotificationSettings=function(){
+  const s=getNotificationSettings();
+  s.lead=Number($('#notificationLead')?.value||0);
+  for(const prayer of V258_PRAYERS){
+    const card=document.querySelector(`[data-v258-prayer="${prayer.name}"]`);
+    if(!card)continue;
+    s.prayers[prayer.name]=!!card.querySelector('[data-v258-enabled]')?.checked;
+    const selected=card.querySelector(`input[name="v258-mode-${prayer.name}"]:checked`);
+    if(selected)s.prayerModes[prayer.name]=v258NormalizeMode(selected.value);
+  }
+  setNotificationSettings(s);
+  v258RefreshPrayerDisplay();
+  syncNotificationUI();
+  startPrayerNotificationScheduler();
+  queuePushSync();
+  queueNativePrayerScheduleSync();
+  if(currentScreen==='monthly')loadMonthlyPrayerTimes();
+};
+
+async function v258TestPrayer(prayer){
+  const s=getNotificationSettings();
+  const mode=s.prayerModes[prayer]||'notification';
+  if(notificationPermission()!=='granted'){
+    await appNotice('Aktifkan izin notifikasi terlebih dahulu.');
+    return;
+  }
+  if(nativeNotificationApp()){
+    try{
+      if(mode==='notification'){
+        window.AmaliyahAndroid.testPrayerNotification?.('notification',prayer);
+      }else{
+        window.AmaliyahAndroid.previewPrayerSound?.(mode,prayer);
+      }
+      return;
+    }catch{}
+  }
+  await showAppNotification(`Tes ${prayer}`,`Mode ${v258ModeCopy(mode)} • pengaturan tersimpan.`);
+}
+
+// Legacy adhan functions remain safe for old links/events.
+getAdhanMode=function(){
+  const s=getNotificationSettings();
+  const modes=V258_PRAYERS.map(p=>s.prayerModes[p.name]);
+  const same=modes.every(m=>m===modes[0])?modes[0]:'notification';
+  return same==='adhan'?'full':same;
+};
+syncAdhanUI=function(){v258SyncExactStatus();v258SyncPrayerCards();};
+setAdhanMode=async function(mode){
+  const normalized=v258NormalizeMode(mode);
+  const s=getNotificationSettings();
+  for(const prayer of V258_PRAYERS)s.prayerModes[prayer.name]=normalized;
+  setNotificationSettings(s);
+  syncNotificationUI();
+  queueNativePrayerScheduleSync();
+};
+testAdhanSound=async function(){return v258TestPrayer('Dzuhur');};
+stopAdhanSound=function(){
+  if(!nativeNotificationApp())return;
+  try{window.AmaliyahAndroid.stopPrayerSoundPreview?.();}catch{}
+};
+
+// Re-export functions because index.html uses inline handlers elsewhere.
+window.saveNotificationSettings=saveNotificationSettings;
+window.setAdhanMode=setAdhanMode;
+window.testAdhanSound=testAdhanSound;
+window.stopAdhanSound=stopAdhanSound;
+window.loadMonthlyPrayerTimes=loadMonthlyPrayerTimes;
+
+// Install immediately after old boot has created the Settings screen.
+v258InstallPrayerSettingsUI();
+if(latestPrayerTimes&&!v258RawPrayerTimes)v258RawPrayerTimes={...latestPrayerTimes};
+v258RefreshPrayerDisplay();
+syncNotificationUI();
+queueNativePrayerScheduleSync();
