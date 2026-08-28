@@ -5569,3 +5569,304 @@ queueMicrotask(()=>{
       clearNotificationHistory;
   }
 });
+
+/* =========================================================
+   V2.59.1 — WELCOME + SETUP FLOW
+   Tempel blok ini di PALING BAWAH app.js root,
+   SETELAH patch V2.59.0.
+
+   Alur pengguna baru:
+   1) Kenali Amaliyah
+   2) Siapkan Notifikasi & Lokasi
+   3) Beranda
+   ========================================================= */
+
+const V2591_WELCOME_KEY='amaliyah:welcome:v2.59.1';
+
+function v2591InjectWelcomeStyles(){
+  if(document.getElementById('v2591WelcomeStyles'))return;
+
+  const style=document.createElement('style');
+  style.id='v2591WelcomeStyles';
+  style.textContent=`
+    .v2591-welcome-backdrop{
+      position:fixed;inset:0;z-index:100060;
+      display:flex;align-items:stretch;justify-content:center;
+      overflow:auto;
+      background:
+        radial-gradient(circle at 50% 8%,rgba(222,185,101,.18),transparent 29%),
+        linear-gradient(180deg,#f8f4eb 0%,#fcfaf5 56%,#f3eee4 100%);
+    }
+
+    .v2591-welcome{
+      width:min(100%,520px);min-height:100%;
+      padding:max(30px,env(safe-area-inset-top)) 22px max(28px,env(safe-area-inset-bottom));
+      display:flex;flex-direction:column;color:#29483d;
+    }
+
+    .v2591-brandline{
+      text-align:center;color:#a17b38;
+      font-size:9px;font-weight:900;letter-spacing:.28em;
+      padding:6px 0 14px;
+    }
+
+    .v2591-logo{
+      width:82px;height:82px;margin:5px auto 17px;
+      display:grid;place-items:center;border-radius:27px;
+      background:linear-gradient(145deg,#17634f,#0d4b3c);
+      color:#e5c575;font:700 42px Georgia,serif;
+      border:1px solid rgba(232,200,120,.55);
+      box-shadow:0 17px 40px rgba(25,79,62,.17);
+    }
+
+    .v2591-welcome h1{
+      margin:0;text-align:center;
+      font-family:Georgia,'Times New Roman',serif;
+      color:#164f41;font-size:32px;line-height:1.08;
+    }
+
+    .v2591-lead{
+      width:min(100%,390px);margin:9px auto 21px;
+      text-align:center;color:#7c827c;font-size:12px;line-height:1.58;
+    }
+
+    .v2591-feature-grid{
+      display:grid;grid-template-columns:1fr 1fr;gap:9px;
+    }
+
+    .v2591-feature{
+      min-height:132px;padding:15px 14px 13px;
+      border:1px solid #e6dccd;border-radius:21px;
+      background:rgba(255,253,248,.92);
+      box-shadow:0 7px 22px rgba(66,51,31,.045);
+    }
+
+    .v2591-feature-icon{
+      width:39px;height:39px;display:grid;place-items:center;
+      border-radius:13px;margin-bottom:11px;
+      background:#eaf4ef;color:#17614e;font-size:19px;
+    }
+
+    .v2591-feature:nth-child(2) .v2591-feature-icon,
+    .v2591-feature:nth-child(4) .v2591-feature-icon{
+      background:#f5eddf;color:#a07831;
+    }
+
+    .v2591-feature b{
+      display:block;color:#304c42;font-size:11.5px;line-height:1.3;
+    }
+
+    .v2591-feature p{
+      margin:5px 0 0;color:#8b908b;font-size:8.8px;line-height:1.52;
+    }
+
+    .v2591-sequence{
+      display:flex;align-items:center;justify-content:center;gap:7px;
+      margin:17px 0 0;
+      color:#9b9488;font-size:8px;font-weight:800;
+    }
+
+    .v2591-sequence i{
+      width:6px;height:6px;border-radius:50%;
+      background:#d8c9ae;
+    }
+
+    .v2591-sequence i.active{
+      width:20px;border-radius:999px;background:#1e6753;
+    }
+
+    .v2591-actions{
+      margin-top:auto;padding-top:22px;
+    }
+
+    .v2591-continue{
+      width:100%;min-height:55px;border:0;border-radius:18px;
+      background:linear-gradient(180deg,#23725d,#125541);
+      color:#fff;font:inherit;font-size:12.5px;font-weight:850;
+      box-shadow:0 12px 24px rgba(25,91,72,.18);
+    }
+
+    .v2591-skip{
+      width:100%;min-height:42px;margin-top:6px;
+      border:0;background:transparent;color:#898a83;
+      font:inherit;font-size:9.5px;font-weight:750;
+    }
+
+    .v2591-footer{
+      margin-top:5px;text-align:center;color:#aaa49a;
+      font-size:7.8px;line-height:1.45;
+    }
+
+    @media(max-width:390px){
+      .v2591-welcome{padding-left:17px;padding-right:17px}
+      .v2591-welcome h1{font-size:29px}
+      .v2591-feature{min-height:124px;padding:13px 12px}
+      .v2591-feature p{font-size:8.3px}
+    }
+
+    @media(max-width:330px){
+      .v2591-feature-grid{grid-template-columns:1fr}
+      .v2591-feature{min-height:auto}
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function v2591RemoveWelcome(){
+  document.querySelector('.v2591-welcome-backdrop')?.remove();
+}
+
+function v2591ContinueToSetup(){
+  store.setItem(V2591_WELCOME_KEY,'1');
+  v2591RemoveWelcome();
+
+  // Jangan tandai onboarding lama selesai di sini.
+  // V2.59 masih memerlukan status tersebut kosong agar layar setup tampil.
+  try{
+    v259ShowFirstSetup();
+  }catch{
+    // Fallback bila patch V2.59 belum siap karena race condition.
+    setTimeout(()=>{
+      try{v259ShowFirstSetup();}catch{}
+    },80);
+  }
+}
+
+function v2591ShowWelcome(){
+  if(document.querySelector('.v2591-welcome-backdrop'))return;
+
+  // Hanya instalasi baru.
+  if(store.getItem(V259_SETUP_KEY))return;
+  if(store.getItem(ONBOARDING_KEY)==='1')return;
+
+  v2591InjectWelcomeStyles();
+
+  // Cegah setup/onboarding lain berada di bawah layar sambutan.
+  document.querySelector('.amaliyah-onboarding-backdrop')?.remove();
+  document.querySelector('.v259-setup-backdrop')?.remove();
+
+  const backdrop=document.createElement('div');
+  backdrop.className='v2591-welcome-backdrop';
+  backdrop.innerHTML=`
+    <section class="v2591-welcome" role="dialog" aria-modal="true" aria-labelledby="v2591WelcomeTitle">
+      <div class="v2591-brandline">SELAMAT DATANG</div>
+      <div class="v2591-logo" aria-hidden="true">ا</div>
+
+      <h1 id="v2591WelcomeTitle">Amaliyah</h1>
+      <p class="v2591-lead">Sahabat dalam setiap amalan. Kenali beberapa bagian utama agar Amaliyah langsung nyaman digunakan.</p>
+
+      <div class="v2591-feature-grid">
+        <article class="v2591-feature">
+          <span class="v2591-feature-icon" aria-hidden="true">۞</span>
+          <b>Al-Qur'an</b>
+          <p>Mushaf Madinah 604 halaman dengan penanda dan lanjut membaca yang tersimpan terpisah.</p>
+        </article>
+
+        <article class="v2591-feature">
+          <span class="v2591-feature-icon" aria-hidden="true">▦</span>
+          <b>Khazanah Amaliyah</b>
+          <p>Jelajahi wirid, doa, maulid, dalail, syair, sholat, dan bacaan pilihan lainnya.</p>
+        </article>
+
+        <article class="v2591-feature">
+          <span class="v2591-feature-icon" aria-hidden="true">★</span>
+          <b>Favorit &amp; Penanda</b>
+          <p>Simpan bacaan pilihan dan tandai halaman penting untuk dibuka kembali dengan cepat.</p>
+        </article>
+
+        <article class="v2591-feature">
+          <span class="v2591-feature-icon" aria-hidden="true">⌖</span>
+          <b>Waktu Sholat</b>
+          <p>Jadwal mengikuti lokasi dengan pilihan notifikasi, pengingat singkat, atau adzan per waktu.</p>
+        </article>
+      </div>
+
+      <div class="v2591-sequence" aria-label="Tahap 1 dari 2">
+        <span>KENALI AMALIYAH</span>
+        <i class="active"></i>
+        <i></i>
+        <span>SIAPKAN APLIKASI</span>
+      </div>
+
+      <div class="v2591-actions">
+        <button class="v2591-continue" type="button" data-v2591-continue>Lanjutkan</button>
+        <button class="v2591-skip" type="button" data-v2591-skip>Lewati perkenalan</button>
+        <div class="v2591-footer">Tahap berikutnya meminta izin Notifikasi dan Lokasi melalui dialog resmi perangkat.</div>
+      </div>
+    </section>
+  `;
+
+  document.body.appendChild(backdrop);
+
+  backdrop.querySelector('[data-v2591-continue]')?.addEventListener(
+    'click',
+    v2591ContinueToSetup,
+    {once:true}
+  );
+
+  // "Lewati perkenalan" tetap menuju setup izin,
+  // bukan langsung melewati kebutuhan Notifikasi/Lokasi.
+  backdrop.querySelector('[data-v2591-skip]')?.addEventListener(
+    'click',
+    v2591ContinueToSetup,
+    {once:true}
+  );
+}
+
+function v2591ShouldShowWelcome(){
+  return (
+    !store.getItem(V259_SETUP_KEY) &&
+    store.getItem(ONBOARDING_KEY)!=='1'
+  );
+}
+
+// Override terakhir untuk auto-onboarding.
+// Pengguna baru: Welcome -> Setup.
+// Pengguna lama: perilaku lama dipertahankan.
+const v2591PreviousShowOnboarding=showOnboarding;
+
+showOnboarding=function(force=false){
+  if(force){
+    // Tombol Petunjuk manual tetap membuka pengenalan fitur lama,
+    // sehingga fungsi bantuan untuk pengguna lama tidak hilang.
+    return v2591PreviousShowOnboarding(true);
+  }
+
+  if(v2591ShouldShowWelcome()){
+    v2591ShowWelcome();
+    return;
+  }
+
+  return v2591PreviousShowOnboarding(false);
+};
+
+window.showOnboarding=showOnboarding;
+
+// Tambahan fungsi preview untuk pengujian tanpa menghapus data pengguna.
+// Tidak mengubah status setup sampai pengguna menekan tombol.
+window.previewNewUserWelcome=function(){
+  document.querySelector('.amaliyah-onboarding-backdrop')?.remove();
+  document.querySelector('.v259-setup-backdrop')?.remove();
+
+  const hadSetup=store.getItem(V259_SETUP_KEY);
+  const hadOnboarding=store.getItem(ONBOARDING_KEY);
+  const hadWelcome=store.getItem(V2591_WELCOME_KEY);
+
+  // Simpan sementara nilai lama agar layar bisa dipreview.
+  try{
+    store.removeItem(V259_SETUP_KEY);
+    store.removeItem(ONBOARDING_KEY);
+    store.removeItem(V2591_WELCOME_KEY);
+    v2591ShowWelcome();
+  }finally{
+    // Pulihkan status lama setelah layar terpasang.
+    if(hadSetup!==null)store.setItem(V259_SETUP_KEY,hadSetup);
+    else store.removeItem(V259_SETUP_KEY);
+
+    if(hadOnboarding!==null)store.setItem(ONBOARDING_KEY,hadOnboarding);
+    else store.removeItem(ONBOARDING_KEY);
+
+    if(hadWelcome!==null)store.setItem(V2591_WELCOME_KEY,hadWelcome);
+    else store.removeItem(V2591_WELCOME_KEY);
+  }
+};
