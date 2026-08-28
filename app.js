@@ -3429,3 +3429,658 @@ if(latestPrayerTimes&&!v258RawPrayerTimes)v258RawPrayerTimes={...latestPrayerTim
 v258RefreshPrayerDisplay();
 syncNotificationUI();
 queueNativePrayerScheduleSync();
+
+/* =========================================================
+   V2.59.0 — FIRST SETUP & NOTIFICATION CENTER
+   Tempel blok ini di PALING BAWAH app.js root.
+
+   Fitur:
+   - Pengguna baru mendapat setup awal Notifikasi + Lokasi.
+   - Izin tetap memakai dialog resmi Android/browser.
+   - Setelah izin notifikasi diberikan, pengingat sholat otomatis ON.
+   - Default pengguna baru: 5 sholat aktif, mode Notifikasi.
+   - Lokasi langsung dipakai untuk memuat jadwal sholat.
+   - Pengaturan Notifikasi & Adzan dipindah ke halaman khusus.
+   - Halaman Pengaturan utama menjadi lebih ringkas.
+   ========================================================= */
+
+const V259_SETUP_KEY='amaliyah:first-setup:v2.59.0';
+const V259_SETUP_DONE='done';
+const V259_SETUP_SKIPPED='skipped';
+
+function v259InjectStyles(){
+  if(document.getElementById('v259Styles'))return;
+
+  const style=document.createElement('style');
+  style.id='v259Styles';
+  style.textContent=`
+    .v259-setup-backdrop{
+      position:fixed;inset:0;z-index:100050;
+      display:flex;align-items:stretch;justify-content:center;
+      background:
+        radial-gradient(circle at 50% 15%,rgba(224,190,116,.18),transparent 31%),
+        linear-gradient(180deg,#f7f3e9 0%,#fbf8f1 55%,#f3eee4 100%);
+      overflow:auto;
+    }
+    .v259-setup{
+      width:min(100%,520px);min-height:100%;
+      padding:max(34px,env(safe-area-inset-top)) 24px max(30px,env(safe-area-inset-bottom));
+      display:flex;flex-direction:column;
+      color:#29483d;
+    }
+    .v259-setup-top{
+      display:flex;align-items:center;justify-content:center;
+      padding:9px 0 16px;
+      font-size:10px;font-weight:850;letter-spacing:.24em;color:#a47c36;
+    }
+    .v259-setup-mark{
+      width:88px;height:88px;margin:12px auto 18px;
+      display:grid;place-items:center;border-radius:29px;
+      background:linear-gradient(145deg,#145d4b,#0b483a);
+      color:#e8c878;font:700 44px Georgia,serif;
+      box-shadow:0 18px 42px rgba(26,77,62,.18);
+      border:1px solid rgba(232,200,120,.55);
+    }
+    .v259-setup h1{
+      margin:0;text-align:center;
+      font-family:Georgia,'Times New Roman',serif;
+      font-size:34px;line-height:1.08;color:#164f41;
+    }
+    .v259-setup-lead{
+      width:min(100%,390px);margin:10px auto 23px;
+      text-align:center;font-size:13px;line-height:1.6;color:#778078;
+    }
+    .v259-setup-card{
+      border:1px solid #e7dccb;border-radius:25px;
+      background:rgba(255,253,248,.9);
+      box-shadow:0 12px 34px rgba(75,59,37,.07);
+      overflow:hidden;
+    }
+    .v259-setup-benefit{
+      display:grid;grid-template-columns:48px minmax(0,1fr) auto;
+      gap:12px;align-items:center;padding:16px;
+    }
+    .v259-setup-benefit+.v259-setup-benefit{border-top:1px solid #eee6da}
+    .v259-setup-benefit-icon{
+      width:48px;height:48px;display:grid;place-items:center;
+      border-radius:16px;background:#eaf4ef;color:#17614e;font-size:22px;
+    }
+    .v259-setup-benefit b{display:block;font-size:13px;color:#304d43}
+    .v259-setup-benefit small{display:block;margin-top:4px;font-size:10px;line-height:1.45;color:#8b918c}
+    .v259-setup-state{
+      min-width:68px;text-align:center;padding:7px 9px;border-radius:999px;
+      background:#f3eee5;color:#8a8275;font-size:8px;font-weight:850;
+    }
+    .v259-setup-state.ready{background:#e6f3ed;color:#17614e}
+    .v259-setup-state.warn{background:#fff0d9;color:#93631d}
+    .v259-setup-note{
+      margin:14px 3px 0;padding:12px 13px;border-radius:15px;
+      background:#f6f1e8;color:#81796d;font-size:9.5px;line-height:1.5;
+    }
+    .v259-setup-actions{margin-top:auto;padding-top:25px}
+    .v259-setup-primary{
+      width:100%;min-height:56px;border:0;border-radius:18px;
+      background:linear-gradient(180deg,#23725d,#125541);
+      color:white;font:inherit;font-size:13px;font-weight:850;
+      box-shadow:0 12px 24px rgba(25,91,72,.18);
+    }
+    .v259-setup-primary:disabled{opacity:.62}
+    .v259-setup-later{
+      width:100%;min-height:43px;margin-top:7px;border:0;background:transparent;
+      color:#85877f;font:inherit;font-size:10px;font-weight:750;
+    }
+    .v259-setup-progress{
+      min-height:20px;margin-top:9px;text-align:center;
+      color:#64756e;font-size:9px;font-weight:700;
+    }
+
+    .v259-settings-launcher{
+      display:block;width:calc(100% - 36px);margin:0 18px 15px;
+      padding:0;border:1px solid #e5dac9;border-radius:23px;
+      background:
+        radial-gradient(circle at 92% 8%,rgba(211,174,92,.16),transparent 34%),
+        #fffdf8;
+      color:inherit;text-align:left;overflow:hidden;
+      box-shadow:0 8px 24px rgba(72,56,35,.055);
+    }
+    .v259-settings-launcher-main{
+      display:grid;grid-template-columns:48px minmax(0,1fr) auto;
+      align-items:center;gap:12px;padding:16px 15px 13px;
+    }
+    .v259-settings-launcher-icon{
+      width:48px;height:48px;display:grid;place-items:center;
+      border-radius:16px;background:#e8f3ee;color:#17614e;
+    }
+    .v259-settings-launcher-icon svg{
+      width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;
+      stroke-linecap:round;stroke-linejoin:round;
+    }
+    .v259-settings-launcher-copy b{display:block;font-size:13px;color:#2c493f}
+    .v259-settings-launcher-copy small{
+      display:block;margin-top:4px;font-size:9px;line-height:1.45;color:#8a8f8a;
+    }
+    .v259-settings-launcher-arrow{font-size:25px;color:#9b8a6b}
+    .v259-settings-launcher-status{
+      display:flex;gap:6px;flex-wrap:wrap;padding:0 15px 14px 75px;
+    }
+    .v259-mini-status{
+      padding:6px 8px;border-radius:999px;background:#f2eee6;
+      color:#817c72;font-size:7.8px;font-weight:850;
+    }
+    .v259-mini-status.ready{background:#e7f3ed;color:#17614e}
+    .v259-mini-status.warn{background:#fff0d8;color:#93631d}
+
+    .v259-prayer-settings-screen{
+      background:
+        radial-gradient(circle at 100% 0,rgba(212,174,93,.12),transparent 24%),
+        #f7f3eb;
+      padding-bottom:105px;
+    }
+    .v259-prayer-screenbar{
+      position:sticky;top:0;z-index:20;
+      background:rgba(250,247,240,.94);
+      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    }
+    .v259-prayer-hero{
+      margin:17px 18px 12px;padding:21px 18px;border-radius:26px;
+      color:white;position:relative;overflow:hidden;
+      background:
+        radial-gradient(circle at 85% 10%,rgba(231,196,116,.25),transparent 34%),
+        linear-gradient(145deg,#1c6854,#104b3d);
+      box-shadow:0 14px 32px rgba(25,85,67,.16);
+    }
+    .v259-prayer-hero:after{
+      content:'۞';position:absolute;right:-12px;bottom:-36px;
+      font:100px Georgia,serif;color:rgba(255,255,255,.055);
+    }
+    .v259-prayer-kicker{
+      display:block;margin-bottom:7px;color:#e3c477;
+      font-size:8px;font-weight:900;letter-spacing:.18em;
+    }
+    .v259-prayer-hero h2{
+      margin:0;max-width:310px;font-family:Georgia,'Times New Roman',serif;
+      font-size:25px;line-height:1.15;
+    }
+    .v259-prayer-hero p{
+      max-width:330px;margin:8px 0 15px;color:rgba(255,255,255,.76);
+      font-size:10px;line-height:1.55;
+    }
+    .v259-hero-status{display:flex;gap:7px;flex-wrap:wrap}
+    .v259-hero-status span{
+      padding:7px 9px;border-radius:999px;
+      background:rgba(255,255,255,.11);font-size:8px;font-weight:800;
+    }
+    .v259-hero-status span.ready{background:rgba(224,194,119,.2);color:#f2d996}
+
+    .v259-location-card{
+      display:grid;grid-template-columns:42px minmax(0,1fr) auto;
+      gap:11px;align-items:center;margin:0 18px 13px;padding:13px;
+      border:1px solid #e5dac9;border-radius:19px;background:#fffdf8;
+      box-shadow:0 7px 22px rgba(66,51,31,.045);
+    }
+    .v259-location-icon{
+      width:42px;height:42px;display:grid;place-items:center;border-radius:14px;
+      background:#f4eddf;color:#a07831;font-size:19px;
+    }
+    .v259-location-copy b{display:block;color:#344e45;font-size:11px}
+    .v259-location-copy small{
+      display:block;margin-top:3px;color:#8b908b;font-size:8.5px;line-height:1.4;
+    }
+    .v259-location-card button{
+      min-height:35px;padding:0 10px;border:1px solid #dbe7e1;border-radius:11px;
+      background:#eef6f2;color:#17614e;font:inherit;font-size:8px;font-weight:850;
+    }
+    .v259-prayer-settings-host{padding:0 18px}
+    .v259-prayer-settings-host #notificationSettings{margin:0!important;width:auto!important}
+
+    @media(max-width:390px){
+      .v259-setup{padding-left:18px;padding-right:18px}
+      .v259-setup h1{font-size:30px}
+      .v259-settings-launcher-status{padding-left:15px}
+      .v259-location-card{grid-template-columns:40px minmax(0,1fr)}
+      .v259-location-card button{grid-column:2}
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function v259NotificationReady(){
+  return notificationPermission()==='granted' && !!getNotificationSettings().enabled;
+}
+
+function v259LocationReady(){
+  const loc=getSavedLocation();
+  return !!(
+    loc &&
+    Number.isFinite(Number(loc.latitude)) &&
+    Number.isFinite(Number(loc.longitude))
+  );
+}
+
+function v259ActivePrayerCount(){
+  const s=getNotificationSettings();
+  return V258_PRAYERS.filter(item=>s.prayers?.[item.name]!==false).length;
+}
+
+function v259SoundPrayerCount(){
+  const s=getNotificationSettings();
+  return V258_PRAYERS.filter(item=>{
+    const mode=v258NormalizeMode(s.prayerModes?.[item.name]||'notification');
+    return s.prayers?.[item.name]!==false && mode!=='notification';
+  }).length;
+}
+
+function v259SyncNotificationCenterSummary(){
+  const notifReady=v259NotificationReady();
+  const locationReady=v259LocationReady();
+  const settings=getNotificationSettings();
+  const activeCount=v259ActivePrayerCount();
+  const soundCount=v259SoundPrayerCount();
+  const loc=getSavedLocation();
+
+  const summary=$('#v259LauncherSummary');
+  if(summary){
+    if(!notifReady){
+      summary.textContent='Pengingat sholat belum aktif';
+    }else{
+      summary.textContent=
+        `${activeCount} waktu aktif`+
+        (soundCount?` • ${soundCount} memakai suara`:' • notifikasi saja');
+    }
+  }
+
+  const notifBadge=$('#v259LauncherNotif');
+  if(notifBadge){
+    notifBadge.textContent=notifReady?'Notifikasi aktif':'Notifikasi belum aktif';
+    notifBadge.className=`v259-mini-status ${notifReady?'ready':'warn'}`;
+  }
+
+  const locBadge=$('#v259LauncherLocation');
+  if(locBadge){
+    locBadge.textContent=locationReady
+      ? (loc?.label?`Lokasi • ${loc.label}`:'Lokasi aktif')
+      : 'Lokasi belum aktif';
+    locBadge.className=`v259-mini-status ${locationReady?'ready':'warn'}`;
+  }
+
+  const heroNotif=$('#v259HeroNotif');
+  if(heroNotif){
+    heroNotif.textContent=notifReady?'Notifikasi aktif':'Notifikasi belum aktif';
+    heroNotif.className=notifReady?'ready':'';
+  }
+
+  const heroLocation=$('#v259HeroLocation');
+  if(heroLocation){
+    heroLocation.textContent=locationReady?'Lokasi aktif':'Lokasi belum aktif';
+    heroLocation.className=locationReady?'ready':'';
+  }
+
+  const locationText=$('#v259PrayerLocationText');
+  if(locationText){
+    locationText.textContent=locationReady
+      ? `${loc?.label||'Lokasi perangkat'} • dipakai untuk jadwal & alarm`
+      : 'Aktifkan lokasi agar jadwal dan alarm mengikuti tempat pengguna.';
+  }
+
+  const launcher=$('#v259NotificationLauncher');
+  if(launcher){
+    launcher.setAttribute(
+      'aria-label',
+      `Notifikasi dan Adzan. ${notifReady?'Notifikasi aktif':'Notifikasi belum aktif'}. `+
+      `${locationReady?'Lokasi aktif':'Lokasi belum aktif'}.`
+    );
+  }
+
+  // Bila izin sudah aktif tetapi native state belum tersinkron,
+  // pastikan master mengikuti pilihan yang tersimpan.
+  if(
+    notificationPermission()==='granted' &&
+    settings.enabled &&
+    nativeNotificationApp()
+  ){
+    try{window.AmaliyahAndroid.setNotificationEnabled?.(true);}catch{}
+  }
+}
+
+function v259InstallNotificationCenter(){
+  if(document.getElementById('prayerSettingsScreen')){
+    v259SyncNotificationCenterSummary();
+    return;
+  }
+
+  v259InjectStyles();
+
+  const settingsScreen=$('#settings');
+  const panel=$('#notificationSettings');
+  if(!settingsScreen || !panel)return;
+
+  SCREEN_TO_ID.prayerSettings='#prayerSettingsScreen';
+
+  const launcher=document.createElement('button');
+  launcher.id='v259NotificationLauncher';
+  launcher.type='button';
+  launcher.className='v259-settings-launcher';
+  launcher.innerHTML=`
+    <span class="v259-settings-launcher-main">
+      <span class="v259-settings-launcher-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>
+        </svg>
+      </span>
+      <span class="v259-settings-launcher-copy">
+        <b>Notifikasi &amp; Adzan</b>
+        <small id="v259LauncherSummary">Memeriksa pengaturan…</small>
+      </span>
+      <span class="v259-settings-launcher-arrow" aria-hidden="true">›</span>
+    </span>
+    <span class="v259-settings-launcher-status">
+      <span class="v259-mini-status" id="v259LauncherNotif">Notifikasi</span>
+      <span class="v259-mini-status" id="v259LauncherLocation">Lokasi</span>
+    </span>
+  `;
+
+  panel.parentNode.insertBefore(launcher,panel);
+
+  const screen=document.createElement('div');
+  screen.id='prayerSettingsScreen';
+  screen.className='screen v259-prayer-settings-screen hidden';
+  screen.innerHTML=`
+    <div class="screenbar v259-prayer-screenbar">
+      <button type="button" data-v259-back aria-label="Kembali">‹</button>
+      <b>Notifikasi &amp; Adzan</b>
+      <span></span>
+    </div>
+
+    <section class="v259-prayer-hero">
+      <span class="v259-prayer-kicker">PENGINGAT WAKTU SHOLAT</span>
+      <h2>Atur pengingat sesuai kebiasaanmu</h2>
+      <p>Setiap waktu sholat dapat memakai notifikasi, pengingat singkat, atau adzan lengkap dengan koreksi jadwal masing-masing.</p>
+      <div class="v259-hero-status">
+        <span id="v259HeroNotif">Notifikasi</span>
+        <span id="v259HeroLocation">Lokasi</span>
+      </div>
+    </section>
+
+    <section class="v259-location-card">
+      <span class="v259-location-icon" aria-hidden="true">⌖</span>
+      <span class="v259-location-copy">
+        <b>Lokasi Jadwal Sholat</b>
+        <small id="v259PrayerLocationText">Memeriksa lokasi…</small>
+      </span>
+      <button type="button" data-v259-refresh-location>Perbarui</button>
+    </section>
+
+    <div class="v259-prayer-settings-host" data-v259-panel-host></div>
+  `;
+
+  const bottomNav=$('#globalBottomNav');
+  if(bottomNav?.parentNode){
+    bottomNav.parentNode.insertBefore(screen,bottomNav);
+  }else{
+    document.body.appendChild(screen);
+  }
+
+  screen.querySelector('[data-v259-panel-host]')?.appendChild(panel);
+
+  launcher.addEventListener('click',()=>showPrayerSettings());
+  screen.querySelector('[data-v259-back]')?.addEventListener('click',()=>goBackInApp());
+
+  screen.querySelector('[data-v259-refresh-location]')?.addEventListener('click',async event=>{
+    const button=event.currentTarget;
+    const old=button.textContent;
+    button.disabled=true;
+    button.textContent='Memuat…';
+    try{
+      await getPrayerTimes();
+      v259SyncNotificationCenterSummary();
+      queueNativePrayerScheduleSync();
+      queuePushSync();
+    }finally{
+      button.disabled=false;
+      button.textContent=old;
+    }
+  });
+
+  v259SyncNotificationCenterSummary();
+}
+
+function showPrayerSettings(){
+  v259InstallNotificationCenter();
+  navigateScreen('prayerSettings');
+  updateGlobalBottomNav('prayerSettings');
+  syncNotificationUI();
+  v259SyncNotificationCenterSummary();
+}
+
+window.showPrayerSettings=showPrayerSettings;
+
+// Supaya bottom navigation tetap menandai "Pengaturan"
+// saat pengguna berada di halaman Notifikasi & Adzan.
+const v259BaseGlobalNavKeyForScreen=globalNavKeyForScreen;
+globalNavKeyForScreen=function(screen='home'){
+  if(screen==='prayerSettings')return 'settings';
+  return v259BaseGlobalNavKeyForScreen(screen);
+};
+
+// Setiap kali UI notifikasi berubah, ringkasan pada Pengaturan ikut berubah.
+const v259BaseSyncNotificationUI=syncNotificationUI;
+syncNotificationUI=function(){
+  v259BaseSyncNotificationUI();
+  v259SyncNotificationCenterSummary();
+};
+
+// Setiap jadwal/lokasi baru berhasil dimuat, perbarui status halaman khusus.
+const v259BaseRenderPrayerData=renderPrayerData;
+renderPrayerData=function(data){
+  v259BaseRenderPrayerData(data);
+  v259SyncNotificationCenterSummary();
+};
+
+async function v259EnableNotificationsForNewUser(){
+  let permission=notificationPermission();
+
+  if(permission!=='granted'){
+    if(nativeNotificationApp()){
+      try{window.AmaliyahAndroid.requestNotificationPermission?.();}catch{}
+      permission=await waitForNativeNotificationPermission();
+    }else if('Notification' in window){
+      try{
+        permission=Notification.permission==='granted'
+          ? 'granted'
+          : await Notification.requestPermission();
+      }catch{
+        permission=notificationPermission();
+      }
+    }
+  }
+
+  if(permission!=='granted'){
+    syncNotificationUI();
+    return false;
+  }
+
+  const settings=getNotificationSettings();
+  settings.enabled=true;
+  settings.lead=0;
+
+  for(const prayer of V258_PRAYERS){
+    settings.prayers[prayer.name]=true;
+    settings.prayerModes[prayer.name]='notification';
+    settings.offsetMinutes[prayer.name]=v258ClampOffset(
+      settings.offsetMinutes?.[prayer.name]||0
+    );
+  }
+
+  setNotificationSettings(settings);
+  syncNotificationUI();
+  startPrayerNotificationScheduler();
+
+  return true;
+}
+
+async function v259EnableLocationForNewUser(){
+  if(v259LocationReady())return true;
+  if(!navigator.geolocation)return false;
+
+  try{
+    await getPrayerTimes();
+  }catch{}
+
+  return v259LocationReady();
+}
+
+function v259SetSetupState(name,state,text){
+  const el=document.querySelector(`[data-v259-${name}-state]`);
+  if(!el)return;
+  el.textContent=text;
+  el.className=`v259-setup-state ${state||''}`.trim();
+}
+
+function v259CloseFirstSetup(result=V259_SETUP_DONE){
+  document.querySelector('.v259-setup-backdrop')?.remove();
+  store.setItem(V259_SETUP_KEY,result);
+  // Setup baru menggantikan onboarding lama untuk instalasi baru.
+  store.setItem(ONBOARDING_KEY,'1');
+  v259SyncNotificationCenterSummary();
+}
+
+async function v259RunFirstSetup(){
+  const button=document.querySelector('[data-v259-start]');
+  const progress=document.querySelector('[data-v259-progress]');
+
+  if(button){
+    button.disabled=true;
+    button.textContent='Menyiapkan Amaliyah…';
+  }
+
+  if(progress)progress.textContent='Meminta izin notifikasi…';
+  v259SetSetupState('notif','warn','Meminta…');
+
+  const notifOk=await v259EnableNotificationsForNewUser();
+  v259SetSetupState(
+    'notif',
+    notifOk?'ready':'warn',
+    notifOk?'Aktif':'Belum aktif'
+  );
+
+  if(progress)progress.textContent='Menyiapkan lokasi jadwal sholat…';
+  v259SetSetupState('location','warn','Meminta…');
+
+  const locationOk=await v259EnableLocationForNewUser();
+  v259SetSetupState(
+    'location',
+    locationOk?'ready':'warn',
+    locationOk?'Aktif':'Belum aktif'
+  );
+
+  if(notifOk && locationOk){
+    if(progress)progress.textContent='Selesai • jadwal dan pengingat sedang disiapkan';
+    queuePushSync();
+    queueNativePrayerScheduleSync();
+    startPrayerNotificationScheduler();
+
+    setTimeout(()=>v259CloseFirstSetup(V259_SETUP_DONE),650);
+    return;
+  }
+
+  if(progress){
+    progress.textContent=
+      !notifOk && !locationOk
+        ? 'Izin belum diberikan. Kamu dapat mengaktifkannya nanti dari Pengaturan.'
+        : !notifOk
+          ? 'Lokasi aktif. Notifikasi dapat diaktifkan nanti dari Pengaturan.'
+          : 'Notifikasi aktif. Lokasi dapat diaktifkan nanti dari Pengaturan.';
+  }
+
+  if(button){
+    button.disabled=false;
+    button.textContent='Masuk ke Amaliyah';
+    button.onclick=()=>v259CloseFirstSetup(V259_SETUP_DONE);
+  }
+}
+
+function v259ShowFirstSetup(){
+  if(store.getItem(V259_SETUP_KEY))return;
+  if(store.getItem(ONBOARDING_KEY)==='1')return;
+  if(document.querySelector('.v259-setup-backdrop'))return;
+
+  v259InjectStyles();
+
+  // Pastikan onboarding lama tidak ikut tampil di bawah setup baru.
+  document.querySelector('.amaliyah-onboarding-backdrop')?.remove();
+
+  const backdrop=document.createElement('div');
+  backdrop.className='v259-setup-backdrop';
+  backdrop.innerHTML=`
+    <section class="v259-setup" role="dialog" aria-modal="true" aria-labelledby="v259SetupTitle">
+      <div class="v259-setup-top">AMALIYAH</div>
+      <div class="v259-setup-mark" aria-hidden="true">ا</div>
+      <h1 id="v259SetupTitle">Siapkan Amaliyah</h1>
+      <p class="v259-setup-lead">Aktifkan dua izin penting agar jadwal sholat langsung mengikuti lokasimu dan pengingat tetap dapat diterima.</p>
+
+      <div class="v259-setup-card">
+        <div class="v259-setup-benefit">
+          <span class="v259-setup-benefit-icon" aria-hidden="true">♢</span>
+          <span>
+            <b>Notifikasi Waktu Sholat</b>
+            <small>Pengingat lima waktu langsung aktif. Suara adzan dapat dipilih kemudian.</small>
+          </span>
+          <span class="v259-setup-state" data-v259-notif-state>Siap</span>
+        </div>
+
+        <div class="v259-setup-benefit">
+          <span class="v259-setup-benefit-icon" aria-hidden="true">⌖</span>
+          <span>
+            <b>Lokasi Jadwal</b>
+            <small>Dipakai untuk menentukan jadwal sholat di tempat pengguna berada.</small>
+          </span>
+          <span class="v259-setup-state" data-v259-location-state>Siap</span>
+        </div>
+      </div>
+
+      <div class="v259-setup-note">Amaliyah tidak dapat memberi izin Android secara diam-diam. Setelah tombol ditekan, Android akan menampilkan dialog izin resmi dan pengguna cukup memilih Izinkan.</div>
+
+      <div class="v259-setup-actions">
+        <button class="v259-setup-primary" type="button" data-v259-start>Aktifkan &amp; Mulai</button>
+        <button class="v259-setup-later" type="button" data-v259-later>Atur nanti</button>
+        <div class="v259-setup-progress" data-v259-progress></div>
+      </div>
+    </section>
+  `;
+
+  document.body.appendChild(backdrop);
+
+  backdrop.querySelector('[data-v259-start]')?.addEventListener(
+    'click',
+    v259RunFirstSetup,
+    {once:true}
+  );
+
+  backdrop.querySelector('[data-v259-later]')?.addEventListener(
+    'click',
+    ()=>v259CloseFirstSetup(V259_SETUP_SKIPPED)
+  );
+}
+
+// Auto-onboarding lama diarahkan ke First Setup hanya untuk instalasi baru.
+// Tombol "Petunjuk" manual tetap membuka onboarding informasi lama.
+const v259BaseShowOnboarding=showOnboarding;
+showOnboarding=function(force=false){
+  if(force)return v259BaseShowOnboarding(true);
+
+  if(
+    !store.getItem(V259_SETUP_KEY) &&
+    store.getItem(ONBOARDING_KEY)!=='1'
+  ){
+    v259ShowFirstSetup();
+    return;
+  }
+
+  return v259BaseShowOnboarding(false);
+};
+window.showOnboarding=showOnboarding;
+
+// Jika timer onboarding lama sudah dijadwalkan, binding showOnboarding di atas
+// akan otomatis mengarah ke First Setup. Instalasi lama tidak diganggu.
+v259InstallNotificationCenter();
+v259SyncNotificationCenterSummary();
