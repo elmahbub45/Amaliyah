@@ -12,8 +12,8 @@ android {
         applicationId 'id.my.elmahbub.amaliyah'
         minSdk 23
         targetSdk 35
-        versionCode 10400
-        versionName '1.4.0'
+        versionCode 10500
+        versionName '1.5.0'
     }
 
     signingConfigs {
@@ -33,7 +33,9 @@ android {
             if (previewKeystore.exists()) {
                 signingConfig signingConfigs.previewRelease
             }
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile(
+                    'proguard-android-optimize.txt'
+            ), 'proguard-rules.pro'
         }
     }
 
