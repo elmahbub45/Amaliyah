@@ -4385,3 +4385,329 @@ window.previewNewUserWelcome=function(){
     else store.removeItem(V2591_WELCOME_KEY);
   }
 };
+/* =========================================================
+   V2.59.2 — REQUIRED ATTEMPT, NON-BLOCKING SETUP
+   Tempel blok ini di PALING BAWAH app.js root,
+   SETELAH V2.59.1.
+
+   Prinsip:
+   - Tidak ada tombol "Lewati" / "Atur nanti".
+   - Notifikasi WAJIB diminta pada onboarding.
+   - Lokasi WAJIB diminta pada onboarding.
+   - Jika pengguna menolak salah satunya, onboarding TETAP lanjut.
+   - Setelah dua permintaan selesai, pengguna masuk Beranda.
+   - Logo onboarding memakai logo aplikasi tanpa wrapper hijau tambahan.
+   ========================================================= */
+
+function v2592InjectStyles(){
+  if(document.getElementById('v2592Styles'))return;
+
+  const style=document.createElement('style');
+  style.id='v2592Styles';
+  style.textContent=`
+    /* Tidak ada jalan pintas yang tampil pada onboarding. */
+    .v2591-skip,
+    .v259-setup-later{
+      display:none!important;
+    }
+
+    /* Logo aplikasi tampil langsung, tanpa kotak hijau/border tambahan. */
+    .v2591-logo,
+    .v259-setup-mark{
+      width:92px!important;
+      height:92px!important;
+      margin-left:auto!important;
+      margin-right:auto!important;
+      padding:0!important;
+      display:grid!important;
+      place-items:center!important;
+      border:0!important;
+      border-radius:0!important;
+      background:transparent!important;
+      box-shadow:none!important;
+      color:transparent!important;
+      overflow:visible!important;
+    }
+
+    .v2591-logo img,
+    .v259-setup-mark img{
+      display:block;
+      width:92px;
+      height:92px;
+      object-fit:contain;
+      border:0;
+      outline:0;
+      background:transparent;
+      box-shadow:none;
+    }
+
+    .v259-setup-note{
+      margin-top:14px!important;
+    }
+
+    .v2592-denied-note{
+      display:block;
+      margin-top:5px;
+      color:#9a7041;
+      font-size:8px;
+      line-height:1.35;
+      font-weight:700;
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+function v2592ApplyAppLogo(root=document){
+  const welcomeLogo=root.querySelector?.('.v2591-logo');
+  if(welcomeLogo){
+    welcomeLogo.innerHTML=
+      '<img src="./assets/icons/icon-192.png" alt="Logo Amaliyah">';
+  }
+
+  const setupLogo=root.querySelector?.('.v259-setup-mark');
+  if(setupLogo){
+    setupLogo.innerHTML=
+      '<img src="./assets/icons/icon-192.png" alt="Logo Amaliyah">';
+  }
+}
+
+function v2592PolishWelcome(){
+  v2592InjectStyles();
+  v2592ApplyAppLogo(document);
+
+  const skip=document.querySelector('.v2591-skip');
+  if(skip)skip.remove();
+
+  const footer=document.querySelector('.v2591-footer');
+  if(footer){
+    footer.textContent=
+      'Tahap berikutnya akan meminta izin Notifikasi dan Lokasi melalui dialog resmi perangkat.';
+  }
+}
+
+function v2592PolishSetup(){
+  v2592InjectStyles();
+  v2592ApplyAppLogo(document);
+
+  const later=document.querySelector('.v259-setup-later');
+  if(later)later.remove();
+
+  const notifState=document.querySelector('[data-v259-notif-state]');
+  if(notifState && notifState.textContent.trim()==='Siap'){
+    notifState.textContent='Belum aktif';
+    notifState.className='v259-setup-state warn';
+  }
+
+  const locationState=document.querySelector('[data-v259-location-state]');
+  if(locationState && locationState.textContent.trim()==='Siap'){
+    locationState.textContent='Belum aktif';
+    locationState.className='v259-setup-state warn';
+  }
+
+  const note=document.querySelector('.v259-setup-note');
+  if(note){
+    note.textContent=
+      'Android akan meminta izin Notifikasi dan Lokasi. Jika salah satu izin tidak diberikan, kamu tetap dapat melanjutkan ke Amaliyah dan mengaktifkannya kemudian melalui Pengaturan.';
+  }
+}
+
+/* Bungkus fungsi tampilan V2.59.1 agar logo/aksi selalu dipoles. */
+const v2592BaseShowWelcome=v2591ShowWelcome;
+v2591ShowWelcome=function(){
+  const result=v2592BaseShowWelcome();
+  requestAnimationFrame(v2592PolishWelcome);
+  return result;
+};
+
+const v2592BaseShowSetup=v259ShowFirstSetup;
+v259ShowFirstSetup=function(){
+  const result=v2592BaseShowSetup();
+  requestAnimationFrame(v2592PolishSetup);
+  return result;
+};
+
+/* Request notifikasi yang tidak menunggu 30 detik bila pengguna menolak. */
+function v2592WaitNotificationDecision(initialState='default'){
+  return new Promise(resolve=>{
+    const started=Date.now();
+
+    const check=()=>{
+      const state=notificationPermission();
+
+      if(state==='granted' || state==='denied' || state==='unsupported'){
+        resolve(state);
+        return;
+      }
+
+      /* Bila status berubah dari kondisi awal, anggap keputusan sudah selesai. */
+      if(state!==initialState && state!=='default'){
+        resolve(state);
+        return;
+      }
+
+      if(Date.now()-started>12000){
+        resolve(notificationPermission());
+        return;
+      }
+
+      setTimeout(check,180);
+    };
+
+    check();
+  });
+}
+
+async function v2592RequestNotificationAttempt(){
+  let state=notificationPermission();
+
+  if(state==='granted'){
+    const s=getNotificationSettings();
+    s.enabled=true;
+    setNotificationSettings(s);
+    syncNotificationUI();
+    startPrayerNotificationScheduler();
+    return true;
+  }
+
+  /* Kalau sudah pernah ditolak, jangan membuat onboarding menggantung.
+     Pengguna tetap boleh lanjut. */
+  if(state==='denied' || state==='unsupported'){
+    const s=getNotificationSettings();
+    s.enabled=false;
+    setNotificationSettings(s);
+    syncNotificationUI();
+    return false;
+  }
+
+  if(nativeNotificationApp()){
+    try{
+      window.AmaliyahAndroid.requestNotificationPermission?.();
+    }catch{}
+
+    state=await v2592WaitNotificationDecision(state);
+
+  }else if('Notification' in window){
+    try{
+      state=await Notification.requestPermission();
+    }catch{
+      state=notificationPermission();
+    }
+  }
+
+  const granted=state==='granted';
+  const s=getNotificationSettings();
+  s.enabled=granted;
+
+  if(granted){
+    s.lead=0;
+
+    for(const prayer of V258_PRAYERS){
+      s.prayers[prayer.name]=true;
+      s.prayerModes[prayer.name]='notification';
+      s.offsetMinutes[prayer.name]=v258ClampOffset(
+        s.offsetMinutes?.[prayer.name]||0
+      );
+    }
+  }
+
+  setNotificationSettings(s);
+  syncNotificationUI();
+  startPrayerNotificationScheduler();
+
+  return granted;
+}
+
+async function v2592RequestLocationAttempt(){
+  if(v259LocationReady())return true;
+  if(!navigator.geolocation)return false;
+
+  try{
+    await getPrayerTimes();
+  }catch{}
+
+  return v259LocationReady();
+}
+
+/* Override proses tombol "Aktifkan & Mulai".
+   Dua izin selalu dicoba, tetapi penolakan tidak memblokir Beranda. */
+v259RunFirstSetup=async function(){
+  const button=document.querySelector('[data-v259-start]');
+  const progress=document.querySelector('[data-v259-progress]');
+
+  if(button){
+    button.disabled=true;
+    button.textContent='Menyiapkan Amaliyah…';
+  }
+
+  /* 1 — Notifikasi */
+  if(progress)progress.textContent='Meminta izin notifikasi…';
+  v259SetSetupState('notif','warn','Meminta…');
+
+  const notifOk=await v2592RequestNotificationAttempt();
+
+  v259SetSetupState(
+    'notif',
+    notifOk?'ready':'warn',
+    notifOk?'Aktif ✓':'Tidak diizinkan'
+  );
+
+  /* 2 — Lokasi */
+  if(progress)progress.textContent='Meminta izin lokasi…';
+  v259SetSetupState('location','warn','Meminta…');
+
+  const locationOk=await v2592RequestLocationAttempt();
+
+  v259SetSetupState(
+    'location',
+    locationOk?'ready':'warn',
+    locationOk?'Aktif ✓':'Tidak diizinkan'
+  );
+
+  /* Sinkronkan hanya layanan yang memang tersedia. */
+  if(notifOk){
+    queuePushSync();
+    startPrayerNotificationScheduler();
+
+    if(locationOk){
+      queueNativePrayerScheduleSync();
+    }
+  }
+
+  if(progress){
+    if(notifOk && locationOk){
+      progress.textContent='Selesai • Notifikasi dan Lokasi aktif';
+    }else if(!notifOk && !locationOk){
+      progress.textContent='Izin belum diberikan • dapat diaktifkan nanti dari Pengaturan';
+    }else if(!notifOk){
+      progress.textContent='Lokasi aktif • Notifikasi dapat diaktifkan nanti dari Pengaturan';
+    }else{
+      progress.textContent='Notifikasi aktif • Lokasi dapat diaktifkan nanti dari Pengaturan';
+    }
+  }
+
+  if(button){
+    button.textContent='Membuka Amaliyah…';
+  }
+
+  setTimeout(()=>{
+    v259CloseFirstSetup(V259_SETUP_DONE);
+
+    try{
+      navigateScreen('home',{push:false});
+    }catch{
+      try{showHome();}catch{}
+    }
+
+    updateHome?.();
+  },700);
+};
+
+/* Pastikan fungsi global/handler yang dibuat setelah patch memakai versi terbaru. */
+window.v259RunFirstSetup=v259RunFirstSetup;
+
+/* Bila layar onboarding sedang terbuka saat file baru termuat,
+   poles langsung tanpa menunggu pembukaan berikutnya. */
+v2592InjectStyles();
+v2592PolishWelcome();
+v2592PolishSetup();
